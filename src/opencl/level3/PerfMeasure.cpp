@@ -37,7 +37,7 @@ std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Kernels/"
 //static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
 // 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
 
-static const char *opts = "";
+static const char *opts = "-cl-opt-disable";
 
 struct _benchmark_type {
 
@@ -69,7 +69,7 @@ struct _benchmark_type {
 };
 
 struct _benchmark_type tests[] ={
-  {"Add1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 1, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 1, 240, 282, 1, 1024, 1024, 1024, 4, 128, 4, TargetDevice::GPU},
   {"Add2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 120, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
   {"Add2", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
   {"Add2", "-240Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 2, 240, 141, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
@@ -484,7 +484,6 @@ void execution (cl_device_id id,
       }
 
       size_t globalWorkSize[1] = {numFloats};
-      A
       size_t maxGroupSize = 1;
       maxGroupSize = getMaxWorkGroupSize (id);
 
