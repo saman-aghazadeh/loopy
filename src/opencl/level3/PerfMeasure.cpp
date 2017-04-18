@@ -282,20 +282,23 @@ void generateKernel (ostringstream &oss,
     else startIdx[i] == startIdx[i+1] + numVecs[i+1];
     nVectors += numVecs[i];
 
-    for (int vv=startIdx[i]; vv<startIdx[i]+numVecs[i]; ++vv) {
-      oss << "  " << tName;
-      if (i>0) oss << (1<<i);
-      oss << " " << test.indexVar << vv << " = "
-        	<< test.indexVar << " + ";
-      if (i>0) oss << "(" << tName << (1<<i) << ")(";
-      oss << iniVal;
-      iniVal += 0.1;
-      for (int ss = 1; ss < (1<<i); ++ss) {
-        oss << "," << iniVal;
-        iniVal += 0.1;
-      }
-      if (i>0) oss << ")";
-      oss << ";\n";
+    for (int p = 0; p < test.numUnrolls; p++) {
+      iniVal = 0.f;
+    	for (int vv=startIdx[i]; vv<startIdx[i]+numVecs[i]; ++vv) {
+      	oss << "  " << tName;
+      	if (i>0) oss << (1<<i);
+      	oss << " " << test.indexVar << p << " = "
+        		<< test.indexVar << " + ";
+      	if (i>0) oss << "(" << tName << (1<<i) << ")(";
+      	oss << iniVal;
+      	iniVal += 0.1;
+      	for (int ss = 1; ss < (1<<i); ++ss) {
+        	oss << "," << iniVal;
+        	iniVal += 0.1;
+      	}
+      	if (i>0) oss << ")";
+      	oss << ";\n";
+    	}
     }
   }
   if (test.numRepeats > 1)
@@ -307,7 +310,7 @@ void generateKernel (ostringstream &oss,
     for (int ss = 0; ss < nVectors; ++ss) {
       string opCode = string (test.opFormula);
       int pos = -1;
-      sprintf (buf, "%s%d", test.indexVar, ss);
+      sprintf (buf, "%s%d", test.indexVar, uu);
       string lVar = string (buf);
       while ((pos=opCode.find("$")) != (-1))
         opCode.replace (pos, 1, lVar);
@@ -329,25 +332,28 @@ void generateKernel (ostringstream &oss,
     }
   }
 
-	oss << "   data[gid] = ";
+  for (int p = 0; p < test.numUnrolls; p++) {
+		oss << "   data[gid] += ";
 
-  // Find the size of the largest vector use;
-  bool first = true;
-  for (i = 4; i >= 0; --i) {
-    if (numVecs[i] > 0) {
-      for (int ss = 0; ss < (1<<i); ++ss) {
-        if (!first) {
-          oss << "+";
-        } else
-          first = false;
-        oss << test.indexVar << startIdx[i];
-        if (i > 0)
-          oss << ".s" << hex << ss << dec;
-      }
-    }
+  	// Find the size of the largest vector use;
+  	bool first = true;
+  	for (i = 4; i >= 0; --i) {
+    	if (numVecs[i] > 0) {
+      	for (int ss = 0; ss < (1<<i); ++ss) {
+        	if (!first) {
+          	oss << "+";
+        	} else
+          	first = false;
+        	oss << test.indexVar << p;
+        	if (i > 0)
+          	oss << ".s" << hex << ss << dec;
+      	}
+    	}
+  	}
+    oss << ";\n";
   }
 
-  oss << ";\n}";
+  oss << "}";
   kernelDump << oss.str();
   kernelDump.close();
 }
