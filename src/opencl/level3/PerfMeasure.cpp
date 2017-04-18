@@ -62,50 +62,53 @@ struct _benchmark_type {
   int halfBufSizeMax;				// We specify the minimum, the maximum and
   													// the geometic stride
   int halfBufSizeStride;		// geometric stride (Values are in thousands of elements)
+  int localWorkSizeMin;			// Minimum Size of the work items
+	int localWorkSizeMax;			// Maximum Size of the work items
+  int localWorkSizeStride;	// Geometric stride
   int target;			// defines which device it intends to run on
 };
 
 struct _benchmark_type tests[] ={
-  {"Add1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 1, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add2", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add2", "-240Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 2, 240, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-120Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 4, 120, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-240Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 4, 240, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 30, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-	{"Add8", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-60Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 8, 60, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-120Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 8, 120, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-240Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 8, 240, 35, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 20, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 30, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-30Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 16, 30, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-60Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 16, 60, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-120Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 16, 120, 35, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-240Unroll", "-17Iters", "s", "data[gid]", "10.f-$", 16, 240, 17, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul1", "-200Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 1, 200, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul2", "-100Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 2, 100, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul4", "-50Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 4, 50, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-	{"Mul8", "-25Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 8, 25, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul16", "-15Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 16, 15, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MAdd1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 1, 240, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MAdd2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 2, 120, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MAdd4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 4, 60, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MAdd8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 30, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MAdd16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 16, 20, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd1", "-160Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 1, 160, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd2", "-80Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 2, 80, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd4", "-40Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 4, 40, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd8", "-20Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 8, 20, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+  {"Add1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 1, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 120, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add2", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add2", "-240Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 2, 240, 141, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 60, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add4", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 120, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add4", "-120Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 4, 120, 141, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add4", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add4", "-240Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 4, 240, 70, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 30, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+	{"Add8", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 60, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add8", "-60Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 8, 60, 141, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add8", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 120, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add8", "-120Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 8, 120, 70, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add8", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add8", "-240Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 8, 240, 35, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 20, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add16", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 30, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add16", "-30Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 16, 30, 141, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add16", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 60, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add16", "-60Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 16, 60, 70, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add16", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 120, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add16", "-120Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 16, 120, 35, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Add16", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 240, 282, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::FPGA},
+  {"Add16", "-240Unroll", "-17Iters", "s", "data[gid]", "10.f-$", 16, 240, 17, 1, 1024, 1024, 1024, 1, 128, 4, TargetDevice::GPU},
+  {"Mul1", "-200Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 1, 200, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"Mul2", "-100Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 2, 100, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"Mul4", "-50Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 4, 50, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+	{"Mul8", "-25Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 8, 25, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"Mul16", "-15Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 16, 15, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MAdd1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 1, 240, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MAdd2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 2, 120, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MAdd4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 4, 60, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MAdd8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 30, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MAdd16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 16, 20, 282, 2, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MulMAdd1", "-160Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 1, 160, 282, 3, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MulMAdd2", "-80Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 2, 80, 282, 3, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MulMAdd4", "-40Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 4, 40, 282, 3, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {"MulMAdd8", "-20Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 8, 20, 282, 3, 1024, 1024, 1024, 1, 128, 2, TargetDevice::FPGA},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 // Creates the program object based on the platform,
@@ -414,7 +417,7 @@ void execution (cl_device_id id,
                 char* precision) {
 
   int verbose = false;
-	int npasses = 10;
+	int npasses = 3;
 	float repeatF = 5.0f;
 
   // Check for double precision support
@@ -430,6 +433,11 @@ void execution (cl_device_id id,
 	int aIdx = 0;
   while ((tests != 0) && (tests[aIdx].name != 0)) {
     struct _benchmark_type temp = tests[aIdx];
+
+		if (temp.target != targetDevice) {
+      aIdx += 1;
+      continue;
+    }
 
 		cl_program program;
     cl_kernel kernel;
@@ -476,56 +484,61 @@ void execution (cl_device_id id,
       }
 
       size_t globalWorkSize[1] = {numFloats};
+      A
       size_t maxGroupSize = 1;
       maxGroupSize = getMaxWorkGroupSize (id);
-      size_t localWorkSize[1] = {1};
-      localWorkSize[0] = maxGroupSize < 128 ? maxGroupSize : 128;
 
-			for (int pas = 0; pas < npasses; ++pas) {
-       	refillMemObject<T> (ctx, queue, &mem1, (int) sizeof(T), numFloats, hostMem);
+      for (int wsBegin = temp.localWorkSizeMin; wsBegin <= temp.localWorkSizeMax; wsBegin *= temp.localWorkSizeStride) {
+        size_t localWorkSize[1] = {1};
+        localWorkSize[0] = wsBegin;
+        char lwsString[10] = {'\0'};
+				for (int pas = 0; pas < npasses; ++pas) {
+       		refillMemObject<T> (ctx, queue, &mem1, (int) sizeof(T), numFloats, hostMem);
 
-        Event evKernel (temp.name);
-        err = clEnqueueNDRangeKernel (queue, kernel, 1, NULL,
-                                      globalWorkSize, localWorkSize,
-                                      0, NULL, &evKernel.CLEvent());
-        CL_CHECK_ERROR (err);
-        err = clWaitForEvents (1, &evKernel.CLEvent());
-        CL_CHECK_ERROR (err);
+        	Event evKernel (temp.name);
+        	err = clEnqueueNDRangeKernel (queue, kernel, 1, NULL,
+        	                              globalWorkSize, localWorkSize,
+        	                              0, NULL, &evKernel.CLEvent());
+        	CL_CHECK_ERROR (err);
+        	err = clWaitForEvents (1, &evKernel.CLEvent());
+        	CL_CHECK_ERROR (err);
 
-        evKernel.FillTimingInfo ();
-        double flopCount = (double) numFloats *
-          													temp.flopCount *
-          													temp.numRepeats *
-          													temp.numUnrolls *
-          													temp.numStreams;
-        double gflop = flopCount / (double)(evKernel.SubmitEndRuntime());
+	        evKernel.FillTimingInfo ();
+	        double flopCount = (double) numFloats *
+	          													temp.flopCount *
+	          													temp.numRepeats *
+	          													temp.numUnrolls *
+	          													temp.numStreams;
+	        double gflop = flopCount / (double)(evKernel.SubmitEndRuntime());
 
 
-				sprintf (sizeStr, "Size: %07d", numFloats);
-        resultDB.AddResult (string(temp.name) + string(temp.nameExtension) + string(temp.reportExtenstion) + precision, sizeStr, "GFLOPS", gflop);
+					sprintf (sizeStr, "Size: %07d", numFloats);
+          sprintf (lwsString, "%d", wsBegin);
+	        resultDB.AddResult (string(temp.name) + string(temp.nameExtension) + string(temp.reportExtenstion) + string("-lws") + string(lwsString) + precision, sizeStr, "GFLOPS", gflop);
 
-        // Zero out the host memory
-        for (int j = 0; j < numFloats; j++) {
-          hostMem2[j] = 0.0;
-        }
+	        // Zero out the host memory
+	        for (int j = 0; j < numFloats; j++) {
+	          hostMem2[j] = 0.0;
+	        }
 
-        // Read the result device memory back to the host
-        err = clEnqueueReadBuffer (queue, mem1, true, 0,
-                                   numFloats*sizeof(T), hostMem2,
-                                   0, NULL, NULL);
-        CL_CHECK_ERROR (err);
+	        // Read the result device memory back to the host
+	        err = clEnqueueReadBuffer (queue, mem1, true, 0,
+	                                   numFloats*sizeof(T), hostMem2,
+	                                   0, NULL, NULL);
+	        CL_CHECK_ERROR (err);
 
-        // Check the result -- At a minimum the first half of memory
-        // should match the second half
-				for (int j = 0; j < halfNumFloats; ++j) {
-          if (hostMem2[j] != hostMem2[numFloats-j-1]) {
-            std::cout << "Error: hostMem2[" << j << "]=" << hostMem2[j]
-              				<< " is different from it's twin element hostMem2["
-              				<< (numFloats-j-1) << "]=" << hostMem2[numFloats-j-1]
-                      << "; stopping check\n";
-            break;
-          }
-        }
+	        // Check the result -- At a minimum the first half of memory
+	        // should match the second half
+					for (int j = 0; j < halfNumFloats; ++j) {
+	          if (hostMem2[j] != hostMem2[numFloats-j-1]) {
+	            std::cout << "Error: hostMem2[" << j << "]=" << hostMem2[j]
+	              				<< " is different from it's twin element hostMem2["
+	              				<< (numFloats-j-1) << "]=" << hostMem2[numFloats-j-1]
+	                      << "; stopping check\n";
+	            break;
+	          }
+	        }
+	      }
       }
     }
 
