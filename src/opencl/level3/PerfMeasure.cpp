@@ -68,43 +68,49 @@ struct _benchmark_type {
 struct _benchmark_type tests[] ={
   {"Add1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 1, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
   {"Add2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add2", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add2", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 2, 240, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add2", "-240Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 2, 240, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
   {"Add4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add4", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 120, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add4", "-120Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 4, 120, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add4", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add4", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 4, 240, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add4", "-240Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 4, 240, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
   {"Add8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 30, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-	{"Add8", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+	{"Add8", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 60, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add8", "-60Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 8, 60, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add8", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 120, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add8", "-120Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 8, 120, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add8", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add8", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 8, 240, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add8", "-240Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 8, 240, 35, 1, 1024, 1024, 1024, TargetDevice::GPU},
   {"Add16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 20, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 30, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add16", "-30Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 30, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add16", "-30Unroll", "-141Iters", "s", "data[gid]", "10.f-$", 16, 30, 141, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 60, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add16", "-60Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 60, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add16", "-60Unroll", "-70Iters", "s", "data[gid]", "10.f-$", 16, 60, 70, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 120, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add16", "-120Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 120, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add16", "-120Unroll", "-35Iters", "s", "data[gid]", "10.f-$", 16, 120, 35, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Add16", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 240, 282, 1, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Add16", "-240Unroll", "-282Iters", "s", "data[gid]", "10.f-$", 16, 240, 282, 1, 1024, 1024, 1024, TargetDevice::FPGA},
   {"Add16", "-240Unroll", "-17Iters", "s", "data[gid]", "10.f-$", 16, 240, 17, 1, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul1", "-200Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 1, 200, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul2", "-100Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 2, 100, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul4", "-50Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 4, 50, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-	{"Mul8", "-25Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 8, 25, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"Mul16", "-15Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 16, 15, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"Mul1", "-200Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 1, 200, 282, 2, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"Mul2", "-100Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 2, 100, 282, 2, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"Mul4", "-50Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 4, 50, 282, 2, 1024, 1024, 1024, TargetDevice::FPGA},
+	{"Mul8", "-25Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 8, 25, 282, 2, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"Mul16", "-15Unroll", "-282Iters", "s", "data[gid]-data[gid]+0.999f", "$*$*1.01f", 16, 15, 282, 2, 1024, 1024, 1024, TargetDevice::FPGA},
   {"MAdd1", "-240Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 1, 240, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
   {"MAdd2", "-120Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 2, 120, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd2", "-240Unroll", "-141Iters", "s", "data[gid]", "10.0f-$*0.9899f", 2, 240, 141, 2, 1024, 1024, 1024, TargetDevice::GPU},
   {"MAdd4", "-60Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 4, 60, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd4", "-120Unroll", "-141Iters", "s", "data[gid]", "10.0f-$*0.9899f", 4, 120, 141, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd4", "-240Unroll", "-70Iters", "s", "data[gid]", "10.0f-$*0.9899f", 4, 240, 70, 2, 1024, 1024, 1024, TargetDevice::GPU},
   {"MAdd8", "-30Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 30, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd8", "-60Unroll", "-141Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 60, 141, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd8", "-120Unroll", "-70Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 120, 70, 2, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MAdd8", "-240Unroll", "-35Iters", "s", "data[gid]", "10.0f-$*0.9899f", 8, 240, 35, 2, 1024, 1024, 1024, TargetDevice::GPU},
   {"MAdd16", "-20Unroll", "-282Iters", "s", "data[gid]", "10.0f-$*0.9899f", 16, 20, 282, 2, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd1", "-160Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 1, 160, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd2", "-80Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 2, 80, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd4", "-40Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 4, 40, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
-  {"MulMAdd8", "-20Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 8, 20, 282, 3, 1024, 1024, 1024, TargetDevice::GPU},
+  {"MulMAdd1", "-160Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 1, 160, 282, 3, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"MulMAdd2", "-80Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 2, 80, 282, 3, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"MulMAdd4", "-40Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 4, 40, 282, 3, 1024, 1024, 1024, TargetDevice::FPGA},
+  {"MulMAdd8", "-20Unroll", "-282Iters", "s", "data[gid]", "(3.75f-0.355f*$)*$", 8, 20, 282, 3, 1024, 1024, 1024, TargetDevice::FPGA},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
@@ -174,6 +180,17 @@ cl_program createProgram (cl_context context,
   CL_CHECK_ERROR (err);
   err = clBuildProgram (program, 0, NULL, opts, NULL, NULL);
   CL_CHECK_ERROR (err);
+  if (err != 0) {
+    char log[5000];
+    size_t retSize = 0;
+    err = clGetProgramBuildInfo (program, device, CL_PROGRAM_BUILD_LOG,
+                                 5000*sizeof(char), log, &retSize);
+    CL_CHECK_ERROR (err);
+
+    cout << "Build error." << endl;
+    cout << "RetSize: " << retSize << endl;
+    cout << "Log: " << log << endl;
+  }
 
   return program;
 
@@ -282,24 +299,25 @@ void generateKernel (ostringstream &oss,
     else startIdx[i] == startIdx[i+1] + numVecs[i+1];
     nVectors += numVecs[i];
 
-    for (int p = 0; p < test.numUnrolls; p++) {
-      iniVal = 0.f;
-    	for (int vv=startIdx[i]; vv<startIdx[i]+numVecs[i]; ++vv) {
-      	oss << "  " << tName;
-      	if (i>0) oss << (1<<i);
-      	oss << " " << test.indexVar << p << " = "
-        		<< test.indexVar << " + ";
-      	if (i>0) oss << "(" << tName << (1<<i) << ")(";
-      	oss << iniVal;
-      	iniVal += 0.1;
-      	for (int ss = 1; ss < (1<<i); ++ss) {
-        	oss << "," << iniVal;
-        	iniVal += 0.1;
-      	}
-      	if (i>0) oss << ")";
-      	oss << ";\n";
-    	}
-    }
+    iniVal = 0.f;
+    for (int vv=startIdx[i]; vv<startIdx[i]+numVecs[i]; ++vv) {
+      oss << "  " << tName;
+      if (i>0) oss << (1<<i);
+      oss << " " << test.indexVar << vv << " = "
+        	<< test.indexVar << " + ";
+      if (i>0) oss << "(" << tName << (1<<i) << ")(";
+      oss << iniVal;
+      iniVal += 0.1;
+      for (int ss = 1; ss < (1<<i); ++ss) {
+        oss << "," << iniVal;
+        iniVal += 0.1;
+      }
+      if (i>0) oss << ")";
+      oss << ";\n";
+      oss << "  " << tName;
+      if (i > 0) oss << (1<<i);
+      oss << " dummy" << vv << " = 0;\n";
+  	}
   }
   if (test.numRepeats > 1)
     oss << "  for (int j = 0; j < nIters; ++j){\n";
@@ -310,11 +328,11 @@ void generateKernel (ostringstream &oss,
     for (int ss = 0; ss < nVectors; ++ss) {
       string opCode = string (test.opFormula);
       int pos = -1;
-      sprintf (buf, "%s%d", test.indexVar, uu);
+      sprintf (buf, "%s%d", test.indexVar, ss);
       string lVar = string (buf);
       while ((pos=opCode.find("$")) != (-1))
         opCode.replace (pos, 1, lVar);
-      oss << " " << lVar << "=" << opCode << ";";
+      oss << " " << "dummy" << ss << "=" << opCode << ";";
     }
     oss << "\n";
   }
@@ -332,28 +350,25 @@ void generateKernel (ostringstream &oss,
     }
   }
 
-  for (int p = 0; p < test.numUnrolls; p++) {
-		oss << "   data[gid] += ";
+	oss << "   data[gid] += ";
 
-  	// Find the size of the largest vector use;
-  	bool first = true;
-  	for (i = 4; i >= 0; --i) {
-    	if (numVecs[i] > 0) {
-      	for (int ss = 0; ss < (1<<i); ++ss) {
-        	if (!first) {
-          	oss << "+";
-        	} else
-          	first = false;
-        	oss << test.indexVar << p;
-        	if (i > 0)
-          	oss << ".s" << hex << ss << dec;
-      	}
-    	}
-  	}
-    oss << ";\n";
+  // Find the size of the largest vector use;
+  bool first = true;
+  for (i = 4; i >= 0; --i) {
+    if (numVecs[i] > 0) {
+      for (int ss = 0; ss < (1<<i); ++ss) {
+        if (!first) {
+          oss << "+";
+        } else
+          first = false;
+        oss << "dummy" << startIdx[i];
+        if (i > 0)
+          oss << ".s" << hex << ss << dec;
+      }
+    }
   }
 
-  oss << "}";
+  oss << ";\n}";
   kernelDump << oss.str();
   kernelDump.close();
 }
@@ -437,6 +452,11 @@ void execution (cl_device_id id,
   while ((tests != 0) && (tests[aIdx].name != 0)) {
     struct _benchmark_type temp = tests[aIdx];
 
+		if (temp.target != targetDevice ){
+     	aIdx+=1;
+      continue;
+    }
+
 		cl_program program;
     cl_kernel kernel;
 
@@ -485,7 +505,7 @@ void execution (cl_device_id id,
       size_t maxGroupSize = 1;
       maxGroupSize = getMaxWorkGroupSize (id);
       size_t localWorkSize[1] = {1};
-      localWorkSize[0] = maxGroupSize < 128 ? maxGroupSize : 128;
+      localWorkSize[0] = maxGroupSize < 32 ? maxGroupSize : 32;
 
 			for (int pas = 0; pas < npasses; ++pas) {
        	refillMemObject<T> (ctx, queue, &mem1, (int) sizeof(T), numFloats, hostMem);
