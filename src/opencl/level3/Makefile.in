@@ -88,7 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-serialopencl_PROGRAMS = Flops$(EXEEXT)
+serialopencl_PROGRAMS = Flops$(EXEEXT) PerfMeasure$(EXEEXT)
 subdir = src/opencl/level3
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -105,6 +105,9 @@ am_Flops_OBJECTS = Flops.$(OBJEXT) main.$(OBJEXT)
 Flops_OBJECTS = $(am_Flops_OBJECTS)
 am__DEPENDENCIES_1 =
 Flops_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_PerfMeasure_OBJECTS = PerfMeasure.$(OBJEXT) main.$(OBJEXT)
+PerfMeasure_OBJECTS = $(am_PerfMeasure_OBJECTS)
+PerfMeasure_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -134,8 +137,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(Flops_SOURCES)
-DIST_SOURCES = $(Flops_SOURCES)
+SOURCES = $(Flops_SOURCES) $(PerfMeasure_SOURCES)
+DIST_SOURCES = $(Flops_SOURCES) $(PerfMeasure_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -337,6 +340,8 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 serialopencldir = $(bindir)/Serial/OpenCL
 Flops_SOURCES = Flops.cpp main.cpp
 Flops_LDADD = $(OCL_LIBS) $(LIBS)
+PerfMeasure_SOURCES = PerfMeasure.cpp main.cpp
+PerfMeasure_LDADD = $(OCL_LIBS) $(LIBS)
 all: all-recursive
 
 .SUFFIXES:
@@ -417,6 +422,10 @@ Flops$(EXEEXT): $(Flops_OBJECTS) $(Flops_DEPENDENCIES) $(EXTRA_Flops_DEPENDENCIE
 	@rm -f Flops$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(Flops_OBJECTS) $(Flops_LDADD) $(LIBS)
 
+PerfMeasure$(EXEEXT): $(PerfMeasure_OBJECTS) $(PerfMeasure_DEPENDENCIES) $(EXTRA_PerfMeasure_DEPENDENCIES) 
+	@rm -f PerfMeasure$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(PerfMeasure_OBJECTS) $(PerfMeasure_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -424,6 +433,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Flops.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PerfMeasure.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .cpp.o:
