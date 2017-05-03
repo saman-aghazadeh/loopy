@@ -23,7 +23,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::ALL;
+int executionMode = ExecutionMode::CALCULATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -56,6 +56,12 @@ struct _algorithm_type {
   vector<int> loopCarriedDDLengths;	// length of operations which will
   													// loop carried data dependency inside the
   													// loop
+  const char* variable;			// variable being used in all formulas
+  const char* varDeclFormula;	// Declaration formula for the variable
+  const char* varInitFormula;	// A formula for initializing the variable
+  const char* returnFormula;	// A formula specifying how to return the
+  														// calculated value
+  const char* formula;			// The formula being used for operations
 	int halfBufSizeMin;				// Specify the buffer sizes for which to
   												 	// perform the test
   int halfBufSizeMax;				// We specify the minimum, the maximum and
@@ -83,15 +89,23 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // and gonna be changed in the next phase implementation
 
 struct _algorithm_type tests[] = {
-  {"Test2", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test3", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test4", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test5", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test7", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test8", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test9", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test10", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0}
+  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+	{"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @",1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test32", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp[$]" ,"temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test41", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test42", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
+  {"Test51", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test52", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test61", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test62", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test71", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 // Creates the program object based on the platform,
@@ -275,9 +289,6 @@ void generateCLsMetas () {
     aIdx++;
   }
 
-  for (int i = 0; i < cl_metas.size(); i++) {
-    cout << "Kernel location is " << cl_metas[i].kernel_location << endl; 
-  }
 
 }
 
@@ -295,25 +306,59 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 
 		oss << "__kernel void " << test.name << "(__global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
     oss << endl;
-		//insertTab (oss ,1); oss << test.varType << " temp[" << test.loopsDepth[0] << "] = {0};" << endl;
-    insertTab (oss, 1); oss << test.varType << test.vectorSize << " temp = 0;" << endl;
+    string declFormula = string (test.varDeclFormula);
+    char arraySizeBuf[32];
+    sprintf (arraySizeBuf, "%d", test.loopsDepth[0]);
+    string depthSize = string (arraySizeBuf);
+		int pos = -1;
+    if ((pos = declFormula.find("$")) != (-1)) {
+      declFormula.replace (pos, 1, depthSize);
+    }
+    insertTab (oss, 1); oss << declFormula << ";" << endl;
+    insertTab (oss, 1); oss << "__local " << test.varType << " localRands[" << depthSize << "];" << endl;
+    insertTab (oss, 1); oss << "int depth = " << depthSize << ";" << endl;
 		insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
+    insertTab (oss, 1); pss << "int lid = get_local_id(0);" << endl;
   	oss << endl;
-		//insertTab (oss, 1); oss << "temp[0] = data[gid];" << endl;
-    insertTab (oss, 1); oss << "temp = data[gid];" << endl;
+		insertTab (oss, 1); oss << "int localWorkSize = get_local_size(0);" << endl;
+    insertTab (oss, 1); oss << "int workItemCopyPortion = depth / localWorkSize;" << endl;
+    insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion);" << endl;
+    oss << endl;
+    insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 
   	for (int i = 1; i < test.loopsDepth[0]; i++) {
-      //    	insertTab (oss, 1); oss << "temp[" << i << "] = (rands[" << i << "]/((" << test.varType << ")rand_max/2)) * temp["
-      //                          << i-1 << "];" << endl;
-      //      insertTab (oss, 1); oss << "temp[" << i << "] = (" << rand() << "/((" << test.varType << ")rand_max/2)) * temp["
-      //        											<< i-1 << "];" << endl;
+      pos = -1;
+      char buf[32];
+      char buf2[32];
+      string opCode = string (test.formula);
+      sprintf (buf, "%d", i);
+      sprintf (buf2, "%d", i-1);
+      string index = string (buf);
+      string index2 = string (buf2);
+      while ((pos=opCode.find("$")) != (-1))
+      	opCode.replace (pos, 1, index);
 
-      //insertTab (oss, 1); oss << "temp[" << i << "] = (" << test.varType << ") rands[" << i << "] * temp[" << i-1 << "];" << endl;
-      insertTab (oss, 1); oss << "temp = (float) rands[" << i << "] * temp;" << endl;
+      pos = -1;
+			while ((pos=opCode.find("#")) != (-1))
+        opCode.replace (pos, 1, index2);
+
+      pos = -1;
+      opCode = string (opCode);
+      while ((pos = opCode.find("@")) != (-1))
+        opCode.replace (pos, 1, string(test.variable));
+
+      insertTab (oss, 1); oss << opCode << ";" << endl;
+
   	}
 
-  	//insertTab (oss, 1); oss << "data[gid] = temp[index];" << endl;
-    insertTab (oss, 1); oss << "data[gid] = temp.s0;" << endl;
+    pos = -1;
+	  char returnBuf[32];
+		string returnOpCode = string (test.returnFormula);
+    if ((pos = returnOpCode.find("$")) != (-1))
+      returnOpCode.replace (pos, 1, string("index"));
+
+    insertTab (oss, 1); oss << returnOpCode << ";" << endl;
+
   	oss << endl;
   	oss << "}" << endl;
     codeDump << oss.str();
@@ -321,33 +366,6 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
   }
 
   if (test.loopCarriedDataDependency == true) {
-    //    ofstream codeDump;
-    //    string dumpFileName = kernels_folder + "/" + test.name + "-" + varType + ".cl";
-    //		codeDump.open (dumpFileName.c_str());
-
-    //    if (strcmp (varType, "double")) {
-    //      oss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
-    //      oss << endl;
-		//    }
-
-    //    oss << "__kernel void " << test.name << "(__global " << varType << " *data, " << varType
-    //        << " *rands, int index, int rand_max){" << endl;
-    //    insertTab (oss, 1); oss << varType << " temp[" << test.loopsDepth[0] << "] = {0};" << endl;
-    //		insertTab (oss, 1); oss << "int gid = get_global_id();" << endl;
-    //    oss << endl;
-    //    insertTab (oss, 1); oss << "temp[0] = data[0];" << endl;
-
-    //    for (int i = 0; i < test.loopsDepth[0] - test.loopCarriedDDLengths[0]; i++) {
-    //      insertTab (oss, 1); oss << "temp[" << i << "] = (rands[i]/((" << varType << ")rand_max/2)) * temp["
-    //                              << i-1 << "];" << endl;
-    //    }
-
-    //    for (int i = 0; test.loopCarriedDDLengths[0]; i++) {
-    //      insertTab (oss, 1); oss << "temp[" << i << "] = (rands[i]/((" << varType << ")rand_max/2)) * temp["
-    //                              << i-1 << "]; "
-    //                            	<<
-    //    }
-    //    oss <<
   }
 }
 
@@ -360,7 +378,6 @@ void generateSingleCLMeta (_algorithm_type &test, _cl_info &info) {
   info.num_workitems = test.loopsLengths[0];
 	info.flops = test.flopCount;
 
-  cout << info.name << " " << info.kernel_location << endl;
 }
 
 // Generate Single-Thread CPU code based on benchmark type struct
@@ -515,7 +532,7 @@ void execution (cl_device_id id,
                 OptionParser &op,
                 char* precision) {
 
-	int verbose = true;
+	int verbose = false;
 	int npasses = 3;
 	int err;
   char sizeStr[128];
@@ -590,15 +607,14 @@ void execution (cl_device_id id,
     err = clSetKernelArg (kernel, 3, sizeof (cl_int), (void *)&rand_max);
     CL_CHECK_ERROR (err);
 
-		cout << "Running Kernel " << alg.name << endl;
 
     //    for (int halfNumFloats = alg.halfBufSizeMin * 1024;
     //     halfNumFloats <= alg.halfBufSizeMax * 1024;
     //     halfNumFloats += alg.halfBufSizeStride * 1024) {
 
     // Set up input memory for data, first half = second half
-    int numFloats = alg.loopsLengths[0];
-    for (int j = 0; j < alg.loopsLengths[0]/2; j++) {
+    int numFloats = numFloatsMax;
+    for (int j = 0; j < numFloatsMax/2; j++) {
     	hostMem_data[j] = hostMem_data[numFloats - j - 1] = (T)(drand48()*5.0);
     }
 
