@@ -23,7 +23,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::GENERATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -315,14 +315,14 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
       declFormula.replace (pos, 1, depthSize);
     }
     insertTab (oss, 1); oss << declFormula << ";" << endl;
-    insertTab (oss, 1); oss << "__local " << test.varType << " localRands[" << depthSize << "];" << endl;
-    insertTab (oss, 1); oss << "int depth = " << depthSize << ";" << endl;
+    //insertTab (oss, 1); oss << "__local " << test.varType << " localRands[" << depthSize << "];" << endl;
+    //insertTab (oss, 1); oss << "int depth = " << depthSize << ";" << endl;
 		insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
-    insertTab (oss, 1); pss << "int lid = get_local_id(0);" << endl;
-  	oss << endl;
-		insertTab (oss, 1); oss << "int localWorkSize = get_local_size(0);" << endl;
-    insertTab (oss, 1); oss << "int workItemCopyPortion = depth / localWorkSize;" << endl;
-    insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion);" << endl;
+    //insertTab (oss, 1); pss << "int lid = get_local_id(0);" << endl;
+  	//oss << endl;
+		//insertTab (oss, 1); oss << "int localWorkSize = get_local_size(0);" << endl;
+    //insertTab (oss, 1); oss << "int workItemCopyPortion = depth / localWorkSize;" << endl;
+    //insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion);" << endl;
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 
