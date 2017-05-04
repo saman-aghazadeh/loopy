@@ -76,9 +76,9 @@ struct _algorithm_type {
 };
 
 struct _cl_info {
-  char name[100] = {'\0'};		 					// Name of the info
- 	char kernel_location[100] = {'\0'};		// mapping between kernel types and kernel locs
-  int num_workitems;										// Number of work items required by the algorithm
+  char name[100];		 					// Name of the info
+ 	char kernel_location[100];	// mapping between kernel types and kernel locs
+  int num_workitems;				  // Number of work items required by the algorithm
   int flops;
 };
 
