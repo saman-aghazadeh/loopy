@@ -152,6 +152,9 @@ void execution  (cl_device_id id,
 // Print some useful info onto the console
 void printInfo (cl_device_id id);
 
+// replacing $ with depth size in varDeclFormula
+string prepareVarDeclFormula (char *varDeclFormula, int depth); 
+
 cl_program createProgram (cl_context context,
                           cl_device_id device,
                           const char* fileName) {
@@ -573,6 +576,22 @@ void printInfo (cl_device_id id) {
   if (verbose) std::cout << "Max allocation size is " << maxAllocSizeBytes << std::endl;
   if (verbose) std::cout << "Max compute unit is " << maxComputeUnits << std::endl;
   if (verbose) std::cout << "Max Work Group size is " << maxWorkGroupSize << std::endl;
+}
+
+string prepareVarDeclFormula (char *varDeclFormula, int depth) {
+
+	string preparedVarDeclFormula = string (varDeclFormula);
+  char depthBuf[32] = {'\0'};
+  sprintf (depthBuf, "%d", depth);
+  string depthString = string (depthBuf);
+
+  int pos = -1;
+  if ((pos = preparedVarDeclFormula.find("$")) != (-1)) {
+    preparedVarDeclFormula.replace (pos, 1, depthString);
+  }
+
+  return preparedVarDeclFormula;
+
 }
 
 void RunBenchmark (cl_device_id id,

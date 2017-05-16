@@ -19,13 +19,17 @@ serialopencldir = $(bindir)/Serial/OpenCL
 # What programs should be installed in the bin/Serial/OpenCL destination?
 serialopencl_PROGRAMS = Flops \
 												PerfMeasure \
-												AlgToCode
+												AlgToCode \
+												AlgTypeGeneration
 
-Flops_SOURCES	= Flops.cpp main.cpp
-Flops_LDADD		= $(OCL_LIBS) $(LIBS)
+Flops_SOURCES								= Flops.cpp main.cpp
+Flops_LDADD									= $(OCL_LIBS) $(LIBS)
 
-PerfMeasure_SOURCES	=	PerfMeasure.cpp main.cpp
-PerfMeasure_LDADD		= $(OCL_LIBS) $(LIBS)
+PerfMeasure_SOURCES					=	PerfMeasure.cpp main.cpp
+PerfMeasure_LDADD						= $(OCL_LIBS) $(LIBS)
 
-AlgToCode_SOURCES	=	AlgToCode.cpp main.cpp
-AlgToCode_LDADD		=	$(OCL_LIBS) $(LIBS)
+AlgToCode_SOURCES						=	AlgToCode.cpp main.cpp
+AlgToCode_LDADD							=	$(OCL_LIBS) $(LIBS)
+
+AlgTypeGeneration_SOURCES 	= AlgTypeGeneration.cpp main.cpp
+AlgTypeGeneration_LDADD			= $(OCL_LIBS) $(LIBS)

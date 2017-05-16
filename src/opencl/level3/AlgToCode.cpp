@@ -9,8 +9,11 @@
 #include "ResultDatabase.h"
 #include "OptionParser.h"
 #include "ProgressBar.h"
+#include "tests.h"
 #include <time.h>
 #include <stdlib.h>
+
+#define PRIVATE_VECTOR_SIZE 5
 
 using namespace std;
 
@@ -23,7 +26,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::GENERATION;
+int executionMode = ExecutionMode::ALL;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -42,6 +45,7 @@ std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
 
 static const char *opts = "-cl-opt-disable";
 
+/*
 struct _algorithm_type {
 
 	const char* name;					// Name of the algorithm
@@ -74,10 +78,11 @@ struct _algorithm_type {
   												 	// per linei
   const char* varType;				// Type of variable which is going to be used
 };
+*/
 
 struct _cl_info {
-  char name[100];		 					// Name of the info
- 	char kernel_location[100];	// mapping between kernel types and kernel locs
+  char name[100] = {'\0'};		 					// Name of the info
+ 	char kernel_location[100] = {'\0'};	// mapping between kernel types and kernel locs
   int num_workitems;				  // Number of work items required by the algorithm
   int flops;
 };
@@ -87,27 +92,26 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // NOTICE: For current implementation we will always assume we have
 // only one foor loop. This is the first implementation assumption
 // and gonna be changed in the next phase implementation
-
+/*
 struct _algorithm_type tests[] = {
-  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-	{"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @",1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test32", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp[$]" ,"temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test41", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test42", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "float"},
-  {"Test51", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test52", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test61", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test62", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test71", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (double) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[$] * @", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
-  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp[$]", "temp[0] = data[gid]", "data[gid] = temp[$].s0", "@[$] = (float) rands[$] * @[#]", 1024, 1024, 1024, 32, 128, 2, 1, "double"},
+  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test32", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp$" ,"temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test41", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test42", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test51", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test52", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double2 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test61", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test62", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test71", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
+  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
-
+*/
 // Creates the program object based on the platform,
 // whether it will be GPU or FPGA.
 cl_program createProgram (cl_context context,
@@ -164,6 +168,15 @@ void print_benchmark ();
 
 // Validating correctness of given benchmark meta information
 void validate_benchmark ();
+
+// replace $ inside varDeclFormula with depth
+string preparedVarDeclFormula (char *varDeclFormula, int depth);
+
+// replace $ inside varDeclFormula with depth
+string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth);
+
+// replace $, @, # inside the formula with appropriate variables
+string prepareOriginalFormula (char *formula, int index, char *variable);
 
 cl_program createProgram (cl_context context,
                           cl_device_id device,
@@ -299,63 +312,43 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
   	string dumpFileName = kernels_folder + "/" + test.name + "-" + test.varType + ".cl";
   	codeDump.open (dumpFileName.c_str());
 
-  	if (strcmp (test.varType, "double")) {
-			oss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
-    	oss << endl;
-  	}
+    //  	if (strcmp (test.varType, "double")) {
+		//	oss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
+    //	oss << endl;
+  	//}
 
 		oss << "__kernel void " << test.name << "(__global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
     oss << endl;
-    string declFormula = string (test.varDeclFormula);
-    char arraySizeBuf[32];
-    sprintf (arraySizeBuf, "%d", test.loopsDepth[0]);
-    string depthSize = string (arraySizeBuf);
-		int pos = -1;
-    if ((pos = declFormula.find("$")) != (-1)) {
-      declFormula.replace (pos, 1, depthSize);
-    }
+    //string declFormula = preparedVarDeclFormula ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE);
+    string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE);
+    //string declFormula = preparedVarDeclFormula (test.varDeclFormula, test.loopsDepth[0]);
     insertTab (oss, 1); oss << declFormula << ";" << endl;
     //insertTab (oss, 1); oss << "__local " << test.varType << " localRands[" << depthSize << "];" << endl;
     //insertTab (oss, 1); oss << "int depth = " << depthSize << ";" << endl;
 		insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
-    //insertTab (oss, 1); pss << "int lid = get_local_id(0);" << endl;
+    //insertTab (oss, 1); oss << "int lid = get_local_id(0);" << endl;
   	//oss << endl;
 		//insertTab (oss, 1); oss << "int localWorkSize = get_local_size(0);" << endl;
     //insertTab (oss, 1); oss << "int workItemCopyPortion = depth / localWorkSize;" << endl;
-    //insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion);" << endl;
+    //insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion, 0);" << endl;
+    //insertTab (oss, 1); oss << "wait_group_events(1, &event);" << endl;
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 
   	for (int i = 1; i < test.loopsDepth[0]; i++) {
-      pos = -1;
-      char buf[32];
-      char buf2[32];
-      string opCode = string (test.formula);
-      sprintf (buf, "%d", i);
-      sprintf (buf2, "%d", i-1);
-      string index = string (buf);
-      string index2 = string (buf2);
-      while ((pos=opCode.find("$")) != (-1))
-      	opCode.replace (pos, 1, index);
 
-      pos = -1;
-			while ((pos=opCode.find("#")) != (-1))
-        opCode.replace (pos, 1, index2);
+			string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
 
-      pos = -1;
-      opCode = string (opCode);
-      while ((pos = opCode.find("@")) != (-1))
-        opCode.replace (pos, 1, string(test.variable));
-
-      insertTab (oss, 1); oss << opCode << ";" << endl;
+      insertTab (oss, 1); oss << origFormula << ";" << endl;
 
   	}
 
-    pos = -1;
+    int pos = -1;
 	  char returnBuf[32];
 		string returnOpCode = string (test.returnFormula);
     if ((pos = returnOpCode.find("$")) != (-1))
-      returnOpCode.replace (pos, 1, string("index"));
+      returnOpCode.replace (pos, 1, string("0"));
+      //returnOpCode.replace (pos, 1, string("index"));
 
     insertTab (oss, 1); oss << returnOpCode << ";" << endl;
 
@@ -532,7 +525,7 @@ void execution (cl_device_id id,
                 OptionParser &op,
                 char* precision) {
 
-	int verbose = false;
+	int verbose = true;
 	int npasses = 3;
 	int err;
   char sizeStr[128];
@@ -599,7 +592,8 @@ void execution (cl_device_id id,
     err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_rands);
     CL_CHECK_ERROR (err);
 
-    int random = rand() % alg.loopsDepth[0];
+    //int random = rand() % alg.loopsDepth[0];
+    int random = rand() % PRIVATE_VECTOR_SIZE;
     err = clSetKernelArg (kernel, 2, sizeof (cl_int), (void *)&random);
     CL_CHECK_ERROR (err);
 
@@ -683,6 +677,84 @@ void execution (cl_device_id id,
 
 }
 
+string preparedVarDeclFormula (char *varDeclFormula, int depth) {
+
+  string declFormula = string (varDeclFormula);
+  char depthBuf[32];
+  sprintf (depthBuf, "%d", depth);
+  string depthSize = string (depthBuf);
+	int pos = -1;
+  while ((pos = declFormula.find ("$")) != -1)
+    declFormula.replace (pos, 1, depthSize);
+
+  return declFormula;
+}
+
+string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth) {
+
+  string completeDeclFormula;
+
+	// Check whether we have $ sign in the varDeclFormula
+  string declFormula = string (varDeclFormula);
+  int pos = -1;
+  if ((pos = declFormula.find ("$")) == -1)
+    depth = 1;
+
+  for (int i = 0; i < depth; i++) {
+    string declFormula = string (varDeclFormula);
+    char depthBuf[32];
+    sprintf (depthBuf, "%d", i);
+    string depthSize = string (depthBuf);
+    int pos = -1;
+    while ((pos = declFormula.find ("$")) != -1)
+      declFormula.replace (pos, 1, depthSize);
+
+		if (i != (depth -1))
+    	completeDeclFormula += (declFormula + ";\n");
+    else
+			completeDeclFormula += (declFormula);
+  }
+
+  return completeDeclFormula;
+}
+
+string prepareOriginalFormula (char *formula, int index, char *variable) {
+
+	int pos = -1;
+
+	string formulaStr = string (formula);
+  char indexBuf[32];
+  char indexBuf2[32];
+  char indexBuf3[32];
+  sprintf (indexBuf, "%d", index%PRIVATE_VECTOR_SIZE);
+  sprintf (indexBuf2, "%d", (index-1)%PRIVATE_VECTOR_SIZE);
+  sprintf (indexBuf3, "%d", (index-1));
+
+  string indexStr = string (indexBuf);
+  string indexStr2 = string (indexBuf2);
+
+  while ((pos = formulaStr.find ("$")) != (-1))
+		formulaStr.replace (pos, 1, indexStr);
+
+	pos = -1;
+  formulaStr = string (formulaStr);
+  while ((pos = formulaStr.find ("!")) != (-1))
+    formulaStr.replace (pos, 1, indexBuf3);
+
+  pos = -1;
+  formulaStr = string (formulaStr);
+  while ((pos = formulaStr.find ("#")) != (-1))
+    formulaStr.replace (pos, 1, indexStr2);
+
+  pos = -1;
+  formulaStr = string (formulaStr);
+  while ((pos = formulaStr.find("@")) != (-1))
+    formulaStr.replace (pos, 1, string (variable));
+
+  return formulaStr;
+
+}
+
 void RunBenchmark (cl_device_id id,
                    cl_context ctx,
                    cl_command_queue queue,
@@ -697,7 +769,7 @@ void RunBenchmark (cl_device_id id,
 		cout << "---- Benchmark Representation ----" << endl;
     print_benchmark ();
     cout << "---- ----" << endl;
-    generateAlgorithms ();
+    //generateAlgorithms ();
     generateCLs ();
   } else if (executionMode == ExecutionMode::CALCULATION) {
     generateCLsMetas();
@@ -707,7 +779,7 @@ void RunBenchmark (cl_device_id id,
     cout << "---- Benchmark Representation ----" << endl;
     print_benchmark ();
     cout << "---- ----" << endl;
-    generateAlgorithms();
+    //generateAlgorithms();
     generateCLs();
     generateCLsMetas();
     execution<float> (id, ctx, queue, resultDB, op, (char *)"float");
