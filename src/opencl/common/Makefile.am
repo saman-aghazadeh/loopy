@@ -5,5 +5,6 @@ noinst_LIBRARIES	= libSHOCCommonOpenCL.a
 libSHOCCommonOpenCL_a_SOURCES = OpenCLDeviceInfo.cpp \
 	OpenCLPlatform.cpp \
 	OpenCLNodePlatformContainer.cpp \
-	Event.cpp
-
+	Event.cpp \
+	opencl.cpp \
+  options.cpp

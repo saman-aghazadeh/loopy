@@ -9,7 +9,8 @@
 #include "ResultDatabase.h"
 #include "OptionParser.h"
 #include "ProgressBar.h"
-#include "tests.h"
+//#include "tests.h"
+#include "aocl_utils.h"
 #include <time.h>
 #include <stdlib.h>
 
@@ -26,7 +27,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::ALL;
+int executionMode = ExecutionMode::GENERATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -38,6 +39,8 @@ int targetDevice = TargetDevice::GPU;
 // Path to the folder where the generated kernels will reside. Change it effectively
 // based on your own system.
 std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
+std::string fpga_built_kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
+
 
 // All possible flags while running the CL kernel
 //static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
@@ -45,7 +48,7 @@ std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
 
 static const char *opts = "-cl-opt-disable";
 
-/*
+
 struct _algorithm_type {
 
 	const char* name;					// Name of the algorithm
@@ -77,8 +80,9 @@ struct _algorithm_type {
   int flopCount;						// Number of floating point operations
   												 	// per linei
   const char* varType;				// Type of variable which is going to be used
+  bool doManualUnroll;			//
 };
-*/
+
 
 struct _cl_info {
   char name[100] = {'\0'};		 					// Name of the info
@@ -92,10 +96,11 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // NOTICE: For current implementation we will always assume we have
 // only one foor loop. This is the first implementation assumption
 // and gonna be changed in the next phase implementation
-/*
+
 struct _algorithm_type tests[] = {
-  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
-  {"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false},
+  {"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true},
+  /*{"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test32", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp$" ,"temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
@@ -108,10 +113,10 @@ struct _algorithm_type tests[] = {
   {"Test71", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
-  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
-  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0}
+  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},*/
+  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
-*/
+
 // Creates the program object based on the platform,
 // whether it will be GPU or FPGA.
 cl_program createProgram (cl_context context,
@@ -173,7 +178,7 @@ void validate_benchmark ();
 string preparedVarDeclFormula (char *varDeclFormula, int depth);
 
 // replace $ inside varDeclFormula with depth
-string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth);
+string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcdd);
 
 // replace $, @, # inside the formula with appropriate variables
 string prepareOriginalFormula (char *formula, int index, char *variable);
@@ -185,28 +190,33 @@ cl_program createProgram (cl_context context,
 	cl_int err;
   cl_program program;
 
-  // Open kernel file and check whether exists or not
-  std::ifstream kernelFile (fileName, std::ios::in);
-  if (!kernelFile.is_open()) {
-    std::cerr << "Failed to open file for reading!" << fileName << std::endl;
-    exit (0);
-  }
+  if (targetDevice == TargetDevice::GPU) {
+  	// Open kernel file and check whether exists or not
+  	std::ifstream kernelFile (fileName, std::ios::in);
+  	if (!kernelFile.is_open()) {
+    	std::cerr << "Failed to open file for reading!" << fileName << std::endl;
+    	exit (0);
+  	}
 
-  std::ostringstream oss;
-  oss << kernelFile.rdbuf();
+  	std::ostringstream oss;
+  	oss << kernelFile.rdbuf();
 
-  // Create and build a program
-  std::string srcStdStr = oss.str();
-	const char *srcStr = srcStdStr.c_str();
-  program = clCreateProgramWithSource (context, 1, (const char **)&srcStr,
+  	// Create and build a program
+  	std::string srcStdStr = oss.str();
+		const char *srcStr = srcStdStr.c_str();
+  	program = clCreateProgramWithSource (context, 1, (const char **)&srcStr,
                                        NULL, &err);
-  CL_CHECK_ERROR (err);
+  	CL_CHECK_ERROR (err);
+  } else if (targetDevice == TargetDevice::FPGA) {
+		string binary_file = aocl_utils::getBoardBinaryFile (fileName, device);
+    program = aocl_utils::createProgramFromBinary (context, binary_file.c_str(), &device, 1);
+  }
   err = clBuildProgram (program, 0, NULL, opts, NULL, NULL);
   if (err != 0) {
     char log[5000];
     size_t retsize = 0;
     err = clGetProgramBuildInfo (program, device, CL_PROGRAM_BUILD_LOG,
-                                 5000*sizeof(char), log, &retsize);
+                                5000*sizeof(char), log, &retsize);
     CL_CHECK_ERROR (err);
 
     cout << "Build Error!" << endl;
@@ -318,30 +328,23 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
   	//}
 
 		oss << "__kernel void " << test.name << "(__global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
-    oss << endl;
-    //string declFormula = preparedVarDeclFormula ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE);
-    string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE);
-    //string declFormula = preparedVarDeclFormula (test.varDeclFormula, test.loopsDepth[0]);
+    string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE, false);
     insertTab (oss, 1); oss << declFormula << ";" << endl;
-    //insertTab (oss, 1); oss << "__local " << test.varType << " localRands[" << depthSize << "];" << endl;
-    //insertTab (oss, 1); oss << "int depth = " << depthSize << ";" << endl;
 		insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
-    //insertTab (oss, 1); oss << "int lid = get_local_id(0);" << endl;
-  	//oss << endl;
-		//insertTab (oss, 1); oss << "int localWorkSize = get_local_size(0);" << endl;
-    //insertTab (oss, 1); oss << "int workItemCopyPortion = depth / localWorkSize;" << endl;
-    //insertTab (oss, 1); oss << "event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion, 0);" << endl;
-    //insertTab (oss, 1); oss << "wait_group_events(1, &event);" << endl;
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 
-  	for (int i = 1; i < test.loopsDepth[0]; i++) {
-
-			string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
-
-      insertTab (oss, 1); oss << origFormula << ";" << endl;
-
-  	}
+		if (test.doManualUnroll == false ) {
+	  	for (int i = 1; i < test.loopsDepth[0]; i++) {
+				string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *) test.variable);
+	      insertTab (oss, 1); oss << origFormula << ";" << endl;
+	  	}
+    } else {
+      insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
+     	string origFormula = prepareOriginalFormula ((char *)test.formula, 0, (char *) test.variable);
+      insertTab (oss, 2); oss << origFormula << ";" << endl;
+      insertTab (oss, 1); oss << "}" << endl;
+    }
 
     int pos = -1;
 	  char returnBuf[32];
@@ -356,9 +359,46 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
   	oss << "}" << endl;
     codeDump << oss.str();
     codeDump.close ();
+
   }
 
   if (test.loopCarriedDataDependency == true) {
+
+		ofstream codeDump;
+    string dumpFileName = kernels_folder + "/" + test.name + "-" + test.varType + ".cl";
+		codeDump.open (dumpFileName.c_str());
+
+    oss << "__kernel void" << test.name << "(global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
+
+		string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, test.loopsDepth[0], true);
+
+    insertTab (oss, 1); oss << declFormula << ";" << endl;
+    insertTab (oss, 1); oss << "int gid = get_global_id(0);" << endl;
+
+    oss << endl;
+    insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
+		oss << endl;
+
+    insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsLengths[0] << "; i++){";
+
+    for (int i = 1; i < test.loopsDepth[0]; i++) {
+      string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
+			insertTab (oss, 2); oss << origFormula << ";" << endl;
+    }
+
+    int pos = -1;
+    char returnBuf[32];
+    string returnOpCode = string (test.returnFormula);
+    if ((pos = returnOpCode.find("$")) != (-1))
+      returnOpCode.replace (pos, 1, string("0"));
+
+    insertTab (oss, 1); oss << returnOpCode << ";" << endl;
+
+    oss << endl;
+    oss << "}" << endl;
+    codeDump << oss.str();
+    codeDump.close();
+
   }
 }
 
@@ -690,29 +730,50 @@ string preparedVarDeclFormula (char *varDeclFormula, int depth) {
   return declFormula;
 }
 
-string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth) {
+string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcdd) {
 
-  string completeDeclFormula;
+	string completeDeclFormula;
 
-	// Check whether we have $ sign in the varDeclFormula
-  string declFormula = string (varDeclFormula);
-  int pos = -1;
-  if ((pos = declFormula.find ("$")) == -1)
-    depth = 1;
+  if (lcdd == false) {
 
-  for (int i = 0; i < depth; i++) {
+		// Check whether we have $ sign in the varDeclFormula
+  	string declFormula = string (varDeclFormula);
+  	int pos = -1;
+  	if ((pos = declFormula.find ("$")) == -1)
+    	depth = 1;
+
+  	for (int i = 0; i < depth; i++) {
+    	string declFormula = string (varDeclFormula);
+    	char depthBuf[32];
+    	sprintf (depthBuf, "%d", i);
+    	string depthSize = string (depthBuf);
+    	int pos = -1;
+    	while ((pos = declFormula.find ("$")) != -1)
+      	declFormula.replace (pos, 1, depthSize);
+
+			if (i != (depth -1))
+    		completeDeclFormula += (declFormula + ";\n");
+    	else
+				completeDeclFormula += (declFormula);
+
+  	}
+  } else {
+
+    // Check whether we have $ sing in the varDeclFormula
     string declFormula = string (varDeclFormula);
-    char depthBuf[32];
-    sprintf (depthBuf, "%d", i);
-    string depthSize = string (depthBuf);
     int pos = -1;
-    while ((pos = declFormula.find ("$")) != -1)
+    if ((pos = declFormula.find ("$")) == -1)
+      exit (0);
+
+    char depthBuf[32];
+    sprintf (depthBuf, "%d", depth);
+    string depthSize = string (depthBuf);
+    pos = -1;
+    while ((pos = declFormula.find("$")) != -1)
       declFormula.replace (pos, 1, depthSize);
 
-		if (i != (depth -1))
-    	completeDeclFormula += (declFormula + ";\n");
-    else
-			completeDeclFormula += (declFormula);
+   	completeDeclFormula = declFormula;
+
   }
 
   return completeDeclFormula;
@@ -789,5 +850,10 @@ void RunBenchmark (cl_device_id id,
 }
 
 void addBenchmarkSpecOptions (OptionParser &op) {
+
+}
+
+void cleanup () {
+
 
 }
