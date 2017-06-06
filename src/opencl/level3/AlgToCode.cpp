@@ -16,6 +16,8 @@
 
 #define PRIVATE_VECTOR_SIZE 5
 
+#define VERBOSE false
+
 using namespace std;
 
 // GENERATION will only generate the set of kernels in the
@@ -27,7 +29,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::GENERATION;
+int executionMode = ExecutionMode::ALL;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -100,8 +102,10 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // and gonna be changed in the next phase implementation
 
 struct _algorithm_type tests[] = {
-  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, true},
-  {"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, true},
+  {"Test11", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, true},
+  {"Test12", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, true},
+  {"Test13", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, false},
+  {"Test14", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, false},
   /*{"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
@@ -196,6 +200,7 @@ cl_program createProgram (cl_context context,
 
   if (targetDevice == TargetDevice::GPU) {
   	// Open kernel file and check whether exists or not
+    cout << "Filename is " << fileName << endl;
   	std::ifstream kernelFile (fileName, std::ios::in);
   	if (!kernelFile.is_open()) {
     	std::cerr << "Failed to open file for reading!" << fileName << std::endl;
@@ -216,6 +221,7 @@ cl_program createProgram (cl_context context,
     program = aocl_utils::createProgramFromBinary (context, binary_file.c_str(), &device, 1);
   }
   err = clBuildProgram (program, 0, NULL, opts, NULL, NULL);
+  cout << "Error is " << err << endl;
   if (err != 0) {
     char log[5000];
     size_t retsize = 0;
@@ -321,10 +327,15 @@ void generateCLsMetas () {
 
 void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, struct _cl_info &info) {
 
+	if (VERBOSE) cout << "[VERBOSE] Generate Single CL Code for " << test.name << endl;
+
   if (test.loopCarriedDataDependency == false) {
   	ofstream codeDump;
-  	string dumpFileName = kernels_folder + "/" + test.name + "-" + test.varType + ".cl";
+  	string dumpFileName = kernels_folder + "/" + test.name + ".cl";
   	codeDump.open (dumpFileName.c_str());
+		if (!codeDump.is_open()) {
+      cout << "[ERROR] Dump File cannot be created or opened!" << endl;
+    }
 
     //  	if (strcmp (test.varType, "double")) {
 		//	oss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
@@ -337,20 +348,24 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
     if (!test.doLocalMemory) {
 			insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
     } else {
-			string localMemoryInit = preparedLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.variable));
+			string localMemoryInit = preparedLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.formula));
       oss << localMemoryInit << endl;
     }
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
+		if (VERBOSE) cout << "[VERBOSE] Init Formula been inserted successfully!" << endl;
 
-		if (test.doManualUnroll == false ) {
+    if (test.doManualUnroll == true ) {
+			if (VERBOSE) cout << "[VERBOSE] Manually Unrolling is True!" << endl;
 	  	for (int i = 1; i < test.loopsDepth[0]; i++) {
 				string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *) test.variable);
 	      insertTab (oss, 1); oss << origFormula << ";" << endl;
 	  	}
     } else {
+      if (VERBOSE) cout << "[VERBOSE] Manually Unrolling is False!" << endl;
+      insertTab (oss, 1); oss << "#pragma unroll" << endl;
       insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
-     	string origFormula = prepareOriginalFormula ((char *)test.formula, 0, (char *) test.variable);
+    	string origFormula = prepareOriginalFormula ((char *)test.formula, 0, (char *) test.variable);
       insertTab (oss, 2); oss << origFormula << ";" << endl;
       insertTab (oss, 1); oss << "}" << endl;
     }
@@ -361,6 +376,7 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
     if ((pos = returnOpCode.find("$")) != (-1) )
       returnOpCode.replace (pos, 1, string("0"));
       //returnOpCode.replace (pos, 1, string("index"));
+		if (VERBOSE) cout << "[VERBOSE] Return Op Code been prepared!" << endl;
 
     insertTab (oss, 1); oss << returnOpCode << ";" << endl;
 
@@ -368,6 +384,8 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
   	oss << "}" << endl;
     codeDump << oss.str();
     codeDump.close ();
+
+    if (VERBOSE) cout << "[VERBOSE] CL Code for " << test.name << " been created successfully!" << endl;
 
   }
 
@@ -425,8 +443,8 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 void generateSingleCLMeta (_algorithm_type &test, _cl_info &info) {
 
   memcpy (info.name, (char *)test.name, strlen((char *)test.name));
-  memcpy (info.kernel_location, (char *)(string(kernels_folder + "/" + test.name + "-" + test.varType + ".cl").c_str()),
-          strlen((char *)(string(kernels_folder + "/" + test.name + "-" + test.varType + ".cl").c_str())));
+  memcpy (info.kernel_location, (char *)(string(kernels_folder + "/" + test.name + ".cl").c_str()),
+          strlen((char *)(string(kernels_folder + "/" + test.name + ".cl").c_str())));
   info.num_workitems = test.loopsLengths[0];
 	info.flops = test.flopCount;
 
@@ -746,6 +764,9 @@ string preparedVarDeclFormula (char *varDeclFormula, int depth) {
   while ((pos = declFormula.find ("$")) != -1)
     declFormula.replace (pos, 1, depthSize);
 
+	if (VERBOSE)
+    cout << "Var Decl Formula been prepared!" << endl;
+
   return declFormula;
 }
 
@@ -795,6 +816,8 @@ string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcd
 
   }
 
+  if (VERBOSE) cout << "[VERBOSE] Var Decl Formula been prepared!" << endl;
+
   return completeDeclFormula;
 }
 
@@ -831,6 +854,9 @@ string prepareOriginalFormula (char *formula, int index, char *variable) {
   while ((pos = formulaStr.find("@")) != (-1))
     formulaStr.replace (pos, 1, string (variable));
 
+	if (VERBOSE)
+		cout << "[VERBOSE] Original Formula been prepared!";
+
   return formulaStr;
 
 }
@@ -839,26 +865,32 @@ string preparedLocalMemoryInitialization (int depth, string dataType, char** ori
 
   // Preparing the intialization of local memory
 	string return_statement;
-	return_statement += (string("\t") + dataType + string(" localRands[") + to_string(depth) + string("];\n"));
-  return_statement += (string("\t") + string("int depth = ") + to_string(depth) + string("\n\n"));
+	return_statement += (string("\t") + string("__local ")+ dataType + string(" localRands[") + to_string(depth) + string("];\n"));
+  return_statement += (string("\t") + string("int depth = ") + to_string(depth) + string(";\n\n"));
   return_statement += (string("\t") + string("int gid = get_global_id(0);\n"));
   return_statement += (string("\t") + string("int lid = get_local_id(0);\n"));
-  return_statement += (string("\t") + string("int localWorkSize = get_local_Size(0);\n"));
+  return_statement += (string("\t") + string("int localWorkSize = get_local_size(0);\n"));
   return_statement += (string("\t") + string("int workItemCopyPortion = depth / localWorkSize;\n\n"));
   return_statement += (string("\t") + string("event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion, 0);\n"));
 	return_statement += (string("\t") + string("wait_group_events(1, &event);\n"));
-
+	if (VERBOSE)
+    cout << "[VERBOSE] return statement been prepared successfully!" << endl;
   // replace rands in original formula with localRands, if it does exists
 	int pos = -1;
   string origFormulaStr = string(*origFormula);
   while ((pos = origFormulaStr.find ("rands")) != -1)
     origFormulaStr.replace (pos, 5, "localRands");
 
-  int length = origFormulaStr.length();
+  int length = origFormulaStr.size();
   char* newOrigFormula = (char *) malloc (50 * sizeof(char));
-  memcpy (*origFormula, origFormulaStr.c_str(), length);
+  memcpy (newOrigFormula, origFormulaStr.c_str(), length);
+
   newOrigFormula[length] = '\0';
 	*origFormula = newOrigFormula;
+	if (VERBOSE)
+    cout << "[VERBOSE] rands been replaced with localRands" << endl;
+
+
 	return return_statement;
 
 }
