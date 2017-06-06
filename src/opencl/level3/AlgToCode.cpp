@@ -80,7 +80,9 @@ struct _algorithm_type {
   int flopCount;						// Number of floating point operations
   												 	// per linei
   const char* varType;				// Type of variable which is going to be used
-  bool doManualUnroll;			//
+  bool doManualUnroll;			// unrolling the loop ourself in the code or
+  													// let the compiler do it
+	bool doLocalMemory;			  // Copy Data from global memory to local memory
 };
 
 
@@ -98,8 +100,8 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // and gonna be changed in the next phase implementation
 
 struct _algorithm_type tests[] = {
-  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false},
-  {"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true},
+  {"Test11", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, true},
+  {"Test12", 2, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float2 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, true},
   /*{"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
@@ -114,7 +116,7 @@ struct _algorithm_type tests[] = {
   {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},*/
-  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+  {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 // Creates the program object based on the platform,
@@ -180,6 +182,8 @@ string preparedVarDeclFormula (char *varDeclFormula, int depth);
 // replace $ inside varDeclFormula with depth
 string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcdd);
 
+// Write the initialization section for the local memory utilization
+string preparedLocalMemoryInitialization (int depth, string varType, char** formula);
 // replace $, @, # inside the formula with appropriate variables
 string prepareOriginalFormula (char *formula, int index, char *variable);
 
@@ -330,7 +334,12 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 		oss << "__kernel void " << test.name << "(__global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
     string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, PRIVATE_VECTOR_SIZE, false);
     insertTab (oss, 1); oss << declFormula << ";" << endl;
-		insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
+    if (!test.doLocalMemory) {
+			insertTab (oss ,1); oss << "int gid = get_global_id(0);" << endl;
+    } else {
+			string localMemoryInit = preparedLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.variable));
+      oss << localMemoryInit << endl;
+    }
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 
@@ -349,7 +358,7 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
     int pos = -1;
 	  char returnBuf[32];
 		string returnOpCode = string (test.returnFormula);
-    if ((pos = returnOpCode.find("$")) != (-1))
+    if ((pos = returnOpCode.find("$")) != (-1) )
       returnOpCode.replace (pos, 1, string("0"));
       //returnOpCode.replace (pos, 1, string("index"));
 
@@ -373,17 +382,27 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 		string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, test.loopsDepth[0], true);
 
     insertTab (oss, 1); oss << declFormula << ";" << endl;
-    insertTab (oss, 1); oss << "int gid = get_global_id(0);" << endl;
+    if (!test.doLocalMemory) {
+    	insertTab (oss, 1); oss << "int gid = get_global_id(0);" << endl;
+    } else {
+      string localMemoryInit = preparedLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.variable));
+      oss << localMemoryInit << endl;
+    }
 
     oss << endl;
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 		oss << endl;
 
-    insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsLengths[0] << "; i++){";
-
-    for (int i = 1; i < test.loopsDepth[0]; i++) {
-      string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
-			insertTab (oss, 2); oss << origFormula << ";" << endl;
+		if (test.doManualUnroll == false) {
+    	for (int i = 1; i < test.loopsDepth[0]; i++) {
+      	string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
+				insertTab (oss, 1); oss << origFormula << ";" << endl;
+    	}
+    } else {
+      insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
+      string origFormula = prepareOriginalFormula ((char *) test.formula, 0, (char *) test.variable);
+      insertTab (oss, 2); oss << origFormula << ";" << endl;
+      insertTab (oss, 1); oss << "}" << endl;
     }
 
     int pos = -1;
@@ -813,6 +832,34 @@ string prepareOriginalFormula (char *formula, int index, char *variable) {
     formulaStr.replace (pos, 1, string (variable));
 
   return formulaStr;
+
+}
+
+string preparedLocalMemoryInitialization (int depth, string dataType, char** origFormula) {
+
+  // Preparing the intialization of local memory
+	string return_statement;
+	return_statement += (string("\t") + dataType + string(" localRands[") + to_string(depth) + string("];\n"));
+  return_statement += (string("\t") + string("int depth = ") + to_string(depth) + string("\n\n"));
+  return_statement += (string("\t") + string("int gid = get_global_id(0);\n"));
+  return_statement += (string("\t") + string("int lid = get_local_id(0);\n"));
+  return_statement += (string("\t") + string("int localWorkSize = get_local_Size(0);\n"));
+  return_statement += (string("\t") + string("int workItemCopyPortion = depth / localWorkSize;\n\n"));
+  return_statement += (string("\t") + string("event_t event = async_work_group_copy (localRands, &(rands[lid * workItemCopyPortion]), (depth - lid*workItemCopyPortion < workItemCopyPortion) ? (depth - lid*workItemCopyPortion) : workItemCopyPortion, 0);\n"));
+	return_statement += (string("\t") + string("wait_group_events(1, &event);\n"));
+
+  // replace rands in original formula with localRands, if it does exists
+	int pos = -1;
+  string origFormulaStr = string(*origFormula);
+  while ((pos = origFormulaStr.find ("rands")) != -1)
+    origFormulaStr.replace (pos, 5, "localRands");
+
+  int length = origFormulaStr.length();
+  char* newOrigFormula = (char *) malloc (50 * sizeof(char));
+  memcpy (*origFormula, origFormulaStr.c_str(), length);
+  newOrigFormula[length] = '\0';
+	*origFormula = newOrigFormula;
+	return return_statement;
 
 }
 
