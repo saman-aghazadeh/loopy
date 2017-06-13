@@ -95,6 +95,7 @@ struct _cl_info {
   int flops;
 };
 
+
 vector<_cl_info> cl_metas; // all meta information for all cls
 
 // NOTICE: For current implementation we will always assume we have
@@ -102,10 +103,15 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // and gonna be changed in the next phase implementation
 
 struct _algorithm_type tests[] = {
-  {"Test11", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, true},
-  {"Test12", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, true},
-  {"Test13", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", true, false},
-  {"Test14", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float", false, false},
+  {"Test11", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, true},
+  {"Test12", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, true},
+  {"Test13", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, false},
+  {"Test14", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, false},
+  {"Test15", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, true},
+  //{"Test16", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@$ = (float) rands[i] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, true},
+  {"Test17", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, false},
+  {"Test18", 16, 1, vector<int>({2097152}), vector<int>({256}), true, vector<int>({128}), "temp", "float16 tempnow; float16 tempbefore", "tempbefore = data[gid]", "data[gid] = tempnow.s0", "tempnow = (float) rands[i] * tempnow + tempbefore", 1024, 1024, 1024, 128, 512, 2, 2, "float", false, false},
+  //{"Test18", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@$ = (float) rands[i] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, false},
   /*{"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
@@ -389,18 +395,21 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 
   }
 
-  if (test.loopCarriedDataDependency == true) {
+  else if (test.loopCarriedDataDependency == true) {
+
+		cout << "in lcdd" << endl;
 
 		ofstream codeDump;
-    string dumpFileName = kernels_folder + "/" + test.name + "-" + test.varType + ".cl";
+    string dumpFileName = kernels_folder + "/" + test.name + ".cl";
 		codeDump.open (dumpFileName.c_str());
 
-    oss << "__kernel void" << test.name << "(global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl;
+    oss << "__kernel void " << test.name << "(global " << test.varType << " *data, __global " << test.varType << " *rands, int index, int rand_max){" << endl << endl;
 
 		string declFormula = preparedVarDeclFormulaNonArray ((char *)test.varDeclFormula, test.loopsDepth[0], true);
 
     insertTab (oss, 1); oss << declFormula << ";" << endl;
     if (!test.doLocalMemory) {
+      insertTab (oss, 1); oss << "int depth = " << test.loopsDepth[0] << ";" << endl;
     	insertTab (oss, 1); oss << "int gid = get_global_id(0);" << endl;
     } else {
       string localMemoryInit = preparedLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.variable));
@@ -411,15 +420,18 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
     insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
 		oss << endl;
 
-		if (test.doManualUnroll == false) {
+		if (test.doManualUnroll == true) {
     	for (int i = 1; i < test.loopsDepth[0]; i++) {
       	string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *)test.variable);
 				insertTab (oss, 1); oss << origFormula << ";" << endl;
     	}
     } else {
-      insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
+      insertTab (oss, 1); oss << "for (int j = 0; j < " << test.loopsLengths[0] << "; j++){" << endl;
+      insertTab (oss, 2); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
       string origFormula = prepareOriginalFormula ((char *) test.formula, 0, (char *) test.variable);
-      insertTab (oss, 2); oss << origFormula << ";" << endl;
+      insertTab (oss, 3); oss << origFormula << ";" << endl;
+      insertTab (oss, 2); oss << "}" << endl;
+			insertTab (oss, 2); oss << "tempbefore = tempnow * rands[j%depth];" << endl;
       insertTab (oss, 1); oss << "}" << endl;
     }
 
@@ -603,7 +615,7 @@ void execution (cl_device_id id,
                 char* precision) {
 
 	int verbose = true;
-	int npasses = 3;
+	int npasses = 5;
 	int err;
   char sizeStr[128];
 
@@ -689,15 +701,25 @@ void execution (cl_device_id id,
     	hostMem_data[j] = hostMem_data[numFloats - j - 1] = (T)(drand48()*5.0);
     }
 
+		size_t globalWorkSize[1];
+    size_t maxGroupSize;
 
-    size_t globalWorkSize[1] = {numFloats};
-    size_t maxGroupSize = 1;
-    maxGroupSize = getMaxWorkGroupSize (id);
+    if (alg.loopCarriedDataDependency == false) {
+    	globalWorkSize[0] = numFloats;
+    	maxGroupSize = 1;
+    	maxGroupSize = getMaxWorkGroupSize (id);
+  	} else if (alg.loopCarriedDataDependency == true) {
+      globalWorkSize[0] = 1;
+      maxGroupSize = 1;
+    }
 
     for (int wsBegin = alg.localWorkSizeMin; wsBegin <= alg.localWorkSizeMax; wsBegin *= alg.localWorkSizeStride) {
 
 			size_t localWorkSize[1] = {1};
-      localWorkSize[0] = wsBegin;
+      if (alg.loopCarriedDataDependency == false)
+      	localWorkSize[0] = wsBegin;
+      else
+        localWorkSize[0] = 1;
       char lwsString[10] = {'\0'};
       for (int pas = 0; pas < npasses; ++pas) {
 
@@ -713,6 +735,8 @@ void execution (cl_device_id id,
         CL_CHECK_ERROR (err);
 
         evKernel.FillTimingInfo ();
+        //cout << "numFloats=" << numFloats << ", flops=" <<meta.flops
+        //     << ", loopsDepth=" << alg.loopsDepth[0] << ", vectorSize=" << alg.vectorSize << endl;
         double flopCount = (double) numFloats *
             												meta.flops *
             												alg.loopsDepth[0] *
@@ -802,8 +826,8 @@ string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcd
     // Check whether we have $ sing in the varDeclFormula
     string declFormula = string (varDeclFormula);
     int pos = -1;
-    if ((pos = declFormula.find ("$")) == -1)
-      exit (0);
+    //if ((pos = declFormula.find ("$")) == -1)
+    //  exit (0);
 
     char depthBuf[32];
     sprintf (depthBuf, "%d", depth);
