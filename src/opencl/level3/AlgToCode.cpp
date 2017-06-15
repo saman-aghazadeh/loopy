@@ -9,7 +9,7 @@
 #include "ResultDatabase.h"
 #include "OptionParser.h"
 #include "ProgressBar.h"
-//#include "tests.h"
+#include "tests.h"
 #include "aocl_utils.h"
 #include <time.h>
 #include <stdlib.h>
@@ -29,7 +29,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::ALL;
+int executionMode = ExecutionMode::GENERATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -49,8 +49,7 @@ std::string fpga_built_kernels_folder = "/home/users/saman/shoc/src/opencl/level
 // 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
 
 static const char *opts = "-cl-opt-disable";
-
-
+/*
 struct _algorithm_type {
 
 	const char* name;					// Name of the algorithm
@@ -85,9 +84,9 @@ struct _algorithm_type {
   bool doManualUnroll;			// unrolling the loop ourself in the code or
   													// let the compiler do it
 	bool doLocalMemory;			  // Copy Data from global memory to local memory
+  int unrollFactor;
 };
-
-
+*/
 struct _cl_info {
   char name[100] = {'\0'};		 					// Name of the info
  	char kernel_location[100] = {'\0'};	// mapping between kernel types and kernel locs
@@ -101,7 +100,7 @@ vector<_cl_info> cl_metas; // all meta information for all cls
 // NOTICE: For current implementation we will always assume we have
 // only one foor loop. This is the first implementation assumption
 // and gonna be changed in the next phase implementation
-
+/*
 struct _algorithm_type tests[] = {
   {"Test11", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, true},
   {"Test12", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[i] * @", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, true},
@@ -112,7 +111,7 @@ struct _algorithm_type tests[] = {
   {"Test17", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", true, false},
   {"Test18", 16, 1, vector<int>({2097152}), vector<int>({256}), true, vector<int>({128}), "temp", "float16 tempnow; float16 tempbefore", "tempbefore = data[gid]", "data[gid] = tempnow.s0", "tempnow = (float) rands[i] * tempnow + tempbefore", 1024, 1024, 1024, 128, 512, 2, 2, "float", false, false},
   //{"Test18", 16, 1, vector<int>({2097152}), vector<int>({256}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@$ = (float) rands[i] * @#", 1024, 1024, 1024, 128, 512, 2, 1, "float", false, false},
-  /*{"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
+  {"Test21", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @",1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test22", 4, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float4 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test31", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (float) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
   {"Test32", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "float8 temp$" ,"temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "float"},
@@ -125,9 +124,10 @@ struct _algorithm_type tests[] = {
   {"Test71", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test72", 8, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double8 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (double) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {"Test81", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp", "temp = data[gid]", "data[gid] = temp.s0", "@ = (double) rands[!] * @", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
-  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},*/
+  {"Test82", 16, 1, vector<int>({1048576}), vector<int>({500}), false, vector<int>({0}), "temp", "double16 temp$", "temp0 = data[gid]", "data[gid] = temp$.s0", "@$ = (float) rands[!] * @#", 1024, 1024, 1024, 32, 512, 2, 1, "double"},
   {0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
+*/
 
 // Creates the program object based on the platform,
 // whether it will be GPU or FPGA.
@@ -369,7 +369,9 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 	  	}
     } else {
       if (VERBOSE) cout << "[VERBOSE] Manually Unrolling is False!" << endl;
-      insertTab (oss, 1); oss << "#pragma unroll" << endl;
+      if (test.unrollFactor != 0) {
+      	insertTab (oss, 1); oss << "#pragma unroll " << test.unrollFactor << endl;
+      }
       insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
     	string origFormula = prepareOriginalFormula ((char *)test.formula, 0, (char *) test.variable);
       insertTab (oss, 2); oss << origFormula << ";" << endl;

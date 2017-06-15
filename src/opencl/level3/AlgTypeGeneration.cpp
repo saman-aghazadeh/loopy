@@ -34,10 +34,13 @@ struct _meta_algorithm_type {
   int localWorkSizeStride;
 
   vector<map<string, string> > formulas;
+  vector<bool> manualUnroll;
+  vector<int> unrollFactor;
 };
 
 struct _meta_algorithm_type meta_tests[] = {
-  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({64}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 128, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}, map<string, string>{{"varDeclFormula", "@@$$ temp$"}, {"varInitFormula", "temp0 = data[gid]"}, {"returnFormula", "data[gid] = temp0.s0"}, {"formula", "@$ = (@@) rands[!] * @#"}}}},
+  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 128, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32})},
+  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 128, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0})},
   {vector<int>(), 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, vector<string>(), 0, 0, 0, 0, 0, 0, vector<map<string, string>>()}
 };
 
@@ -56,35 +59,16 @@ void RunBenchmark (cl_device_id id,
                    OptionParser &op) {
 
 	int aIdx = 0;
-  while ((meta_tests != 0) && (meta_tests[aIdx].variable != 0)) {
-		cout << "Meta test #" << aIdx << endl;
+  ofstream headerFile;
 
-		vector<map<string, string>> formulas = meta_tests[aIdx].formulas;
-
-    vector<int> streamSizes = meta_tests[aIdx].streamSizes;
-    int loopLevels = meta_tests[aIdx].loopLevels;
-    vector<int> loopIterSizes = meta_tests[aIdx].loopIterSizes;
-    vector<int> loopDepthSizes = meta_tests[aIdx].loopDepthSizes;
-    bool loopCarriedDataDependency = meta_tests[aIdx].loopCarriedDataDependency;
-    vector<int> loopCarriedDDLengths = meta_tests[aIdx].loopCarriedDDLengths;
-    const char* variable = meta_tests[aIdx].variable;
-    vector<string> varTypes = meta_tests[aIdx].varTypes;
-    int halfBufSizeMin = meta_tests[aIdx].halfBufSizeMin;
-    int halfBufSizeMax = meta_tests[aIdx].halfBufSizeMax;
-    int halfBufSizeStride = meta_tests[aIdx].halfBufSizeStride;
-		int localWorkSizeMin = meta_tests[aIdx].localWorkSizeMin;
-    int localWorkSizeMax = meta_tests[aIdx].localWorkSizeMax;
-    int localWorkSizeStride = meta_tests[aIdx].localWorkSizeStride;
-
-		ofstream headerFile;
-  	headerFile.open (fileName);
-
+  headerFile.open (fileName);
 		headerFile << "#ifndef _TESTS_H_" << endl;
   	headerFile << "#define _TESTS_H_" << endl;
 		headerFile << endl;
   	headerFile << "#include <vector>" << endl;
   	headerFile << "#include <map>" << endl;
   	headerFile << "#include <string>" << endl;
+		headerFile << "using namespace std;" << endl;
 		headerFile << endl << endl;
 
   	// Generating the structure _algorithm_type
@@ -109,9 +93,35 @@ void RunBenchmark (cl_device_id id,
 	  headerFile << "\t" << "int localWorkSizeStride;" << endl;
 	  headerFile << "\t" << "int flopCount;" << endl;
   	headerFile << "\t" << "const char* varType;" << endl;
-  	headerFile << "};" << endl << endl;;
+    headerFile << "\t" << "bool doManualUnroll;" << endl;
+    headerFile << "\t" << "bool doLocalMemory;" << endl;
+    headerFile << "\t" << "int unrollFactor;" << endl;
+  	headerFile << "};" << endl << endl;
 
 		headerFile << "struct _algorithm_type tests[] = {" << endl;
+
+
+    while ((meta_tests != 0) && (meta_tests[aIdx].variable != 0)) {
+		cout << "Meta test #" << aIdx << endl;
+
+		vector<map<string, string>> formulas = meta_tests[aIdx].formulas;
+
+    vector<int> streamSizes = meta_tests[aIdx].streamSizes;
+    int loopLevels = meta_tests[aIdx].loopLevels;
+    vector<int> loopIterSizes = meta_tests[aIdx].loopIterSizes;
+    vector<int> loopDepthSizes = meta_tests[aIdx].loopDepthSizes;
+    bool loopCarriedDataDependency = meta_tests[aIdx].loopCarriedDataDependency;
+    vector<int> loopCarriedDDLengths = meta_tests[aIdx].loopCarriedDDLengths;
+    const char* variable = meta_tests[aIdx].variable;
+    vector<string> varTypes = meta_tests[aIdx].varTypes;
+    int halfBufSizeMin = meta_tests[aIdx].halfBufSizeMin;
+    int halfBufSizeMax = meta_tests[aIdx].halfBufSizeMax;
+    int halfBufSizeStride = meta_tests[aIdx].halfBufSizeStride;
+		int localWorkSizeMin = meta_tests[aIdx].localWorkSizeMin;
+    int localWorkSizeMax = meta_tests[aIdx].localWorkSizeMax;
+    int localWorkSizeStride = meta_tests[aIdx].localWorkSizeStride;
+    vector<bool> manualUnroll = meta_tests[aIdx].manualUnroll;
+		vector<int> unrollFactor = meta_tests[aIdx].unrollFactor;
 
 
   	for (int formulasNum = 0; formulasNum < formulas.size(); formulasNum++){
@@ -119,53 +129,60 @@ void RunBenchmark (cl_device_id id,
 				for (int streamSizesNum = 0; streamSizesNum < streamSizes.size(); streamSizesNum++) {
       		for (int loopIterSizesNum = 0; loopIterSizesNum < loopIterSizes.size(); loopIterSizesNum++) {
         		for (int loopDepthSizesNum = 0; loopDepthSizesNum < loopDepthSizes.size(); loopDepthSizesNum++) {
-          		headerFile << "\t" << "{\"Test_S" << streamSizes[streamSizesNum] << "_" << "V" << varTypes[varTypesNum] << "_" << "I" << loopIterSizes[loopIterSizesNum] << "_" << "D" << loopDepthSizes[loopDepthSizesNum] << "_Form" << (formulasNum+1) << "\", ";
-          		headerFile << streamSizes[streamSizesNum] << ", ";
-          		headerFile << "1, ";
-          		headerFile << "vector<int>({" << loopIterSizes[loopIterSizesNum] << "}), ";
-          		headerFile << "vector<int>({" << loopDepthSizes[loopDepthSizesNum] << "}), ";
-          		headerFile << "false, ";
-          		headerFile << "vector<int>({0}), ";
-          		headerFile << "\"" << variable << "\", ";
+              for (int manualUnrollMode = 0; manualUnrollMode < manualUnroll.size(); manualUnrollMode++) {
+                for (int unrollFactorSize = 0; unrollFactorSize < unrollFactor.size(); unrollFactorSize++) {
+          				headerFile << "\t" << "{\"TestS" << streamSizes[streamSizesNum] << "" << "V" << varTypes[varTypesNum] << "" << "I" << loopIterSizes[loopIterSizesNum] << "" << "D" << loopDepthSizes[loopDepthSizesNum] << "Form" << (formulasNum+1) << "MUnrol" << manualUnroll[manualUnrollMode] << "U" << unrollFactor[unrollFactorSize] << "\", ";
+          				headerFile << streamSizes[streamSizesNum] << ", ";
+          				headerFile << "1, ";
+          				headerFile << "vector<int>({" << loopIterSizes[loopIterSizesNum] << "}), ";
+          				headerFile << "vector<int>({" << loopDepthSizes[loopDepthSizesNum] << "}), ";
+          				headerFile << "false, ";
+          				headerFile << "vector<int>({0}), ";
+          				headerFile << "\"" << variable << "\", ";
 
-							string varDeclFormula = formulas[formulasNum]["varDeclFormula"];
-            	int pos = -1;
-            	while ((pos = varDeclFormula.find("@@")) != -1)
-              	varDeclFormula.replace (pos, 2, string(varTypes[varTypesNum]));
+									string varDeclFormula = formulas[formulasNum]["varDeclFormula"];
+            			int pos = -1;
+            			while ((pos = varDeclFormula.find("@@")) != -1)
+              			varDeclFormula.replace (pos, 2, string(varTypes[varTypesNum]));
 
-            	pos = -1;
-            	while ((pos = varDeclFormula.find("$$")) != -1)
-              	varDeclFormula.replace (pos, 2, to_string(streamSizes.data()[streamSizesNum]));
+            			pos = -1;
+            			while ((pos = varDeclFormula.find("$$")) != -1)
+              			varDeclFormula.replace (pos, 2, to_string(streamSizes.data()[streamSizesNum]));
 
-            	headerFile << "\"" << varDeclFormula << "\", ";
-            	headerFile << "\"" << formulas[formulasNum]["varInitFormula"] << "\", ";
-            	headerFile << "\"" << formulas[formulasNum]["returnFormula"] << "\", ";
-            	pos = -1;
-							string formula = formulas[formulasNum]["formula"];
-            	while ((pos = formula.find("@@")) != -1)
-              	formula.replace (pos, 2, string(varTypes.data()[varTypesNum]));
-            	headerFile << "\"" << formula << "\", ";
-            	headerFile << halfBufSizeMin << ", ";
-            	headerFile << halfBufSizeMax << ", ";
-            	headerFile << halfBufSizeStride << ", ";
+            			headerFile << "\"" << varDeclFormula << "\", ";
+            			headerFile << "\"" << formulas[formulasNum]["varInitFormula"] << "\", ";
+            			headerFile << "\"" << formulas[formulasNum]["returnFormula"] << "\", ";
+            			pos = -1;
+									string formula = formulas[formulasNum]["formula"];
+            			while ((pos = formula.find("@@")) != -1)
+              			formula.replace (pos, 2, string(varTypes.data()[varTypesNum]));
+            			headerFile << "\"" << formula << "\", ";
+            			headerFile << halfBufSizeMin << ", ";
+            			headerFile << halfBufSizeMax << ", ";
+            			headerFile << halfBufSizeStride << ", ";
 
-            	headerFile << localWorkSizeMin << ", ";
-            	headerFile << localWorkSizeMax << ", ";
-            	headerFile << localWorkSizeStride << ", ";
-            	headerFile << "1, ";
-            	headerFile <<"\"" << varTypes[varTypesNum] << "\"}," << endl;
+            			headerFile << localWorkSizeMin << ", ";
+ 									headerFile << localWorkSizeMax << ", ";
+            			headerFile << localWorkSizeStride << ", ";
+            			headerFile << "1, ";
+            			headerFile <<"\"" << varTypes[varTypesNum] << "\", ";
+              		headerFile << manualUnroll[manualUnrollMode] << ",";
+              		headerFile << "false, ";
+									headerFile << unrollFactor[unrollFactorSize] << "}," << endl;
+                }
+              }
 						}
         	}
      		}
     	}
   	}
-		headerFile << "\t" << "{0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0}" << endl;
-		headerFile << "};" << endl;
-		headerFile << endl;
-  	headerFile << "#endif" << endl;
-
-		headerFile.close();
 
     aIdx++;
 	}
+
+	headerFile << "\t" << "{0, 0, 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, false, false, 0}" << endl;
+  headerFile << "};" << endl;
+	headerFile << endl;
+	headerFile << "#endif" << endl;
+	headerFile.close();
 }
