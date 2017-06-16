@@ -29,19 +29,19 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::GENERATION;
+int executionMode = ExecutionMode::CALCULATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
 public:
   enum targetDevice {FPGA, GPU};
 };
-int targetDevice = TargetDevice::GPU;
+int targetDevice = TargetDevice::FPGA;
 
 // Path to the folder where the generated kernels will reside. Change it effectively
 // based on your own system.
 std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
-std::string fpga_built_kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
+std::string fpga_built_kernels_folder = "/home/Design/SHOC-Kernels/bin/";
 
 
 // All possible flags while running the CL kernel
@@ -457,8 +457,12 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 void generateSingleCLMeta (_algorithm_type &test, _cl_info &info) {
 
   memcpy (info.name, (char *)test.name, strlen((char *)test.name));
-  memcpy (info.kernel_location, (char *)(string(kernels_folder + "/" + test.name + ".cl").c_str()),
-          strlen((char *)(string(kernels_folder + "/" + test.name + ".cl").c_str())));
+  if (targetDevice == TargetDevice::GPU)
+  	memcpy (info.kernel_location, (char *)(string(fpga_built_kernels_folder + "/" + test.name + ".cl").c_str()),
+          strlen((char *)(string(fpga_built_kernels_folder + "/" + test.name + ".cl").c_str())));
+  else
+    memcpy (info.kernel_location, (char *)(string(fpga_built_kernels_folder + "/" + test.name).c_str()),
+            strlen((char *)(string(fpga_built_kernels_folder + "/" + test.name).c_str())));
   info.num_workitems = test.loopsLengths[0];
 	info.flops = test.flopCount;
 
