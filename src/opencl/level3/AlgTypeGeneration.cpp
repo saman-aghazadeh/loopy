@@ -39,8 +39,8 @@ struct _meta_algorithm_type {
 };
 
 struct _meta_algorithm_type meta_tests[] = {
-  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 128, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32})},
-  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 128, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0})},
+  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 256, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32})},
+  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 256, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0})},
   {vector<int>(), 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, vector<string>(), 0, 0, 0, 0, 0, 0, vector<map<string, string>>()}
 };
 
