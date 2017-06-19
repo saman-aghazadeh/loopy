@@ -29,15 +29,14 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::ALL;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
 public:
   enum targetDevice {FPGA, GPU};
 };
-int targetDevice = TargetDevice::FPGA;
-
+int targetDevice = TargetDevice::GPU;
 // Path to the folder where the generated kernels will reside. Change it effectively
 // based on your own system.
 std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
@@ -458,8 +457,8 @@ void generateSingleCLMeta (_algorithm_type &test, _cl_info &info) {
 
   memcpy (info.name, (char *)test.name, strlen((char *)test.name));
   if (targetDevice == TargetDevice::GPU)
-  	memcpy (info.kernel_location, (char *)(string(fpga_built_kernels_folder + "/" + test.name + ".cl").c_str()),
-          strlen((char *)(string(fpga_built_kernels_folder + "/" + test.name + ".cl").c_str())));
+  	memcpy (info.kernel_location, (char *)(string(kernels_folder + "/" + test.name + ".cl").c_str()),
+          strlen((char *)(string(kernels_folder + "/" + test.name + ".cl").c_str())));
   else
     memcpy (info.kernel_location, (char *)(string(fpga_built_kernels_folder + "/" + test.name).c_str()),
             strlen((char *)(string(fpga_built_kernels_folder + "/" + test.name).c_str())));
@@ -740,6 +739,8 @@ void execution (cl_device_id id,
         err = clWaitForEvents (1, &evKernel.CLEvent());
         CL_CHECK_ERROR (err);
 
+        CL_CHECK_ERROR (err);
+
         evKernel.FillTimingInfo ();
         //cout << "numFloats=" << numFloats << ", flops=" <<meta.flops
         //     << ", loopsDepth=" << alg.loopsDepth[0] << ", vectorSize=" << alg.vectorSize << endl;
@@ -861,7 +862,10 @@ string prepareOriginalFormula (char *formula, int index, char *variable) {
   char indexBuf3[32];
   sprintf (indexBuf, "%d", index%PRIVATE_VECTOR_SIZE);
   sprintf (indexBuf2, "%d", (index-1)%PRIVATE_VECTOR_SIZE);
-  sprintf (indexBuf3, "%d", (index-1));
+  if (index != 0)
+  	sprintf (indexBuf3, "%d", (index-1));
+  else
+    sprintf (indexBuf3, "%c", 'i');
 
   string indexStr = string (indexBuf);
   string indexStr2 = string (indexBuf2);
@@ -952,6 +956,7 @@ void RunBenchmark (cl_device_id id,
     //generateAlgorithms();
     generateCLs();
     generateCLsMetas();
+    cout << "Start Execution" << endl;
     execution<float> (id, ctx, queue, resultDB, op, (char *)"float");
     execution<double> (id, ctx, queue, resultDB, op, (char *)"double");
   }
