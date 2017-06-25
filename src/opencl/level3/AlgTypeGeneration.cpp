@@ -16,6 +16,11 @@
 
 using namespace std;
 
+class RandomAccessType {
+public:
+	enum randomAccessType {SEQUENTIAL, SEMIRANDOM, RANDOM};
+};
+
 struct _meta_algorithm_type {
 	vector<int> streamSizes;
   int loopLevels;
@@ -37,11 +42,12 @@ struct _meta_algorithm_type {
   vector<bool> manualUnroll;
   vector<int> unrollFactor;
   vector<bool> localMemory;
+  vector<int> randomAccessType;
 };
 
 struct _meta_algorithm_type meta_tests[] = {
-  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 256, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0 + temp.s1 + temp.s2+ temp.s3 + temp.s4 + temp.s5 + temp.s6 + temp.s7 + temp.s8 + temp.s9 + temp.sA + temp.sB + temp.sC + temp.sD + temp.sE + temp.sF"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32}), vector<bool>{false, true}},
-  {vector<int>({16}), 1, vector<int>({1048576}), vector<int>({32,64,128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 256, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid] = temp.s0 + temp.s1 + temp.s2 + temp.s3 + temp.s4 + temp.s5 + temp.s6 + temp.s7 + temp.s8 + temp.s9 + temp.sA + temp.sB + temp.sC + temp.sD + temp.sE + temp.sF"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0}), vector<bool>{false, true}},
+  {vector<int>({16, 8, 4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL}},
+  {vector<int>({16, 8, 4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL, RandomAccessType::RANDOM}},
   {vector<int>(), 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, vector<string>(), 0, 0, 0, 0, 0, 0, vector<map<string, string>>()}
 };
 
@@ -97,7 +103,14 @@ void RunBenchmark (cl_device_id id,
     headerFile << "\t" << "bool doManualUnroll;" << endl;
     headerFile << "\t" << "bool doLocalMemory;" << endl;
     headerFile << "\t" << "int unrollFactor;" << endl;
+    headerFile << "\t" << "int randomAccessType;" << endl;
   	headerFile << "};" << endl << endl;
+
+		headerFile << "class RandomAccessType {" << endl;
+    headerFile << "public:" << endl;
+    headerFile << "\tenum randomAccessType {SEQUENTIAL, SEMIRANDOM, RANDOM};" << endl;
+    headerFile << "};" << endl;
+
 
 		headerFile << "struct _algorithm_type tests[] = {" << endl;
 
@@ -124,6 +137,7 @@ void RunBenchmark (cl_device_id id,
     vector<bool> manualUnroll = meta_tests[aIdx].manualUnroll;
 		vector<int> unrollFactor = meta_tests[aIdx].unrollFactor;
 		vector<bool> localMemory = meta_tests[aIdx].localMemory;
+		vector<int> randomAccessType = meta_tests[aIdx].randomAccessType;
 
   	for (int formulasNum = 0; formulasNum < formulas.size(); formulasNum++){
 			for (int varTypesNum = 0; varTypesNum < varTypes.size(); varTypesNum++) {
@@ -133,44 +147,55 @@ void RunBenchmark (cl_device_id id,
               for (int manualUnrollMode = 0; manualUnrollMode < manualUnroll.size(); manualUnrollMode++) {
                 for (int unrollFactorSize = 0; unrollFactorSize < unrollFactor.size(); unrollFactorSize++) {
                   for (int localMemoryMode = 0; localMemoryMode < localMemory.size(); localMemoryMode++) {
-          					headerFile << "\t" << "{\"TestS" << streamSizes[streamSizesNum] << "" << "V" << varTypes[varTypesNum] << "" << "I" << loopIterSizes[loopIterSizesNum] << "" << "D" << loopDepthSizes[loopDepthSizesNum] << "Form" << (formulasNum+1) << "MUnrol" << manualUnroll[manualUnrollMode] << "U" << unrollFactor[unrollFactorSize] << "LM" << localMemory[localMemoryMode] << "\", ";
-          					headerFile << streamSizes[streamSizesNum] << ", ";
-          					headerFile << "1, ";
-          					headerFile << "vector<int>({" << loopIterSizes[loopIterSizesNum] << "}), ";
-          					headerFile << "vector<int>({" << loopDepthSizes[loopDepthSizesNum] << "}), ";
-          					headerFile << "false, ";
-          					headerFile << "vector<int>({0}), ";
-          					headerFile << "\"" << variable << "\", ";
+                    for (int randomAccessMode = 0; randomAccessMode < randomAccessType.size(); randomAccessMode++){
+                      string randTypeString;
+                      if (randomAccessType[randomAccessMode] == RandomAccessType::SEQUENTIAL)
+                        randTypeString = string("SEQ");
+                      else if (randomAccessType[randomAccessMode] == RandomAccessType::RANDOM)
+                        randTypeString = string("RAND");
+                      else if (randomAccessType[randomAccessMode] == RandomAccessType::SEMIRANDOM)
+                        randTypeString = string("SRAND");
 
-										string varDeclFormula = formulas[formulasNum]["varDeclFormula"];
-            				int pos = -1;
-            				while ((pos = varDeclFormula.find("@@")) != -1)
-              				varDeclFormula.replace (pos, 2, string(varTypes[varTypesNum]));
+          						headerFile << "\t" << "{\"TestS" << streamSizes[streamSizesNum] << "" << "V" << varTypes[varTypesNum] << "" << "D" << loopDepthSizes[loopDepthSizesNum] << "Form" << (formulasNum+1) << "MUnrol" << manualUnroll[manualUnrollMode] << "U" << unrollFactor[unrollFactorSize] << "LM" << localMemory[localMemoryMode] << randTypeString << "\", ";
+          						headerFile << streamSizes[streamSizesNum] << ", ";
+          						headerFile << "1, ";
+          						headerFile << "vector<int>({" << loopIterSizes[loopIterSizesNum] << "}), ";
+          						headerFile << "vector<int>({" << loopDepthSizes[loopDepthSizesNum] << "}), ";
+          						headerFile << "false, ";
+          						headerFile << "vector<int>({0}), ";
+          						headerFile << "\"" << variable << "\", ";
 
-            				pos = -1;
-            				while ((pos = varDeclFormula.find("$$")) != -1)
-              				varDeclFormula.replace (pos, 2, to_string(streamSizes.data()[streamSizesNum]));
+											string varDeclFormula = formulas[formulasNum]["varDeclFormula"];
+            					int pos = -1;
+            					while ((pos = varDeclFormula.find("@@")) != -1)
+              					varDeclFormula.replace (pos, 2, string(varTypes[varTypesNum]));
 
-            				headerFile << "\"" << varDeclFormula << "\", ";
-            				headerFile << "\"" << formulas[formulasNum]["varInitFormula"] << "\", ";
-            				headerFile << "\"" << formulas[formulasNum]["returnFormula"] << "\", ";
-            				pos = -1;
-										string formula = formulas[formulasNum]["formula"];
-            				while ((pos = formula.find("@@")) != -1)
-              				formula.replace (pos, 2, string(varTypes.data()[varTypesNum]));
-            				headerFile << "\"" << formula << "\", ";
-            				headerFile << halfBufSizeMin << ", ";
-            				headerFile << halfBufSizeMax << ", ";
-            				headerFile << halfBufSizeStride << ", ";
+            					pos = -1;
+            					while ((pos = varDeclFormula.find("$$")) != -1)
+              					varDeclFormula.replace (pos, 2, to_string(streamSizes.data()[streamSizesNum]));
 
-            				headerFile << localWorkSizeMin << ", ";
- 										headerFile << localWorkSizeMax << ", ";
-            				headerFile << localWorkSizeStride << ", ";
-            				headerFile << "1, ";
-            				headerFile <<"\"" << varTypes[varTypesNum] << "\", ";
-              			headerFile << manualUnroll[manualUnrollMode] << ",";
-              			headerFile << localMemory[localMemoryMode] << ",";
-										headerFile << unrollFactor[unrollFactorSize] << "}," << endl;
+            					headerFile << "\"" << varDeclFormula << "\", ";
+            					headerFile << "\"" << formulas[formulasNum]["varInitFormula"] << "\", ";
+            					headerFile << "\"" << formulas[formulasNum]["returnFormula"] << "\", ";
+            					pos = -1;
+											string formula = formulas[formulasNum]["formula"];
+            					while ((pos = formula.find("@@")) != -1)
+              					formula.replace (pos, 2, string(varTypes.data()[varTypesNum]));
+            					headerFile << "\"" << formula << "\", ";
+            					headerFile << halfBufSizeMin << ", ";
+            					headerFile << halfBufSizeMax << ", ";
+            					headerFile << halfBufSizeStride << ", ";
+
+	            				headerFile << localWorkSizeMin << ", ";
+ 											headerFile << localWorkSizeMax << ", ";
+    	        				headerFile << localWorkSizeStride << ", ";
+      	      				headerFile << "1, ";
+        	    				headerFile <<"\"" << varTypes[varTypesNum] << "\", ";
+          	    			headerFile << manualUnroll[manualUnrollMode] << ",";
+            	  			headerFile << localMemory[localMemoryMode] << ",";
+											headerFile << unrollFactor[unrollFactorSize] << ",";
+                	    headerFile << randomAccessType[randomAccessMode] << "}," << endl;
+                    }
                   }
                 }
               }

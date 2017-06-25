@@ -13,6 +13,7 @@
 #include "aocl_utils.h"
 #include <time.h>
 #include <stdlib.h>
+#include <ctime>
 
 #define PRIVATE_VECTOR_SIZE 5
 
@@ -29,7 +30,7 @@ class ExecutionMode {
 public:
   enum executionMode {GENERATION, CALCULATION, ALL};
 };
-int executionMode = ExecutionMode::ALL;
+int executionMode = ExecutionMode::CALCULATION;
 
 // Defines whether we are going to run our code on FPGA or GPU
 class TargetDevice {
@@ -40,14 +41,53 @@ int targetDevice = TargetDevice::GPU;
 // Path to the folder where the generated kernels will reside. Change it effectively
 // based on your own system.
 std::string kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";
-std::string fpga_built_kernels_folder = "/home/Design/SHOC-Kernels/bin/";
+std::string fpga_built_kernels_folder = "/home/Design/SHOC-Kernels/bin";
 
 
 // All possible flags while running the CL kernel
-//static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
-// 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
+static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
+ 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
 
-static const char *opts = "-cl-opt-disable";
+//static const char *opts = "-cl-opt-disable";
+
+class NumberGenerator {
+public:
+
+  NumberGenerator (int size){
+    this->size = size;
+    for (int i = 0; i < size; i++)
+      numbersIndices.push_back (true);
+
+    srand ((unsigned) time(0));
+  }
+
+	~NumberGenerator () {}
+
+  int getNextSequential () {
+    if (seqIndex < size) {
+      numbersIndices[seqIndex] = false;
+      seqIndex++;
+      return seqIndex-1;
+    }
+  }
+
+  int getNextRandom () {
+    while (true) {
+    	int random = rand() % size;
+      if (numbersIndices[random] == false) continue;
+      else {
+        numbersIndices[random] = false;
+        return random;
+      }
+    }
+  }
+
+private:
+	int size;
+  vector<bool> numbersIndices;
+  int seqIndex = 0;
+};
+
 /*
 struct _algorithm_type {
 
@@ -195,6 +235,8 @@ string preparedVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcd
 string preparedLocalMemoryInitialization (int depth, string varType, char** formula);
 // replace $, @, # inside the formula with appropriate variables
 string prepareOriginalFormula (char *formula, int index, char *variable);
+
+string prepareReturnOpCode (int streamSize, string returnOpCode);
 
 cl_program createProgram (cl_context context,
                           cl_device_id device,
@@ -361,13 +403,21 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 		if (VERBOSE) cout << "[VERBOSE] Init Formula been inserted successfully!" << endl;
 
     if (test.doManualUnroll == true ) {
+			NumberGenerator numberGenerator (test.loopsDepth[0]);
 			if (VERBOSE) cout << "[VERBOSE] Manually Unrolling is True!" << endl;
 	  	for (int i = 1; i < test.loopsDepth[0]; i++) {
-				string origFormula = prepareOriginalFormula ((char *)test.formula, i, (char *) test.variable);
+        string origFormula;
+        if (test.randomAccessType == RandomAccessType::SEQUENTIAL)
+					origFormula = prepareOriginalFormula ((char *)test.formula, numberGenerator.getNextSequential()+1, (char *) test.variable);
+        else if (test.randomAccessType == RandomAccessType::RANDOM)
+          origFormula = prepareOriginalFormula ((char *)test.formula, numberGenerator.getNextRandom()+1, (char *) test.variable);
 	      insertTab (oss, 1); oss << origFormula << ";" << endl;
 	  	}
     } else {
       if (VERBOSE) cout << "[VERBOSE] Manually Unrolling is False!" << endl;
+      if (test.randomAccessType != RandomAccessType::SEQUENTIAL)
+        cout << "[WARNING] random access type cannot be generated for automatically unrolled kernels!" << endl
+             << "\tPlease re-design your \"test.h\" file!" << endl;
       if (test.unrollFactor != 0) {
       	insertTab (oss, 1); oss << "#pragma unroll " << test.unrollFactor << endl;
       }
@@ -379,9 +429,12 @@ void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &test, str
 
     int pos = -1;
 	  char returnBuf[32];
-		string returnOpCode = string (test.returnFormula);
-    if ((pos = returnOpCode.find("$")) != (-1) )
-      returnOpCode.replace (pos, 1, string("0"));
+
+		string returnOpCode = prepareReturnOpCode (test.vectorSize, test.returnFormula);
+
+		//string returnOpCode = string (test.returnFormula);
+    //if ((pos = returnOpCode.find("$")) != (-1) )
+    //returnOpCode.replace (pos, 1, string("0"));
       //returnOpCode.replace (pos, 1, string("index"));
 		if (VERBOSE) cout << "[VERBOSE] Return Op Code been prepared!" << endl;
 
@@ -927,6 +980,33 @@ string preparedLocalMemoryInitialization (int depth, string dataType, char** ori
 
 	return return_statement;
 
+}
+
+string prepareReturnOpCode (int streamSize, string returnOpCode) {
+
+  string finalReturnOpCode = (returnOpCode + " = ");
+
+  for (int i = 0; i < streamSize; i++){
+    if (i == 10)
+      finalReturnOpCode += (string("temp.s") + string("A"));
+  	else if (i == 11)
+      finalReturnOpCode += (string("temp.s") + string("B"));
+    else if (i == 12)
+			finalReturnOpCode += (string("temp.s") + string("C"));
+    else if (i == 13)
+      finalReturnOpCode += (string("temp.s") + string("D"));
+    else if (i == 14)
+      finalReturnOpCode += (string("temp.s") + string("E"));
+    else if (i == 15)
+      finalReturnOpCode += (string("temp.s") + string("F"));
+		else
+			finalReturnOpCode += (string("temp.s") + to_string(i));
+
+    if (i != streamSize-1)
+      finalReturnOpCode += string(" + ");
+  }
+
+  return finalReturnOpCode;
 }
 
 void RunBenchmark (cl_device_id id,
