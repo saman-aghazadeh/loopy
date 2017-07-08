@@ -16,8 +16,9 @@
 #include <ctime>
 
 #define PRIVATE_VECTOR_SIZE 5
-
 #define VERBOSE false
+#define VERIFICATION true
+#define TEMP_INIT_VALUE 1.0
 
 using namespace std;
 
@@ -680,7 +681,7 @@ void execution (cl_device_id id,
 	T *hostMem_data;
   T *hostMem2;
   T *hostMem_rands;
-
+	T *verification_data;
   cl_mem mem_data;
   cl_mem mem_rands;
 
@@ -710,12 +711,20 @@ void execution (cl_device_id id,
 		hostMem_data = new T[numFloatsMax];
     hostMem2 = new T[numFloatsMax];
     hostMem_rands = new T[alg.loopsDepth[0]];
+		verification_data = new T[numFloatsMax];
+
 
     if (verbose) cout << "hostMem_data, hostMem2, and hostMem_rands are created successfully!" << endl;
 
 		// Filling out the hostMem_rands array
-    for (int length = 0; length < alg.loopsDepth[0]; length++) {
-      hostMem_rands[length] = (float)rand() / ((float)RAND_MAX/2);
+    if (!VERIFICATION) {
+    	for (int length = 0; length < alg.loopsDepth[0]; length++) {
+      	hostMem_rands[length] = (float)rand() / ((float)RAND_MAX/2);
+    	}
+    } else {
+      for (int length = 0; length < alg.loopsDepth[0]; length++) {
+        hostMem_rands[length] = (float) 1.1;
+      }
     }
 
     program = createProgram (ctx, id, meta.kernel_location);
@@ -755,8 +764,14 @@ void execution (cl_device_id id,
 
     // Set up input memory for data, first half = second half
     int numFloats = numFloatsMax;
-    for (int j = 0; j < numFloatsMax/2; j++) {
-    	hostMem_data[j] = hostMem_data[numFloats - j - 1] = (T)(drand48()*5.0);
+    if (!VERIFICATION) {
+    	for (int j = 0; j < numFloatsMax/2; j++) {
+    		hostMem_data[j] = hostMem_data[numFloats - j - 1] = (T)(drand48()*5.0);
+    	}
+    } else {
+      for (int j = 0; j < numFloatsMax; j++) {
+        hostMem_data[j] = 0.4;
+      }
     }
 
 		size_t globalWorkSize[1];
@@ -792,9 +807,24 @@ void execution (cl_device_id id,
         err = clWaitForEvents (1, &evKernel.CLEvent());
         CL_CHECK_ERROR (err);
 
-        CL_CHECK_ERROR (err);
-
         evKernel.FillTimingInfo ();
+
+        if (VERIFICATION) {
+          int streamSize = tests[aIdx].vectorSize;
+          for (int i = 0; i < numFloatsMax; i++) {
+            T *temp = new T[streamSize];
+            for (int j = 0; j < streamSize; j++) temp[j] = 0.4;
+            for (int j = 0; j < alg.loopsDepth[0]; j++) {
+              for (int k = 0; k < streamSize; k++)
+						 		temp[k] = hostMem_rands[j] * temp[k];
+            }
+            T temp2 = 0.0;
+            for (int j = 0; j < streamSize; j++) {
+              temp2 += temp[j];
+            }
+            verification_data[i] = temp2;
+          }
+        }
         //cout << "numFloats=" << numFloats << ", flops=" <<meta.flops
         //     << ", loopsDepth=" << alg.loopsDepth[0] << ", vectorSize=" << alg.vectorSize << endl;
         double flopCount = (double) numFloats *
@@ -816,8 +846,11 @@ void execution (cl_device_id id,
 				err = clEnqueueReadBuffer (queue, mem_data, true, 0,
                                    numFloats*sizeof(T), hostMem2,
                                    0, NULL, NULL);
-        CL_CHECK_ERROR (err);
 
+        if (VERIFICATION) {
+          cout << string(alg.name) + string("-lws") + string(lwsString) + string("-") + string(precision)  << "|" << verification_data[0] << ":" << hostMem2[0] << "|" << verification_data[1] << ":" << hostMem2[1] << "|" << verification_data[2] << ":" << hostMem2[2] << endl;
+        }
+         CL_CHECK_ERROR (err);
       }
     }
 
