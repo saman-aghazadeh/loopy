@@ -45,10 +45,10 @@ std::string fpga_built_kernels_folder = "/home/Design/SHOC-Kernels/bin";
 
 
 // All possible flags while running the CL kernel
-static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
- 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
+// static const char *opts = "-cl-mad-enable -cl-no-signed-zeros "
+// 												"-cl-unsafe-math-optimizations -cl-finite-math-only";
 
-//static const char *opts = "-cl-opt-disable";
+static const char *opts = "-cl-opt-disable";
 
 class NumberGenerator {
 public:
