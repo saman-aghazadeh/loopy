@@ -38,6 +38,7 @@ class TargetDevice {
 public:
   enum targetDevice {FPGA, GPU};
 };
+
 int targetDevice = TargetDevice::GPU;
 // Path to the folder where the generated kernels will reside. Change it effectively
 // based on your own system.
@@ -194,7 +195,7 @@ void generateSingleAlgorithm (ostringstream &oss, struct _algorithm_type &test);
 // Generate Single-Threaded CPU version of code based on algorithm type struct
 void generateAlgorithms ();
 
-// Generate all opencl kernel plus the meta information related to opencl
+// Generate all CL kernel plus the meta information related to CL
 // These information consists workgroup size, number of work items, and
 // any other related information. These info are all stored in clInfo
 // data structure
@@ -203,15 +204,18 @@ void generateCLs ();
 // Generate a single opencl code and it's metadata baseed on benchmark type struct
 void generateSingleCLCode (ostringstream &oss, struct _algorithm_type &temp, struct _cl_info &info);
 
+
 // Generate all CL kernels meta information for execution phase
 void generateCLsMetas ();
+
+
 
 // Generate single cl meta information for execution phase
 void generateSingleCLMeta (struct _algorithm_type &temp, struct _cl_info &info);
 
 // Executing OpenCL codes
 template <class T>
-void execution (cl_device_id id,
+void executionCL (cl_device_id id,
            cl_context ctx,
            cl_command_queue queue,
            ResultDatabase &resultDB,
@@ -666,7 +670,7 @@ void validate_benchmark () {
 }
 
 template <class T>
-void execution (cl_device_id id,
+void executionCL (cl_device_id id,
                 cl_context ctx,
                 cl_command_queue queue,
                 ResultDatabase &resultDB,
@@ -1059,19 +1063,19 @@ void RunBenchmark (cl_device_id id,
     //generateAlgorithms ();
     generateCLs ();
   } else if (executionMode == ExecutionMode::CALCULATION) {
-    generateCLsMetas();
-    execution<float> (id, ctx, queue, resultDB, op, (char *)"float");
-    execution<double> (id, ctx, queue, resultDB, op, (char *)"double");
+    generateCLsMetas ();
+    executionCL<float> (id, ctx, queue, resultDB, op, (char *)"float");
+    executionCL<double> (id, ctx, queue, resultDB, op, (char *)"double");
   } else if (executionMode == ExecutionMode::ALL) {
     cout << "---- Benchmark Representation ----" << endl;
     print_benchmark ();
     cout << "---- ----" << endl;
     //generateAlgorithms();
-    generateCLs();
-    generateCLsMetas();
-    cout << "Start Execution" << endl;
-    execution<float> (id, ctx, queue, resultDB, op, (char *)"float");
-    execution<double> (id, ctx, queue, resultDB, op, (char *)"double");
+    generateCLs ();
+    generateCLsMetas ();
+   	cout << "Start Execution" << endl;
+    executionCL<float> (id, ctx, queue, resultDB, op, (char *)"float");
+    executionCL<double> (id, ctx, queue, resultDB, op, (char *)"double");
   }
 
 }
