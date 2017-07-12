@@ -1,43 +1,14 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
+#include "AlgorithmType.h"
+
 #include <vector>
 #include <map>
 #include <string>
 using namespace std;
 
 
-struct _algorithm_type {
-	const char* name;
-	int vectorSize;
-	int numLoops;
-	vector<int> loopsLengths;
-	vector<int> loopsDepth;
-	bool loopCarriedDataDependency;
-	vector<int> loopCarriedDDLengths;
-	const char* variable;
-	const char* varDeclFormula;
-	const char* varInitFormula;
-	const char* returnFormula;
-	const char* formula;
-	int halfBufSizeMin;
-	int halfBufSizeMax;
-	int halfBufSizeStride;
-	int localWorkSizeMin;
-	int localWorkSizeMax;
-	int localWorkSizeStride;
-	int flopCount;
-	const char* varType;
-	bool doManualUnroll;
-	bool doLocalMemory;
-	int unrollFactor;
-	int randomAccessType;
-};
-
-class RandomAccessType {
-public:
-	enum randomAccessType {SEQUENTIAL, SEMIRANDOM, RANDOM};
-};
 struct _algorithm_type tests[] = {
 	{"TestS16VfloatD32Form1MUnrol0U0LM0SEQ", 16, 1, vector<int>({2097152}), vector<int>({32}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid]", "@ = (float) rands[!] * @", 1024, 1024, 2, 32, 256, 2, 1, "float", 0,0,0,0},
 	{"TestS16VfloatD32Form1MUnrol0U0LM1SEQ", 16, 1, vector<int>({2097152}), vector<int>({32}), false, vector<int>({0}), "temp", "float16 temp", "temp = data[gid]", "data[gid]", "@ = (float) rands[!] * @", 1024, 1024, 2, 32, 256, 2, 1, "float", 0,1,0,0},

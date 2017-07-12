@@ -17,16 +17,8 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 serialopencldir = $(bindir)/Serial/OpenCL
 
 # What programs should be installed in the bin/Serial/OpenCL destination?
-serialopencl_PROGRAMS = Flops \
-												PerfMeasure \
-												AlgToCode \
+serialopencl_PROGRAMS = AlgToCode \
 												AlgTypeGeneration
-
-Flops_SOURCES								= Flops.cpp main.cpp
-Flops_LDADD									= $(OCL_LIBS) $(LIBS)
-
-PerfMeasure_SOURCES					=	PerfMeasure.cpp main.cpp
-PerfMeasure_LDADD						= $(OCL_LIBS) $(LIBS)
 
 AlgToCode_SOURCES						=	AlgToCode.cpp main.cpp
 AlgToCode_LDADD							=	$(OCL_LIBS) $(LIBS)

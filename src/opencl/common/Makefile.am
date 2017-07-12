@@ -7,4 +7,6 @@ libSHOCCommonOpenCL_a_SOURCES = OpenCLDeviceInfo.cpp \
 	OpenCLNodePlatformContainer.cpp \
 	Event.cpp \
 	opencl.cpp \
-  options.cpp
+  options.cpp \
+	OpenCLEngine.cpp \
+	NumberGenerator.cpp

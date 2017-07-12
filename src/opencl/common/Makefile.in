@@ -109,7 +109,8 @@ libSHOCCommonOpenCL_a_AR = $(AR) $(ARFLAGS)
 libSHOCCommonOpenCL_a_LIBADD =
 am_libSHOCCommonOpenCL_a_OBJECTS = OpenCLDeviceInfo.$(OBJEXT) \
 	OpenCLPlatform.$(OBJEXT) OpenCLNodePlatformContainer.$(OBJEXT) \
-	Event.$(OBJEXT)
+	Event.$(OBJEXT) opencl.$(OBJEXT) options.$(OBJEXT) \
+	OpenCLEngine.$(OBJEXT) NumberGenerator.$(OBJEXT)
 libSHOCCommonOpenCL_a_OBJECTS = $(am_libSHOCCommonOpenCL_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -294,7 +295,11 @@ noinst_LIBRARIES = libSHOCCommonOpenCL.a
 libSHOCCommonOpenCL_a_SOURCES = OpenCLDeviceInfo.cpp \
 	OpenCLPlatform.cpp \
 	OpenCLNodePlatformContainer.cpp \
-	Event.cpp
+	Event.cpp \
+	opencl.cpp \
+  options.cpp \
+	OpenCLEngine.cpp \
+	NumberGenerator.cpp
 
 all: all-am
 
@@ -345,9 +350,13 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Event.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NumberGenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OpenCLDeviceInfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OpenCLEngine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OpenCLNodePlatformContainer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OpenCLPlatform.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opencl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/options.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
