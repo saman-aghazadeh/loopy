@@ -53,7 +53,7 @@ struct _meta_algorithm_type meta_tests[] = {
 
 vector<map<string, string> > formulas;
 
-string fileName = "../common/tests.h";
+string fileName = "../../common/tests.h";
 
 void addBenchmarkSpecOptions (OptionParser &op) {
 

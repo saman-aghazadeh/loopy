@@ -22,7 +22,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::GENERATION;
 int targetDevice = TargetDevice::GPU;
 
 /*

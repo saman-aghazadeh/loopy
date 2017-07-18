@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "support.h"
 #include "aocl_utils.h"
-#include "ExecutionConfig.h"
+#include "../common/ExecutionConfig.h"
 #include "AlgorithmType.h"
 using namespace std;
 
