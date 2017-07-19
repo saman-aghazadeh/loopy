@@ -225,10 +225,7 @@ AS_IF([test "x$with_cuda" != xno],
                  dnl Note: cc 13 for Tesla
                  dnl Note: cc 20 for Fermi
                  dnl Note: cc 30 for Kepler
-                 CUDA_CPPFLAGS=["-gencode=arch=compute_12,code=sm_12 \
- -gencode=arch=compute_13,code=sm_13 \
- -gencode=arch=compute_20,code=sm_20 \
- -gencode=arch=compute_20,code=compute_20"]
+                 CUDA_CPPFLAGS=["-gencode=arch=compute_35,code=sm_35"]
                  AC_MSG_NOTICE([using CUDA_CPPFLAGS=$CUDA_CPPFLAGS])
                  AC_MSG_WARN([*** SHOC programs may fail if these -gencode values do not apply to your GPU.  If they don't apply, or if you want to shorten SHOC's compile time, determine the -gencode options that apply for your GPU and re-configure SHOC explicitly specifying only those options in CUDA_CPPFLAGS during the configure. ***])
                 ]
@@ -452,6 +449,7 @@ AC_CONFIG_FILES([Makefile
                  src/cuda/level2/qtclustering/tpmpi/Makefile
                  src/cuda/level2/s3d/Makefile
                  src/cuda/level2/s3d/epmpi/Makefile
+		 src/cuda/level3/Makefile
                  src/mpi/Makefile
                  src/mpi/common/Makefile
                  src/mpi/contention/Makefile

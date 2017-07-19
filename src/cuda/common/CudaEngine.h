@@ -2,7 +2,7 @@
 #define CUDAENGINE_H_
 
 #include "AlgorithmType.h"
-#include "CudaKernelsExecution.h"
+#include "CudaKernelExecution.h"
 #include "NumberGenerator.h"
 
 #include <vector>
@@ -18,6 +18,30 @@ struct _cuda_info {
   int num_workitems;
   int flops;
 };
+
+
+string replace_str(string& str, const string& from, const string& to)
+{
+
+	string newStr(str);
+
+  if(from.empty())
+    return string();
+  string wsRet;
+  wsRet.reserve(newStr.length());
+  size_t start_pos = 0, pos;
+  while((pos = newStr.find(from, start_pos)) != string::npos) {
+    wsRet += newStr.substr(start_pos, pos - start_pos);
+    wsRet += to;
+    pos += from.length();
+    start_pos = pos;
+  }
+  wsRet += newStr.substr(start_pos);
+  newStr.swap(wsRet); // faster than str = wsRet;
+
+  return newStr;
+}
+
 template<class T>
 class CudaEngine {
 public:
@@ -27,7 +51,7 @@ public:
     this->executionMode = executionMode;
     this->targetDevice = targetDevice;
     this->tests = tests;
-    int npasses = 5;
+    init_kernel_map ();
   }
  	~CudaEngine () {}
 
@@ -60,9 +84,11 @@ public:
 
   string prepareVarDeclFormulaNonArray (char *varDeclFormula, int depth, bool lcdd);
 
-	string prepareOriginalFormula (char *formula, int index, char *variable);
+	string prepareOriginalFormula (int streamSize, char *formula, int index, char *variable);
 
 	string prepareReturnOpCode (int streamSize, string returnOpCode);
+
+	string prepareVarInitFormula (int streamSize, string varInitFormula, string variable);
 
   void insertTab (ostringstream &oss, int numTabs);
 
@@ -75,6 +101,7 @@ private:
 	const bool VERBOSE = true;
   const bool VERIFICATION = true;
 
+  int npasses = 5;
   // Path to folder where the generated CUDA kernels will resude. Change it effectively
   std::string cuda_built_kernels_folder = "/home/users/saman/shoc/src/cuda/level3/Algs";
 };
@@ -84,6 +111,7 @@ void CudaEngine<T>::executionCUDA (ResultDatabase &resultDB,
                                    OptionParser &op,
                                    char *precision) {
   int err;
+	char sizeStr[128];
 
 	T* hostMem_data;
   T* hostMem2;
@@ -166,6 +194,66 @@ void CudaEngine<T>::executionCUDA (ResultDatabase &resultDB,
       exit(0);
     }
 
+		int numBlocks;
+		int threadsPerBlock;
+
+		for (int wsBegin = alg.localWorkSizeMin; wsBegin <= alg.localWorkSizeMax; wsBegin *= alg.localWorkSizeStride) {
+
+     	if (alg.loopCarriedDataDependency == false) {
+				threadsPerBlock = wsBegin;
+				numBlocks = numFloatsMax / wsBegin;
+      } else if (alg.loopCarriedDataDependency == true) {
+        threadsPerBlock = 1;
+        numBlocks = 1;
+      }
+			char lwsString[10] = {'\0'};
+
+      for (int pas = 0; pas < npasses; ++pas) {
+				if (!refillCUDAObject (&mem_data, (int) sizeof (T), numFloatsMax, hostMem_data)) {
+          cerr << "Error refilling device memory!" << endl;
+          exit (0);
+        }
+
+        if (!refillCUDAObject (&mem_rands, (int) sizeof (T), alg.loopsDepth[0], hostMem_rands)) {
+          cerr << "Error refilling device memory!" << endl;
+          exit (0);
+        }
+
+        cudaEvent_t start, stop;
+        float t = 0.0f;
+        cudaEventCreate (&start);
+        cudaEventCreate (&stop);
+        cudaEventRecord (start, 0);
+				kernelMaps[string(tests[aIdx].name)](mem_data, mem_rands, random, rand_max, numBlocks, threadsPerBlock);
+        cudaEventRecord (stop, 0);
+        cudaEventSynchronize (stop);
+        CHECK_CUDA_ERROR ();
+        cudaEventElapsedTime (&t, start, stop);
+        t /= 1.e3;
+
+				double flopCount = (double) numFloatsMax *
+          													meta.flops *
+          													alg.loopsDepth[0] *
+          													alg.vectorSize;
+
+        double gflops = flopCount / (double)(t * 1.e9);
+
+        sprintf (sizeStr, "Size: %07d", numFloatsMax);
+        sprintf (lwsString, "%d", wsBegin);
+        resultDB.AddResult (string (alg.name) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflops);
+
+        cudaEventDestroy (start);
+        cudaEventDestroy (stop);
+      }
+    }
+
+		cudaFree ((void *) mem_data);
+		cudaFree ((void *) mem_rands);
+
+    delete hostMem_data;
+    delete hostMem2;
+    delete hostMem_rands;
+    delete verification_data;
 
   }
 }
@@ -294,6 +382,42 @@ void CudaEngine<T>::generateCUDAs () {
   // hold reference to all cuda kernel files and
   // as a map from string to function pointer
 
+	ostringstream oss;
+  ofstream codeDump;
+	string dumpFileName = cuda_built_kernels_folder + "/CudaKernelExecution.h";
+  codeDump.open (dumpFileName.c_str());
+  if (!codeDump.is_open()) {
+    cout << "[ERROR] Dump File cannot be created or opened!" << endl;
+  }
+
+	oss << "#ifndef CUDAKERNELEXECUTION_H_" << endl;
+  oss << "#define CUDAKERNELEXECUTION_H_" << endl;
+	oss << endl;
+	oss << "#include <map>" << endl;
+  oss << "#include <string>" << endl;
+  oss << "using namespace std;" << endl;
+	oss << endl;
+  aIdx = 0;
+  while ((tests != 0) && (tests[aIdx].name != 0)) {
+    oss << "#include \"" << tests[aIdx].name << ".h\"" << endl;
+    aIdx++;
+  }
+	oss << endl;
+	oss << "map<string, void(*)(float*, float*, int, int, int, int)> kernelMaps;" << endl;
+
+  oss << "void init_kernel_map () {" << endl;
+  aIdx = 0;
+  while ((tests != 0) && (tests[aIdx].name != 0)) {
+    insertTab (oss, 1); oss << "kernelMaps[string(\"" << tests[aIdx].name << "\")] = " << tests[aIdx].name << "_wrapper;" << endl;
+    aIdx++;
+  }
+  oss << "}" << endl;
+  oss << endl;
+  oss << "#endif // CUDAKERNELEXECUTION_h_" << endl;
+
+  codeDump << oss.str();
+	codeDump.close();
+
 }
 
 template <class T>
@@ -310,17 +434,21 @@ void CudaEngine<T>::generateSingleCUDACode (ostringstream &oss, struct _algorith
 
 	if (test.loopCarriedDataDependency == false) {
 
+		oss << "#ifndef " << test.name << "_H_" << endl;
+    oss << "#define " << test.name << "_H_" << endl;
+    oss << endl;
     oss << "__global__ void " << test.name << "( " << test.varType << " *data, " << test.varType << " *rands, int index, int rand_max){" << endl;
 		string declFormula = prepareVarDeclFormulaNonArray ((char *) test.varDeclFormula, PRIVATE_VECTOR_SIZE, false);
     insertTab (oss, 1); oss << declFormula << ";" << endl;
 		if (!test.doLocalMemory) {
-      insertTab (oss, 1); oss << "int gid = get_global_id(0);" << endl;
+      insertTab (oss, 1); oss << "int gid = blockIdx.x * blockDim.x + threadIdx.x;" << endl;
     } else {
-      
+      insertTab (oss, 1); oss << "int gid = blockIdx.x * blockDim.x + threadIdx.x;" << endl;
     }
 
     oss << endl;
-    insertTab (oss, 1); oss << test.varInitFormula << ";" << endl;
+    string preparedVarInitFormula = prepareVarInitFormula (test.vectorSize, test.varInitFormula, test.variable);
+    insertTab (oss, 1); oss << preparedVarInitFormula << ";" << endl;
     if (VERBOSE) cout << "[VERBOSE] Init formula been inserted successfully!" << endl;
 
     if (test.doManualUnroll == true) {
@@ -329,9 +457,9 @@ void CudaEngine<T>::generateSingleCUDACode (ostringstream &oss, struct _algorith
       for (int i = 1; i < test.loopsDepth[0]; i++) {
         string origFormula;
         if (test.randomAccessType == RandomAccessType::SEQUENTIAL)
-          origFormula = prepareOriginalFormula ((char *) test.formula, numberGenerator.getNextSequential() + 1, (char *) test.variable);
+          origFormula = prepareOriginalFormula (test.vectorSize, (char *) test.formula, numberGenerator.getNextSequential() + 1, (char *) test.variable);
         else if (test.randomAccessType == RandomAccessType::RANDOM)
-          origFormula = prepareOriginalFormula ((char *) test.formula, numberGenerator.getNextRandom() + 1, (char *) test.variable);
+          origFormula = prepareOriginalFormula (test.vectorSize, (char *) test.formula, numberGenerator.getNextRandom() + 1, (char *) test.variable);
         insertTab (oss, 1); oss << origFormula << ";" << endl;
       }
     }  else {
@@ -343,7 +471,7 @@ void CudaEngine<T>::generateSingleCUDACode (ostringstream &oss, struct _algorith
       	insertTab (oss, 1); oss << "#pragma unroll " << test.unrollFactor << endl;
     	}
     	insertTab (oss, 1); oss << "for (int i = 0; i < " << test.loopsDepth[0] << "; i++){" << endl;
-    	string origFormula = prepareOriginalFormula ((char *)test.formula, 0, (char *) test.variable);
+    	string origFormula = prepareOriginalFormula (test.vectorSize, (char *)test.formula, 0, (char *) test.variable);
     	insertTab (oss, 2); oss << origFormula << ";" << endl;
     	insertTab (oss, 1); oss << "}" << endl;
   	}
@@ -370,11 +498,14 @@ void CudaEngine<T>::generateSingleCUDACode (ostringstream &oss, struct _algorith
 
 	oss << endl << endl;
 
-  oss << "void " test.name << "_wrapper (" << test.varType << " *data, " << test.varType << " *rands, int index, int rand_max, int numBlocks, int threadPerBlock) {" << endl;
+  oss << "void " << test.name << "_wrapper (" << test.varType << " *data, " << test.varType << " *rands, int index, int rand_max, int numBlocks, int threadPerBlock) {" << endl;
 
   insertTab (oss, 1); oss << test.name << "<<<numBlocks, threadPerBlock>>> (data, rands, index, rand_max);" << endl;
 
   oss << "}" << endl;
+	oss << endl;
+  oss << "#endif " << endl;
+
   codeDump << oss.str();
   codeDump.close();
 
@@ -438,7 +569,7 @@ string CudaEngine<T>::prepareVarDeclFormulaNonArray (char *varDeclFormula, int d
 }
 
 template <class T>
-string CudaEngine<T>::prepareOriginalFormula (char *formula, int index, char* variable) {
+string CudaEngine<T>::prepareOriginalFormula (int  streamSize, char *formula, int index, char* variable) {
 
 	int pos = -1;
 
@@ -478,7 +609,36 @@ string CudaEngine<T>::prepareOriginalFormula (char *formula, int index, char* va
 	if (VERBOSE)
 		cout << "[VERBOSE] Original Formula been prepared!" << endl;
 
-  return formulaStr;
+	// Now it's time to replace every variable in the formula
+  // with the equivalent with index included
+
+	string variable_string (variable);
+	string returnFormulaStr;
+
+  for (int i = 0; i < streamSize; i++) {
+    string index;
+    if (i == 0) index = "x";
+    else if (i == 1) index = "y";
+    else if (i == 2) index = "z";
+    else if (i == 3) index = "w";
+
+    if (i != 0) returnFormulaStr += "\t\t";
+    //int varIndex = -1;
+    //int prevVarIndex = 0;
+   	//while ((varIndex = formulaStr.find (variable_string, prevVarIndex)) != -1) {
+    //returnFormulaStr += (formulaStr.substr(prevVarIndex, varIndex) + variable_string + "." + index);
+    //prevVarIndex = varIndex + variable_string.length();
+    //}
+
+    returnFormulaStr += replace_str (formulaStr, variable_string, variable_string + "." + index);
+    returnFormulaStr += ";";
+
+    //returnFormulaStr += (formulaStr.substr (prevVarIndex) + ";");
+		if (i != streamSize-1) returnFormulaStr += "\n";
+
+  }
+
+  return returnFormulaStr;
 
 }
 
@@ -488,26 +648,49 @@ string CudaEngine<T>::prepareReturnOpCode (int streamSize, string returnOpCode){
   string finalReturnOpCode = (returnOpCode + " = ");
 
   for (int i = 0; i < streamSize; i++){
-    if (i == 10)
-      finalReturnOpCode += (string("temp.s") + string("A"));
-  	else if (i == 11)
-      finalReturnOpCode += (string("temp.s") + string("B"));
-    else if (i == 12)
-			finalReturnOpCode += (string("temp.s") + string("C"));
-    else if (i == 13)
-      finalReturnOpCode += (string("temp.s") + string("D"));
-    else if (i == 14)
-      finalReturnOpCode += (string("temp.s") + string("E"));
-    else if (i == 15)
-      finalReturnOpCode += (string("temp.s") + string("F"));
-		else
-			finalReturnOpCode += (string("temp.s") + to_string(i));
+    if (i == 0)
+      finalReturnOpCode += (string("temp.") + string("x"));
+    else if (i == 1)
+      finalReturnOpCode += (string("temp.") + string("y"));
+    else if (i == 2)
+      finalReturnOpCode += (string("temp.") + string("z"));
+    else if (i == 3)
+      finalReturnOpCode += (string("temp.") + string("w"));
 
     if (i != streamSize-1)
       finalReturnOpCode += string(" + ");
   }
 
   return finalReturnOpCode;
+
+}
+
+template <class T>
+string CudaEngine<T>::prepareVarInitFormula (int streamSize, string varInitFormula, string variable) {
+
+	string finalVarInitFormula;
+
+  for (int i = 0; i < streamSize; i++) {
+		int varIndex = varInitFormula.find (variable);
+    if (varIndex == -1) {
+      cerr << "Cannot find " << variable << " in " << varInitFormula << endl;
+      return varInitFormula;
+    }
+
+   	string index;
+    if (i == 0) index = "x";
+    else if (i == 1) index = "y";
+    else if (i == 2) index = "z";
+    else if (i == 3) index = "w";
+
+		if (i != 0) finalVarInitFormula += "\t";
+
+		finalVarInitFormula += (variable + "." + index + varInitFormula.substr (varIndex + variable.length()) + ";");
+
+    if (i != streamSize-1) finalVarInitFormula += "\n";
+  }
+
+	return finalVarInitFormula;
 
 }
 
