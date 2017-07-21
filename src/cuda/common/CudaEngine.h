@@ -90,6 +90,8 @@ public:
 
 	string prepareVarInitFormula (int streamSize, string varInitFormula, string variable);
 
+	string prepareLocalMemoryInitialization (int depth, string varType, char **origFormula);
+
   void insertTab (ostringstream &oss, int numTabs);
 
 private:
@@ -159,12 +161,12 @@ void CudaEngine<T>::executionCUDA (ResultDatabase &resultDB,
     }
 
 		// Time to allocate device global data
-		if (!createMemObjects (&mem_data, (int) sizeof (T), numFloatsMax, hostMem_data)) {
+		if (!createCUDAObjects (&mem_data, (int) sizeof (T), numFloatsMax, hostMem_data)) {
       cerr << "Error allocating device memory!" << endl;
       exit(0);
     }
 
-    if (!createMemObjects (&mem_rands, (int) sizeof (T), alg.loopsDepth[0], hostMem_rands)) {
+    if (!createCUDAObjects (&mem_rands, (int) sizeof (T), alg.loopsDepth[0], hostMem_rands)) {
       cerr << "Error allocating device memory!" << endl;
       exit(0);
     }
@@ -236,6 +238,12 @@ void CudaEngine<T>::executionCUDA (ResultDatabase &resultDB,
           													alg.loopsDepth[0] *
           													alg.vectorSize;
 
+        cout << "nums are " << numFloatsMax << " "
+             << meta.flops << " " << alg.loopsDepth[0] << " "
+          	 << alg.vectorSize << " "
+             << numBlocks << " "
+          	 << threadsPerBlock << endl;
+
         double gflops = flopCount / (double)(t * 1.e9);
 
         sprintf (sizeStr, "Size: %07d", numFloatsMax);
@@ -255,6 +263,7 @@ void CudaEngine<T>::executionCUDA (ResultDatabase &resultDB,
     delete hostMem_rands;
     delete verification_data;
 
+    aIdx++;
   }
 }
 
@@ -443,7 +452,8 @@ void CudaEngine<T>::generateSingleCUDACode (ostringstream &oss, struct _algorith
 		if (!test.doLocalMemory) {
       insertTab (oss, 1); oss << "int gid = blockIdx.x * blockDim.x + threadIdx.x;" << endl;
     } else {
-      insertTab (oss, 1); oss << "int gid = blockIdx.x * blockDim.x + threadIdx.x;" << endl;
+      string localMemoryInit = prepareLocalMemoryInitialization (test.loopsDepth[0], test.varType, (char **)&(test.formula));
+      oss << localMemoryInit << endl;
     }
 
     oss << endl;
@@ -692,6 +702,39 @@ string CudaEngine<T>::prepareVarInitFormula (int streamSize, string varInitFormu
 
 	return finalVarInitFormula;
 
+}
+
+template <class T>
+string CudaEngine<T>::prepareLocalMemoryInitialization (int depth, string dataType, char** origFormula) {
+
+	string return_statement;
+
+  return_statement += (string("\t") + string("__shared__ ") + dataType + string(" localRands[") + to_string(depth) + string("];\n"));
+	return_statement += (string("\t") + string("int depth = ") + to_string(depth) + string(";\n\n"));
+	return_statement += (string("\t") + string("int gid = blockIdx.x * blockDim.x + threadIdx.x;\n"));
+  return_statement += (string("\t") + string("int lid = threadIdx.x;\n"));
+  return_statement += (string("\t") + string("int blockSize = blockDim.x;\n"));
+	return_statement += (string("\t") + string("for(int i = lid; i < depth; i += blockSize) {\n"));
+  return_statement += (string("\t\t") + string ("localRands[i] = rands[i];\n"));
+  return_statement += (string("\t") + string("}\n"));
+	return_statement += (string("\t") + string("__syncthreads();\n\n"));
+
+  // replace rands in original formula with localRands, if it does exist
+	int pos = -1;
+  string origFormulaStr = string (*origFormula);
+	origFormulaStr = replace_str (origFormulaStr, "rands", "localRands");
+
+  int length = origFormulaStr.size();
+  char *newOrigFormula = (char *) malloc (50 * sizeof(char));
+  memcpy (newOrigFormula, origFormulaStr.c_str(), length);
+
+  newOrigFormula[length] = '\0';
+  *origFormula = newOrigFormula;
+
+  if (VERBOSE)
+    cout << "rands been replaced with localRands" << endl;
+
+  return return_statement;
 }
 
 #endif // CUDAENGINE_H_

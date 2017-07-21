@@ -45,11 +45,18 @@ struct _meta_algorithm_type {
   vector<int> randomAccessType;
 };
 
+//struct _meta_algorithm_type meta_tests[] = {
+//  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL}},
+//  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL, RandomAccessType::RANDOM}},
+//  {vector<int>(), 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, vector<string>(), 0, 0, 0, 0, 0, 0, vector<map<string, string>>()}
+//};
+
 struct _meta_algorithm_type meta_tests[] = {
-  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({false}), vector<int>({0, 8, 16, 32}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL}},
-  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576, 524288, 262144}), vector<int>({32, 64, 128, 256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 32, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @"}}}, vector<bool>({true}), vector<int>({0}), vector<bool>{false, true}, vector<int>{RandomAccessType::SEQUENTIAL, RandomAccessType::RANDOM}},
+  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576}), vector<int>({256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 128, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @ + rands[!]"}}}, vector<bool>({false}), vector<int>({0, 8, 16}), vector<bool>{false,true}, vector<int>{RandomAccessType::SEQUENTIAL}},
+  {vector<int>({4, 2}), 1, vector<int>({2097152, 1048576}), vector<int>({256, 512}), false, vector<int>(), "temp", vector<string>({string("float")}), 1024, 1024, 2, 128, 256, 2, vector<map<string, string>>{map<string, string>{{"varDeclFormula", "@@$$ temp"}, {"varInitFormula", "temp = data[gid]"}, {"returnFormula", "data[gid]"}, {"formula", "@ = (@@) rands[!] * @ + rands[!]"}}}, vector<bool>({true}), vector<int>({0}), vector<bool>{false,true}, vector<int>{RandomAccessType::SEQUENTIAL, RandomAccessType::RANDOM}},
   {vector<int>(), 0, vector<int>(), vector<int>(), 0, vector<int>(), 0, vector<string>(), 0, 0, 0, 0, 0, 0, vector<map<string, string>>()}
 };
+
 
 vector<map<string, string> > formulas;
 
@@ -189,7 +196,7 @@ void RunBenchmark (cl_device_id id,
 	            				headerFile << localWorkSizeMin << ", ";
  											headerFile << localWorkSizeMax << ", ";
     	        				headerFile << localWorkSizeStride << ", ";
-      	      				headerFile << "1, ";
+      	      				headerFile << "2, ";
         	    				headerFile <<"\"" << varTypes[varTypesNum] << "\", ";
           	    			headerFile << manualUnroll[manualUnrollMode] << ",";
             	  			headerFile << localMemory[localMemoryMode] << ",";
