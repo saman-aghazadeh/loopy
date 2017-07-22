@@ -17,12 +17,12 @@
 
 #define PRIVATE_VECTOR_SIZE 5
 #define VERBOSE false
-#define VERIFICATION true
+#define VERIFICATION false
 #define TEMP_INIT_VALUE 1.0
 
 using namespace std;
 
-int executionMode = ExecutionMode::GENERATION;
+int executionMode = ExecutionMode::CALCULATION;
 int targetDevice = TargetDevice::GPU;
 
 /*

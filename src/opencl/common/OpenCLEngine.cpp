@@ -1,10 +1,10 @@
 #include "OpenCLEngine.h"
 #include "NumberGenerator.h"
 
-#define VERBOSE false
+#define VERBOSE true
 #define PRIVATE_VECTOR_SIZE 5
-#define VERIFICATION true
 #define TEMP_INIT_VALUE 1.0
+#define VERIFICATION false
 
 template class OpenCLEngine<float>;
 
@@ -52,7 +52,8 @@ cl_program OpenCLEngine<T>::createProgram (const char* fileName) {
   } else if (targetDevice == TargetDevice::FPGA) {
 		string binary_file = aocl_utils::getBoardBinaryFile (fileName, this->device);
     program = aocl_utils::createProgramFromBinary (this->context, binary_file.c_str(), &(this->device), 1);
-  }
+	}
+	cout << "Before cl build program!" << endl;
   err = clBuildProgram (program, 0, NULL, opts, NULL, NULL);
   cout << "Error is " << err << endl;
   if (err != 0) {
@@ -582,7 +583,9 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     aIdx += 1;
 
     delete[] hostMem_data;
+    delete[] hostMem2;
     delete[] hostMem_rands;
+    delete[] verification_data;
 	}
 
 }
