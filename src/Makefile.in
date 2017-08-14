@@ -152,7 +152,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = common opencl cuda mpi stability
+DIST_SUBDIRS = common opencl stability
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -305,7 +305,7 @@ top_srcdir = @top_srcdir@
 @BUILD_OPENCL_TRUE@MAYBE_OPENCL = opencl
 @BUILD_STABILITY_TRUE@MAYBE_STABILITY = stability
 @BUILD_MPI_TRUE@MAYBE_MPI = mpi
-SUBDIRS = common $(MAYBE_OPENCL) $(MAYBE_CUDA) $(MAYBE_MPI) $(MAYBE_STABILITY)
+SUBDIRS = common $(MAYBE_OPENCL) $(MAYBE_STABILITY)
 all: all-recursive
 
 .SUFFIXES:

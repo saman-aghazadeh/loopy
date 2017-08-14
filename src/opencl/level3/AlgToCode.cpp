@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <ctime>
 #include <OpenCLEngine.h>
+#include "Algorithm.h"
+#include "AlgorithmFactory.h"
 
 #define PRIVATE_VECTOR_SIZE 5
 #define VERBOSE false
@@ -117,28 +119,62 @@ void RunBenchmark (cl_device_id id,
                    OptionParser &op) {
 
 	srand (time(NULL));
-	OpenCLEngine<float> openCLEngine (ctx, id, ExecutionMode::CALCULATION, TargetDevice::GPU, tests);
+	OpenCLEngine<float> openCLEngine (ctx, id, ExecutionMode::GENERATION, TargetDevice::GPU, tests);
 
-	openCLEngine.validate_benchmark();
-	if (executionMode == ExecutionMode::GENERATION) {
-		cout << "---- Benchmark Representation ----" << endl;
-    openCLEngine.print_benchmark ();
-    cout << "---- ----" << endl;
-    //generateAlgorithms ();
-    openCLEngine.generateCLs ();
-  } else if (executionMode == ExecutionMode::CALCULATION) {
-    openCLEngine.generateCLsMetas ();
-    openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float");
-  } else if (executionMode == ExecutionMode::ALL) {
-    cout << "---- Benchmark Representation ----" << endl;
-    openCLEngine.print_benchmark ();
-    cout << "---- ----" << endl;
-    //generateAlgorithms();
-    openCLEngine.generateCLs ();
-    openCLEngine.generateCLsMetas ();
-   	cout << "Start Execution" << endl;
-    openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float");
-  }
+  bool onlyMeta = true;
+  if (executionMode == ExecutionMode::GENERATION)
+    onlyMeta = false;
+  else if (executionMode == ExecutionMode::CALCULATION)
+    onlyMeta = true;
+  else if (executionMode == ExecutionMode::ALL)
+	  onlyMeta = false;
+
+	AlgorithmFactory algorithmFactory;
+  // Contents here will be experimental.
+  //algorithmFactory.createNewAlgorithm ()
+  //  .targetDeviceIs (AlgorithmTargetDevice::GPU)
+  //  .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+  //  .memAllocationPerWorkItemIs (5)
+  //  .startKernelFunction ()
+  //  .createFor (10, true, 10, "temp = GIn[@] * temp + GIn[!]")
+  //  .createFor (10, false, 20, "temp = GIn[@] * temp")
+  //  .createFor (10, true, 30, "temp = GIn[@] * temp + GIn[!]")
+  //  .createFor (10, false, 40, "temp = GIn[@] * temp")
+  //  .generateFors (onlyMeta)
+  //  .popMetas ()
+  //  .endKernelFunction ()
+  //  .verboseKernel ()
+  //  .writeToFile ("/home/users/saman/shoc/test-new.cl");
+
+	// TODO: What I'm doing here is totally against DSL
+  // practices. Should be changed as soon as possible.
+  int* workGroupSize = new int[2];
+  workGroupSize[0] = 32;
+  workGroupSize[1] = 32;
+  //workGroupSize[2] = 4;
+
+  algorithmFactory.createNewAlgorithm ()
+    .targetDeviceIs (AlgorithmTargetDevice::GPU)
+    .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+    .memAllocationPerWorkItemIs (1024)
+    .workGroupSizeIs (workGroupSize)
+    .memReuseFactorIs (1024)
+    .startKernelFunctionV2 ()
+    //.createFor (64, false, 512, "temp = GIn[@] * temp", 16, false)
+    //.createFor (64, false, 256, "temp = GIn[@] * temp", 16, true)
+    //.createFor (0, false, 128, "temp = GIn[@] * temp", 1, false)
+    //.createFor (0, false, 256, "temp = GIn[@] * temp", 1, false)
+    .createFor (0, false, 1024, "temp += GIn[@] * 1.5f", 1, false)
+		.createFor (1024, false, 1024, "temp += GIn[@] * 1.5f", 1, false)
+    .generateForsV2 (onlyMeta)
+    .popMetasV2 ()
+    .endKernelFunction ()
+    .verbose ()
+    .writeToFile ("/home/users/saman/shoc/gemm-kernel1-T1.cl");
+
+  if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
+		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
+
 }
 
 void addBenchmarkSpecOptions (OptionParser &op) {
@@ -146,6 +182,5 @@ void addBenchmarkSpecOptions (OptionParser &op) {
 }
 
 void cleanup () {
-
 
 }

@@ -10,6 +10,8 @@
 #include "aocl_utils.h"
 #include "../common/ExecutionConfig.h"
 #include "AlgorithmType.h"
+#include "AlgorithmFactory.h"
+
 using namespace std;
 
 struct _cl_info {
@@ -36,12 +38,12 @@ public:
   // on the target device
   bool createMemObjects (cl_command_queue queue,
                          cl_mem *memObjects, int singleElementSize,
-                         const int memDoublesSize, T *data);
+                         const long long memDoublesSize, T *data);
 
   // Refilling the allocated memory on the device side
   bool refillMemObject (cl_command_queue queue,
                         cl_mem *memObject, int singleElementSize,
-                        const int memSize,
+                        const long long memSize,
                         T* data);
 
   // Cleaning up the allocated resources
@@ -75,7 +77,8 @@ public:
                     cl_command_queue queue,
                     ResultDatabase &resultDB,
                     OptionParser &op,
-                    char* precision);
+                    char* precision,
+                    AlgorithmFactory& algorithmFactory);
 
   // Validating correctness of given benchmark meta information
   void validate_benchmark ();
@@ -107,7 +110,8 @@ private:
   // All possible flags while running the CL kernels
   // static const char* opts = "-cl-mad-enable -cl-no-signed-zeros"
   //													"-cl-unsafe-math-optimization -cl-finite-math-only";
-  const char *opts = "-cl-opt-disable";
+  //const char *opts = "-cl-opt-disable";
+	const char *opts = "-cl-opt-disable";
 
   // Path to folder where the generated kernels will reside. Change it effectively
   std::string gpu_built_kernels_folder = "/home/users/saman/shoc/src/opencl/level3/Algs";

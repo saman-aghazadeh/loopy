@@ -10,5 +10,7 @@ libSHOCCommon_a_SOURCES = CTimer.cpp \
 	ProgressBar.cpp \
 	InvalidArgValue.cpp \
 	Matrix2DStatics.cpp \
-	NumberGenerator.cpp
+	NumberGenerator.cpp \
+	Algorithm.cpp \
+	AlgorithmFactory.cpp
 

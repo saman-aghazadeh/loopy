@@ -110,7 +110,8 @@ libSHOCCommon_a_LIBADD =
 am_libSHOCCommon_a_OBJECTS = CTimer.$(OBJEXT) ResultDatabase.$(OBJEXT) \
 	OptionParser.$(OBJEXT) Option.$(OBJEXT) Timer.$(OBJEXT) \
 	ProgressBar.$(OBJEXT) InvalidArgValue.$(OBJEXT) \
-	Matrix2DStatics.$(OBJEXT)
+	Matrix2DStatics.$(OBJEXT) NumberGenerator.$(OBJEXT) \
+	Algorithm.$(OBJEXT) AlgorithmFactory.$(OBJEXT)
 libSHOCCommon_a_OBJECTS = $(am_libSHOCCommon_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -299,7 +300,10 @@ libSHOCCommon_a_SOURCES = CTimer.cpp \
 	Timer.cpp \
 	ProgressBar.cpp \
 	InvalidArgValue.cpp \
-	Matrix2DStatics.cpp
+	Matrix2DStatics.cpp \
+	NumberGenerator.cpp \
+	Algorithm.cpp \
+	AlgorithmFactory.cpp
 
 all: all-am
 
@@ -349,9 +353,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Algorithm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AlgorithmFactory.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CTimer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InvalidArgValue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Matrix2DStatics.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NumberGenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Option.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OptionParser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ProgressBar.Po@am__quote@

@@ -1,10 +1,24 @@
 #include "OpenCLEngine.h"
 #include "NumberGenerator.h"
+#include <sys/time.h>
 
 #define VERBOSE true
 #define PRIVATE_VECTOR_SIZE 5
 #define TEMP_INIT_VALUE 1.0
 #define VERIFICATION false
+#define GENERATE_PTX true
+
+const std::string currentDateTime() {
+  char            fmt[64], buf[64];
+  struct timeval  tv;
+  struct tm       *tm;
+
+  gettimeofday(&tv, NULL);
+  tm = localtime(&tv.tv_sec);
+  strftime(fmt, sizeof fmt, "%Y-%m-%d %H:%M:%S.%%06u", tm);
+  snprintf(buf, sizeof buf, fmt, tv.tv_usec);
+  return buf;
+}
 
 template class OpenCLEngine<float>;
 
@@ -61,7 +75,7 @@ cl_program OpenCLEngine<T>::createProgram (const char* fileName) {
     size_t retsize = 0;
     err = clGetProgramBuildInfo (program, this->device, CL_PROGRAM_BUILD_LOG,
                                 5000*sizeof(char), log, &retsize);
-    CL_CHECK_ERROR (err);
+    //CL_CHECK_ERROR (err);
 
     cout << "Build Error!" << endl;
     cout << "retSize: " << retsize << endl;
@@ -76,10 +90,12 @@ cl_program OpenCLEngine<T>::createProgram (const char* fileName) {
 
 template <class T>
 bool OpenCLEngine<T>::createMemObjects (cl_command_queue queue, cl_mem *memObjects,
-                                     int singleElementSize, const int memSize,
+                                     int singleElementSize, const long long memSize,
                                      T *data) {
 
 	cl_int err;
+
+  cout << "--Create Mem Object: MemSize: " << memSize << endl;
 
   *memObjects = clCreateBuffer (this->context, CL_MEM_READ_WRITE,
                                 memSize * singleElementSize, NULL, &err);
@@ -92,20 +108,19 @@ bool OpenCLEngine<T>::createMemObjects (cl_command_queue queue, cl_mem *memObjec
 
   // Enqueue data buffer
   Event evWriteData ("write-data");
-  err = clEnqueueWriteBuffer (queue, *memObjects, CL_FALSE, 0, memSize * singleElementSize,
+  err = clEnqueueWriteBuffer (queue, *memObjects, CL_TRUE, 0, memSize * singleElementSize,
                               data, 0, NULL, &evWriteData.CLEvent());
   CL_CHECK_ERROR (err);
   err = clWaitForEvents (1, &evWriteData.CLEvent());
   CL_CHECK_ERROR (err);
 
   return true;
-
 }
 
 template <class T>
 bool OpenCLEngine<T>::refillMemObject (cl_command_queue queue,
                       cl_mem* memObject, int singleElementSize,
-                      const int memSize, T *data) {
+                      const long long memSize, T *data) {
 
   cl_int err;
 
@@ -388,186 +403,170 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
                 cl_command_queue queue,
                 ResultDatabase &resultDB,
                 OptionParser &op,
-                char* precision) {
+                char* precision,
+                AlgorithmFactory& algorithmFactory) {
 
 	int verbose = true;
 	int npasses = 5;
 	int err;
   char sizeStr[128];
 
-	T *hostMem_data;
-  T *hostMem2;
-  T *hostMem_rands;
-	T *verification_data;
-  cl_mem mem_data;
-  cl_mem mem_rands;
+	T *hostMem_GIn;
+  T *hostMem_GOut;
+	T *verification_GOut;
+  cl_mem mem_GIn;
+  cl_mem mem_GOut;
 
 	if (verbose) cout << "start execution!" << endl;
 
   int aIdx = 0;
-  while ((tests != 0) && (tests[aIdx].name != 0)) {
-		if (strcmp(tests[aIdx].varType, precision)){
-      aIdx++;
-      continue;
-    }
 
-    struct _algorithm_type alg = tests[aIdx];
-    struct _cl_info meta = cl_metas[aIdx];
+  while (true) {
+    Algorithm* algorithm = algorithmFactory.nextAlgorithm ();
+    if (algorithm == NULL) break;
 
-		if (verbose) cout << "[Retrieved CL Meta] ";
-    if (verbose) cout << "name=" << meta.name << ", kern_loc=" << meta.kernel_location << endl;
+    if (verbose) cout << "current algorithm name for execution is: " << algorithm->getKernelName () << endl;
 
     cl_program program;
     cl_kernel kernel;
 
-    int halfNumFloatsMax = alg.loopsLengths[0];
-    int numFloatsMax = halfNumFloatsMax;
+    long long GInSize = algorithm->getGInSize ();
+    long long GOutSize = algorithm->getGOutSize ();
 
-		if (verbose) cout << "numFloatsMax=" << numFloatsMax << ", depth=" << alg.loopsDepth[0] << endl;
+		hostMem_GIn = new T[GInSize];
+    hostMem_GOut = new T[GOutSize];
+    verification_GOut = new T[GOutSize];
 
-		hostMem_data = new T[numFloatsMax];
-    hostMem2 = new T[numFloatsMax];
-    hostMem_rands = new T[alg.loopsDepth[0]];
-		verification_data = new T[numFloatsMax];
-
-
-    if (verbose) cout << "hostMem_data, hostMem2, and hostMem_rands are created successfully!" << endl;
-
-		// Filling out the hostMem_rands array
-    if (!VERIFICATION) {
-    	for (int length = 0; length < alg.loopsDepth[0]; length++) {
-      	hostMem_rands[length] = (float)rand() / ((float)RAND_MAX/2);
-    	}
-    } else {
-      for (int length = 0; length < alg.loopsDepth[0]; length++) {
-        hostMem_rands[length] = (float) 1.1;
-      }
-    }
-
-    program = createProgram (meta.kernel_location);
+    program = createProgram ((algorithm->getKernelLocation ()).c_str());
     if (program == NULL)
       exit (0);
     if (verbose) std::cout << "Program Created Successfully!" << endl;
 
-    kernel = clCreateKernel (program, alg.name, &err);
+    kernel = clCreateKernel (program, (algorithm->getKernelName ()).c_str(), &err);
     CL_CHECK_ERROR (err);
     if (verbose) cout << "Kernel Created Successfully!" << endl;
 
-		createMemObjects (queue, &mem_data, (int) sizeof (T), numFloatsMax, hostMem_data);
+		if (GENERATE_PTX) {
+      size_t bin_sz;
+      err = clGetProgramInfo (program, CL_PROGRAM_BINARY_SIZES,
+                              sizeof(size_t), &bin_sz, NULL);
+      // Read binary (PTX file) to memory buffer
+      unsigned char* bin = (unsigned char*) malloc (bin_sz);
+      err = clGetProgramInfo (program, CL_PROGRAM_BINARIES,
+                              sizeof(unsigned char *), &bin, NULL);
+
+      FILE* fp = fopen ("binary.ptx", "wb");
+      fwrite (bin, sizeof(char), bin_sz, fp);
+      fclose (fp);
+      free (bin);
+    }
+
+		createMemObjects (queue, &mem_GIn, (int) sizeof (T), GInSize, hostMem_GIn);
     CL_CHECK_ERROR (err);
 
-    createMemObjects (queue, &mem_rands, (int) sizeof (T), alg.loopsDepth[0], hostMem_rands);
+    createMemObjects (queue, &mem_GOut, (int) sizeof (T), GOutSize, hostMem_GOut);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_data);
+    /*
+    err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_GIn);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_rands);
+    err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_GOut);
     CL_CHECK_ERROR (err);
 
-    //int random = rand() % alg.loopsDepth[0];
-    int random = rand() % PRIVATE_VECTOR_SIZE;
-    err = clSetKernelArg (kernel, 2, sizeof (cl_int), (void *)&random);
-    CL_CHECK_ERROR (err);
+    // It's time to fill values M, N, and P in version 2 of generator
+    if (algorithm->getIsV2 ()) {
+      int *M = new int;
+			int *N = new int;
+      int *P = new int;
+      M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
+      err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
+      CL_CHECK_ERROR (err);
 
-    int rand_max = RAND_MAX;
-    err = clSetKernelArg (kernel, 3, sizeof (cl_int), (void *)&rand_max);
-    CL_CHECK_ERROR (err);
+      err = clSetKernelArg (kernel, 3, sizeof (int), (void *)N);
+      CL_CHECK_ERROR (err);
 
-
-    //    for (int halfNumFloats = alg.halfBufSizeMin * 1024;
-    //     halfNumFloats <= alg.halfBufSizeMax * 1024;
-    //     halfNumFloats += alg.halfBufSizeStride * 1024) {
+      err = clSetKernelArg (kernel, 4, sizeof (int), (void *)P);
+      CL_CHECK_ERROR (err);
+    }
+		*/
 
     // Set up input memory for data, first half = second half
-    int numFloats = numFloatsMax;
-    if (!VERIFICATION) {
-    	for (int j = 0; j < numFloatsMax/2; j++) {
-    		hostMem_data[j] = hostMem_data[numFloats - j - 1] = (T)(drand48()*5.0);
-    	}
-    } else {
-      for (int j = 0; j < numFloatsMax; j++) {
-        hostMem_data[j] = 0.4;
-      }
-    }
+    for (int j = 0; j < GInSize; j++)
+      hostMem_GIn[j] = (T)(drand48()*5.0);
 
-		size_t globalWorkSize[1];
-    size_t maxGroupSize;
+    int* wsBegin;
+    while ((wsBegin = algorithm->nextLocalWorkSize ()) != NULL) {
 
-    if (alg.loopCarriedDataDependency == false) {
-    	globalWorkSize[0] = numFloats;
-    	maxGroupSize = 1;
-    	maxGroupSize = getMaxWorkGroupSize (id);
-  	} else if (alg.loopCarriedDataDependency == true) {
-      globalWorkSize[0] = 1;
-      maxGroupSize = 1;
-    }
-
-    for (int wsBegin = alg.localWorkSizeMin; wsBegin <= alg.localWorkSizeMax; wsBegin *= alg.localWorkSizeStride) {
-
-			size_t localWorkSize[1] = {1};
-      if (alg.loopCarriedDataDependency == false)
-      	localWorkSize[0] = wsBegin;
-      else
-        localWorkSize[0] = 1;
       char lwsString[10] = {'\0'};
       for (int pas = 0; pas < npasses; ++pas) {
 
-        refillMemObject (queue, &mem_data, (int) sizeof (T), numFloats, hostMem_data);
-        refillMemObject (queue, &mem_rands, (int) sizeof (T), alg.loopsDepth[0], hostMem_rands);
+        refillMemObject (queue, &mem_GIn, (int) sizeof (T), GInSize, hostMem_GIn);
+        refillMemObject (queue, &mem_GOut, (int) sizeof (T), GOutSize, hostMem_GOut);
 
-        Event evKernel (alg.name);
-        err = clEnqueueNDRangeKernel (queue, kernel, 1, NULL,
-                                      globalWorkSize, localWorkSize,
+        err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_GIn);
+        CL_CHECK_ERROR (err);
+
+        err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_GOut);
+        CL_CHECK_ERROR (err);
+
+        // It's time to fill values M, N, and P in version 2 of generator
+        if (algorithm->getIsV2 ()) {
+          int *M = new int;
+          int *N = new int;
+          int *P = new int;
+          M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
+          err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
+          CL_CHECK_ERROR (err);
+
+          err = clSetKernelArg (kernel, 3, sizeof (int), (void *)N);
+          CL_CHECK_ERROR (err);
+
+          err = clSetKernelArg (kernel, 4, sizeof (int), (void *)P);
+          CL_CHECK_ERROR (err);
+        }
+
+
+        size_t* globalWorkSize = new size_t[algorithm->getWorkDim()];
+        size_t* localMemSize = new size_t[algorithm->getWorkDim()];
+
+        for (int i = 0; i < algorithm->getWorkDim(); i++) {
+          globalWorkSize[i] = (size_t) algorithm->getGlobalWorkSize()[i];
+          localMemSize[i] = (size_t) wsBegin[i];
+        }
+        //size_t localWorkSize[1];
+        //globalWorkSize[0] = algorithm->getGlobalWorkSize ();
+        //localWorkSize[0] = wsBegin;
+        //if (verbose)
+          //cout << "--Executing kernel with global work size " << globalWorkSize[0] << endl
+          //     << "--and local work size " << localWorkSize[0] << endl
+          //     << "--and total number of floating point operations as " << algorithm->getTotalNumFlops ()
+          //     << endl;
+        Event evKernel (algorithm->getKernelName ());
+        cout << "1 " <<currentDateTime () << endl;
+        err = clEnqueueNDRangeKernel (queue, kernel, algorithm->getWorkDim(),
+                                      NULL,
+                                      globalWorkSize,
+                                      localMemSize,
                                       0, NULL, &evKernel.CLEvent());
+        cout << "2 " << currentDateTime () << endl;
         CL_CHECK_ERROR (err);
         err = clWaitForEvents (1, &evKernel.CLEvent());
-        CL_CHECK_ERROR (err);
+        cout << "3 " << currentDateTime () << endl;
+        //cout << "err is " << err << endl;
+        //CL_CHECK_ERROR (err);
 
         evKernel.FillTimingInfo ();
 
-        if (VERIFICATION) {
-          int streamSize = tests[aIdx].vectorSize;
-          for (int i = 0; i < numFloatsMax; i++) {
-            T *temp = new T[streamSize];
-            for (int j = 0; j < streamSize; j++) temp[j] = 0.4;
-            for (int j = 0; j < alg.loopsDepth[0]; j++) {
-              for (int k = 0; k < streamSize; k++)
-						 		temp[k] = hostMem_rands[j] * temp[k];
-            }
-            T temp2 = 0.0;
-            for (int j = 0; j < streamSize; j++) {
-              temp2 += temp[j];
-            }
-            verification_data[i] = temp2;
-          }
-        }
-        //cout << "numFloats=" << numFloats << ", flops=" <<meta.flops
-        //     << ", loopsDepth=" << alg.loopsDepth[0] << ", vectorSize=" << alg.vectorSize << endl;
-        double flopCount = (double) numFloats *
-            												meta.flops *
-            												alg.loopsDepth[0] *
-          													alg.vectorSize;
+        //double TNF = algorithm->getTotalNumFlops ();
+        //double time = evKernel.SubmitEndRuntime ();
+        //cout << "TNF: " << TNF << ", Time: " << time << endl;
+        double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
+				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
+        //sprintf (lwsString, "%d", wsBegin);
+        resultDB.AddResult (string(algorithm->getKernelName ()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
 
-        double gflop = flopCount / (double)(evKernel.SubmitEndRuntime());
-				sprintf (sizeStr, "Size: %07d", numFloats);
-        sprintf (lwsString, "%d", wsBegin);
-        resultDB.AddResult (string(alg.name) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
-
-        // Zero out the host memory
-        for (int j = 0; j < numFloats; j++) {
-          hostMem2[j] = 0.0;
-        }
-
-        // Read the result device memory back to the host
-				err = clEnqueueReadBuffer (queue, mem_data, true, 0,
-                                   numFloats*sizeof(T), hostMem2,
-                                   0, NULL, NULL);
-
-        if (VERIFICATION) {
-          cout << string(alg.name) + string("-lws") + string(lwsString) + string("-") + string(precision)  << "|" << verification_data[0] << ":" << hostMem2[0] << "|" << verification_data[1] << ":" << hostMem2[1] << "|" << verification_data[2] << ":" << hostMem2[2] << endl;
-        }
-         CL_CHECK_ERROR (err);
+        CL_CHECK_ERROR (err);
       }
     }
 
@@ -575,17 +574,14 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     CL_CHECK_ERROR (err);
     err = clReleaseProgram (program);
     CL_CHECK_ERROR (err);
-    err = clReleaseMemObject (mem_data);
+    err = clReleaseMemObject (mem_GIn);
     CL_CHECK_ERROR (err);
-    err = clReleaseMemObject (mem_rands);
+    err = clReleaseMemObject (mem_GOut);
     CL_CHECK_ERROR (err);
 
-    aIdx += 1;
-
-    delete[] hostMem_data;
-    delete[] hostMem2;
-    delete[] hostMem_rands;
-    delete[] verification_data;
+    delete[] hostMem_GIn;
+    delete[] hostMem_GOut;
+    delete[] verification_GOut;
 	}
 
 }
