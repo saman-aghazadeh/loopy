@@ -56,6 +56,9 @@ public:
   void setUseLocalMem (bool useLocalMem);
   bool getUseLocalMem ();
 
+  void setFops (int fops);
+  int getFops ();
+
 private:
 	int numOfInstructions;
   bool dependency;
@@ -63,6 +66,7 @@ private:
 	string formula;
   int vectorSize;
 	bool useLocalMem;
+  int fops;
 };
 
 class Algorithm {
@@ -103,6 +107,9 @@ public:
   // can reflect that behaviour.
 	Algorithm& memReuseFactorIs (int memoryReuseFactor);
 
+	// Set the kernel name
+  Algorithm& NameIs (string kernelName);
+
 	// Start definition of the kernel function headerB
   Algorithm& startKernelFunction ();
 
@@ -110,13 +117,20 @@ public:
   // size of all involved dimensions.
 	Algorithm& startKernelFunctionV2 ();
 
+  // Version 3 of starting a kernel.
+	Algorithm& startKernelFunctionV3 ();
+
+  // Version Simple 1 of starting a kernel.
+	Algorithm& startKernelFunctionSimpleV1 ();
+
   // this will terminate the kernel function initiation
 	Algorithm& endKernelFunction ();
 
   // It just basically creates a for loop, the type of
   // dependency realizes the unrollment of loop into parallel version or not.
 	Algorithm& createFor (int numberOfInstructions, bool dependency, int loopLength,
-                        string formula, int vectorSize, bool useLocalMem);
+                        string formula, int vectorSize, bool useLocalMem,
+                        int fops);
 
   // This will be called after sequential calls into createFor.
   // This will generata the body of the kernel.
@@ -161,6 +175,20 @@ public:
                                   vector<vector<string> >& indexingFormulas,
                                   vector<vector<string> >& indexingFormulasPrev);
 
+  // This is the first simple generation of kernel generator. Basically it's
+  // going to generate the simplest version, which omits the
+  // involvement of the memory access. This tries to rule out
+  // memory effect.
+	Algorithm& generateForsSimpleV1 (bool onlyMeta);
+
+	// Generates the body of a single for loop for the simple
+  // version. This function will be called recursively,until
+  // it finishes.
+	Algorithm& generateSingleForSimpleV1 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
   // Writes the created kernel into a file
   Algorithm& writeToFile (string fileName);
 
@@ -173,9 +201,17 @@ public:
   // final performance.
   Algorithm& popMetas ();
 
-  // generate all meta information of the algorithm, for them
+  // generate all meta information of the algorithm, for the
   // second version of the algorithm.
   Algorithm& popMetasV2 ();
+
+  // generate all meta information of the algorithm, for the
+  // third version of the algorithm.
+	Algorithm& popMetasV3 ();
+
+  // generate all meta information of the algorithm, for the
+  // third version of the algorithm.
+  Algorithm& popMetasSimpleV1 ();
 
   long long getGInSize ();
   long long getGOutSize ();
@@ -218,6 +254,7 @@ private:
   int P;
   string kernelLocation;
 	bool isV2;
+
 
   // These are information about the size of GIn and GOut
   // that should be allocated on the device

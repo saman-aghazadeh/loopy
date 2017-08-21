@@ -95,7 +95,6 @@ bool OpenCLEngine<T>::createMemObjects (cl_command_queue queue, cl_mem *memObjec
 
 	cl_int err;
 
-  cout << "--Create Mem Object: MemSize: " << memSize << endl;
 
   *memObjects = clCreateBuffer (this->context, CL_MEM_READ_WRITE,
                                 memSize * singleElementSize, NULL, &err);
@@ -543,16 +542,13 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
           //     << "--and total number of floating point operations as " << algorithm->getTotalNumFlops ()
           //     << endl;
         Event evKernel (algorithm->getKernelName ());
-        cout << "1 " <<currentDateTime () << endl;
         err = clEnqueueNDRangeKernel (queue, kernel, algorithm->getWorkDim(),
                                       NULL,
                                       globalWorkSize,
                                       localMemSize,
                                       0, NULL, &evKernel.CLEvent());
-        cout << "2 " << currentDateTime () << endl;
         CL_CHECK_ERROR (err);
         err = clWaitForEvents (1, &evKernel.CLEvent());
-        cout << "3 " << currentDateTime () << endl;
         //cout << "err is " << err << endl;
         //CL_CHECK_ERROR (err);
 

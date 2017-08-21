@@ -24,7 +24,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::ALL;
 int targetDevice = TargetDevice::GPU;
 
 /*
@@ -148,29 +148,79 @@ void RunBenchmark (cl_device_id id,
 
 	// TODO: What I'm doing here is totally against DSL
   // practices. Should be changed as soon as possible.
-  int* workGroupSize = new int[2];
-  workGroupSize[0] = 32;
-  workGroupSize[1] = 32;
+  //  int* workGroupSize = new int[2];
+  //workGroupSize[0] = 32;
+  //workGroupSize[1] = 32;
   //workGroupSize[2] = 4;
 
-  algorithmFactory.createNewAlgorithm ()
-    .targetDeviceIs (AlgorithmTargetDevice::GPU)
-    .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-    .memAllocationPerWorkItemIs (1024)
-    .workGroupSizeIs (workGroupSize)
-    .memReuseFactorIs (1024)
-    .startKernelFunctionV2 ()
+  //algorithmFactory.createNewAlgorithm ()
+  //.targetDeviceIs (AlgorithmTargetDevice::GPU)
+  //.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+  //.memAllocationPerWorkItemIs (4)
+  //.workGroupSizeIs (workGroupSize)
+  //.memReuseFactorIs (1024)
+  //.startKernelFunctionSimpleV1 ()
     //.createFor (64, false, 512, "temp = GIn[@] * temp", 16, false)
     //.createFor (64, false, 256, "temp = GIn[@] * temp", 16, true)
     //.createFor (0, false, 128, "temp = GIn[@] * temp", 1, false)
-    //.createFor (0, false, 256, "temp = GIn[@] * temp", 1, false)
-    .createFor (0, false, 1024, "temp += GIn[@] * 1.5f", 1, false)
-		.createFor (1024, false, 1024, "temp += GIn[@] * 1.5f", 1, false)
-    .generateForsV2 (onlyMeta)
-    .popMetasV2 ()
-    .endKernelFunction ()
-    .verbose ()
-    .writeToFile ("/home/users/saman/shoc/gemm-kernel1-T1.cl");
+    //.createFor (0, false, 1024, "temp = GIn[@] * temp", 1, false, -1)
+    //.createFor (1024, false, 1024, "temp += GIn[@] * 1.5f", 1, false, 2)
+		//.createFor (1024, false, 1024, "temp += GIn[@] * 1.5f", 1, false)
+    //.generateForsSimpleV1 (onlyMeta)
+    //.popMetasSimpleV1 ()
+    //.endKernelFunction ()
+    //.verbose ()
+    //.writeToFile ("/home/users/saman/shoc/kernel1.cl");
+
+  //algorithmFactory.createNewAlgorithm ()
+  //  .targetDeviceIs (AlgorithmTargetDevice::GPU)
+  //  .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+  //  .memAllocationPerWorkItemIs (4)
+  //  .workGroupSizeIs ()
+  //  .memReuseFactorIs (1024)
+  //  .startKernelFunctionSimpleV1 ()
+  //  .createFor (0, false, 1024, "temp = GIn[@] * temp", 1, false, -1)
+
+  int kernelCounter = 1;
+  // This part we autho generate multiple kernels, each one takes care of
+  // loop's depth of 1.
+  // Setting work grup size as 64, 128, 256, 512, 1025
+	for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
+    // Setting Memory Allocation per work item as 2, 4, 8, 16, 32, 64
+		for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 32;
+         memAllocationPerWorkItem *= 2) {
+			// There is a case here, if the total amount of local memory goes
+      // beyond 4 MB, then we need to skip this test. It's not gonna work
+      // out, since GPU cannot hand over more local memory than that.
+      // currently we only consider float values
+      if (workGroupSize*memAllocationPerWorkItem > 1024)
+        continue;
+
+      // Setting the loop Length For the only loop we have in the kernel
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+        int* WGS = new int[1];
+        WGS[0] = workGroupSize;
+        algorithmFactory.createNewAlgorithm ()
+          .targetDeviceIs (AlgorithmTargetDevice::GPU)
+          .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          .NameIs (string("WGS") + to_string(workGroupSize)
+                   +string("MAPI") + to_string(memAllocationPerWorkItem)
+                   +string("LL") + to_string(loopLength))
+          .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+					.workGroupSizeIs (WGS)
+          .memReuseFactorIs (1024)
+          .startKernelFunctionSimpleV1 ()
+          .createFor (1024, false, loopLength, "temp += GIn[@] * 1.5f", 1, false, 2)
+					.generateForsSimpleV1 (onlyMeta)
+					.popMetasSimpleV1 ()
+          .endKernelFunction ()
+          .verbose ()
+          .writeToFile (string("/home/users/saman/shoc/kernel") + to_string(kernelCounter) + string(".cl"));
+        kernelCounter++;
+      }
+    }
+  }
 
   if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
 		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
