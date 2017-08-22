@@ -1454,22 +1454,23 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     }
 
     if (numOfInstructions != 0) {
-			oss << getIndent () << "__local float GInL[" << workGroupSize * memAllocationPerWorkItem << "];" << endl;
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+				oss << getIndent () << "__local float GInL[" << workGroupSize * memAllocationPerWorkItem << "];" << endl;
 
-			oss << getIndent () << "for (int i = 0; i < " << memAllocationPerWorkItem << "; i++) {" << endl;
-			this->currentIndentation++;
-			oss << getIndent () << "GInL["
-        	<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex)
-        	<< "+" << "i*" << workGroupSize << "]"
-        	<< " = " << "GIn["
-      		<< "baseIndex" << loopIndex+1 << "+i*" << workGroupSize
-        	<< "];" << endl;
-   		this->currentIndentation--;
-    	oss << getIndent () << "}" << endl << endl;
+				oss << getIndent () << "for (int i = 0; i < " << memAllocationPerWorkItem << "; i++) {" << endl;
+				this->currentIndentation++;
+				oss << getIndent () << "GInL["
+        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex)
+        		<< "+" << "i*" << workGroupSize << "]"
+        		<< " = " << "GIn["
+      			<< "baseIndex" << loopIndex+1 << "+i*" << workGroupSize
+        		<< "];" << endl;
+   			this->currentIndentation--;
+    		oss << getIndent () << "}" << endl << endl;
 
-
-			oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
-        	<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
+				oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
+        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
+      }
     }
     CircularNumberGenerator CNG (memAllocationPerWorkItem);
     for (int i = 0; i < numOfInstructions; i++) {
@@ -1480,7 +1481,9 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
 
       replacement << "baseIndex" << loopIndex+1 << " + " << CNG.next() << "*" << workGroupSize;
       replace (formulaRepl, "@", replacement.str());
-      replace (formulaRepl, "GIn", "GInL");
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+      	replace (formulaRepl, "GIn", "GInL");
+      }
       oss << getIndent () << formulaRepl << ";" << endl;
     }
 
@@ -1540,8 +1543,37 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     baseIndex2 << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex);
     baseIndexPrev2 << indexingFormulasPrev.at(numberOfNestedForLoops-1).at(loopIndex);
 
-    oss << getIndent () << "int baseIndex" << loopIndex+1 << " = " << baseIndex2.str() << ";" << endl;
-    oss << getIndent () << "int baseIndexPrev" << loopIndex+1 << " = " << baseIndexPrev2.str() << ";" << endl;
+    oss << getIndent () << "long baseIndex" << loopIndex+1 << " = " << baseIndex2.str() << ";" << endl;
+    oss << getIndent () << "long baseIndexPrev" << loopIndex+1 << " = " << baseIndexPrev2.str() << ";" << endl;
+
+    // This part will participate in copying data from global memory into the local
+    // memory. We try to consider the memory coalescing access to reduce the global
+		// memory access as much as possible.
+		// First we define the local memory here
+    int workGroupSize = 1;
+    for (int i = 0; i < numberOfNestedForLoops; i++) {
+      workGroupSize *= localWorkSize[i];
+    }
+
+    if (numOfInstructions != 0) {
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+				oss << getIndent () << "__local float GInL[" << workGroupSize * memAllocationPerWorkItem << "];" << endl;
+
+				oss << getIndent () << "for (int i = 0; i < " << memAllocationPerWorkItem << "; i++) {" << endl;
+				this->currentIndentation++;
+				oss << getIndent () << "GInL["
+        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex)
+        		<< "+" << "i*" << workGroupSize << "]"
+        		<< " = " << "GIn["
+      			<< "baseIndex" << loopIndex+1 << "+i*" << workGroupSize
+        		<< "];" << endl;
+   			this->currentIndentation--;
+    		oss << getIndent () << "}" << endl << endl;
+
+				oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
+        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
+      }
+    }
 
 		CircularNumberGenerator CNG (memAllocationPerWorkItem);
     for (int i = 0; i < numOfInstructions; i++) {
@@ -1558,6 +1590,9 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
       replacementIdx2 << "baseIndexPrev" << loopIndex+1 << " + " << cngNext << "*" << totalGroupSize;
 			replace (formulaRepl, "@", replacementIdx1.str());
       replace (formulaRepl, "!", replacementIdx2.str());
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+      	replace (formulaRepl, "GIn", "GInL");
+      }
       oss << getIndent () << formulaRepl << ";" << endl;
     }
 
