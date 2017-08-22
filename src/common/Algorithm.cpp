@@ -255,6 +255,8 @@ Algorithm& Algorithm::startKernelFunctionSimpleV1 () {
     
   }
 
+  return *this;
+
 }
 
 Algorithm& Algorithm::endKernelFunction () {
