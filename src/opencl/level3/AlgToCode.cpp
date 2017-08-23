@@ -182,6 +182,7 @@ void RunBenchmark (cl_device_id id,
   //  .createFor (0, false, 1024, "temp = GIn[@] * temp", 1, false, -1)
 
   int kernelCounter = 1;
+  bool localMemory = false;
   // This part we autho generate multiple kernels, each one takes care of
   // loop's depth of 1.
   // Setting work grup size as 64, 128, 256, 512, 1025
@@ -194,7 +195,11 @@ void RunBenchmark (cl_device_id id,
       // beyond 4 MB, then we need to skip this test. It's not gonna work
       // out, since GPU cannot hand over more local memory than that.
       // currently we only consider float values
-      if (workGroupSize*memAllocationPerWorkItem > 1024)
+
+      if (workGroupSize*memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize*memAllocationPerWorkItem > 4096)
         continue;
 
       // Setting the loop Length For the only loop we have in the kernel
@@ -211,12 +216,16 @@ void RunBenchmark (cl_device_id id,
 					.workGroupSizeIs (WGS)
           .memReuseFactorIs (1024)
           .startKernelFunctionSimpleV1 ()
-          .createFor (1024, false, loopLength, "temp += GIn[@] * 1.5f", 1, false, 2)
+          .createFor (1024, false, loopLength, "temp += GIn[@] * 1.5f", 1,true, 2)
 					.generateForsSimpleV1 (onlyMeta)
 					.popMetasSimpleV1 ()
           .endKernelFunction ()
           .verbose ()
-          .writeToFile (string("/home/users/saman/shoc/kernel") + to_string(kernelCounter) + string(".cl"));
+          .writeToFile (string("/home/users/saman/shoc/kernel")
+                        + string("WGS") + to_string(workGroupSize)
+                        + string("MAPI") + to_string(memAllocationPerWorkItem)
+                        + string("LL") + to_string(loopLength)
+                        + string(".cl"));
         kernelCounter++;
       }
     }
