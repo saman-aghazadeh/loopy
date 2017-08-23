@@ -2084,6 +2084,14 @@ bool Algorithm::getIsV2 () {
   return isV2;
 }
 
+int Algorithm::getAlgorithmTargetDevice () {
+  return this->algorithmTargetDevice;
+}
+
+int Algorithm::getAlgorithmTargetLanguage () {
+  return this->algorithmTargetLanguage;
+}
+
 Algorithm& Algorithm::verbose () {
 
   cout << "------- Algorithm Specification -------" << endl;

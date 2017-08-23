@@ -436,7 +436,14 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     hostMem_GOut = new T[GOutSize];
     verification_GOut = new T[GOutSize];
 
-    program = createProgram ((algorithm->getKernelLocation ()).c_str());
+		int targetDevice = algorithm->getAlgorithmTargetDevice (); 
+		if (targetDevice == AlgorithmTargetDevice::GPU) {
+    	program = createProgram ((algorithm->getKernelLocation ()).c_str());
+    } else if (targetDevice == AlgorithmTargetDevice::FPGA) {
+      string kernelLoc = algorithm->getKernelLocation ();
+      program = createProgram (kernelLoc.substr(0, kernelLoc.size()-3).c_str());
+    }
+
     if (program == NULL)
       exit (0);
     if (verbose) std::cout << "Program Created Successfully!" << endl;

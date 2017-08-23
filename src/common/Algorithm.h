@@ -226,6 +226,9 @@ public:
   int getP ();
 	bool getIsV2 ();
 
+	int getAlgorithmTargetDevice ();
+  int getAlgorithmTargetLanguage ();
+
   Algorithm& verbose();
 private:
 
