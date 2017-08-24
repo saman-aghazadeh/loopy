@@ -119,7 +119,7 @@ void RunBenchmark (cl_device_id id,
                    OptionParser &op) {
 
 	srand (time(NULL));
-	OpenCLEngine<float> openCLEngine (ctx, id, ExecutionMode::GENERATION, TargetDevice::GPU, tests);
+	OpenCLEngine<float> openCLEngine (ctx, id, executionMode, targetDevice, tests);
 
   bool onlyMeta = true;
   if (executionMode == ExecutionMode::GENERATION)
@@ -186,6 +186,7 @@ void RunBenchmark (cl_device_id id,
   // This part we autho generate multiple kernels, each one takes care of
   // loop's depth of 1.
   // Setting work grup size as 64, 128, 256, 512, 1025
+
 	for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     // Setting Memory Allocation per work item as 2, 4, 8, 16, 32, 64
 		for (int memAllocationPerWorkItem = 2;
@@ -205,7 +206,10 @@ void RunBenchmark (cl_device_id id,
       // Setting the loop Length For the only loop we have in the kernel
       for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
         int* WGS = new int[1];
-        WGS[0] = workGroupSize;
+        int *vWGS = new int[1];
+        WGS[0] = 1;
+				vWGS[0] = workGroupSize;
+
         algorithmFactory.createNewAlgorithm ()
           .targetDeviceIs (AlgorithmTargetDevice::GPU)
           .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
@@ -214,9 +218,11 @@ void RunBenchmark (cl_device_id id,
                    +string("LL") + to_string(loopLength))
           .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
 					.workGroupSizeIs (WGS)
+          .virtualWorkGroupSizeIs(vWGS)
           .memReuseFactorIs (1024)
           .startKernelFunctionSimpleV1 ()
-          .createFor (1024, false, loopLength, "temp += GIn[@] * 1.5f", 1,true, 2)
+          //.createFor (0, true, loopLength, "temp += GIn[@] * 1.5f", 1, false, 2)
+          .createFor (128, true, loopLength, "temp += GIn[@] * 1.5f", 1,true, 2)
 					.generateForsSimpleV1 (onlyMeta)
 					.popMetasSimpleV1 ()
           .endKernelFunction ()
@@ -231,6 +237,20 @@ void RunBenchmark (cl_device_id id,
     }
   }
 
+	/*
+  for (int workGroupSize = 16; workGroupSize <= 32; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 32;
+         memAllocationPerWorkItem *=2) {
+      if (workGroupSize*memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+      if (workGroupSize*memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength = 256; loopLength)
+    }
+  }
+	*/
   if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
 		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
 

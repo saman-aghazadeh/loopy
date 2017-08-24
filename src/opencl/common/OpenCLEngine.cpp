@@ -473,7 +473,6 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     createMemObjects (queue, &mem_GOut, (int) sizeof (T), GOutSize, hostMem_GOut);
     CL_CHECK_ERROR (err);
 
-    /*
     err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_GIn);
     CL_CHECK_ERROR (err);
 
@@ -495,7 +494,8 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
       err = clSetKernelArg (kernel, 4, sizeof (int), (void *)P);
       CL_CHECK_ERROR (err);
     }
-		*/
+
+    cout << "Hello" << endl;
 
     // Set up input memory for data, first half = second half
     for (int j = 0; j < GInSize; j++)
@@ -550,7 +550,7 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
           //     << endl;
         Event evKernel (algorithm->getKernelName ());
         err = clEnqueueNDRangeKernel (queue, kernel, algorithm->getWorkDim(),
-                                      NULL,
+	                                    NULL,
                                       globalWorkSize,
                                       localMemSize,
                                       0, NULL, &evKernel.CLEvent());

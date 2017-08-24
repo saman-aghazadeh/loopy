@@ -96,6 +96,9 @@ public:
   // Set the work group size for this algorithm
   Algorithm& workGroupSizeIs (int* workGroupSize);
 
+	// Set the virtual work group size for this algorithm
+  Algorithm& virtualWorkGroupSizeIs (int* virtualWorkGroupSize);
+
   // It sets the general allocation share of memory for each
   // single work item,
 	Algorithm& memAllocationPerWorkItemIs (int memAllocationPerWorkItem);
@@ -218,6 +221,7 @@ public:
 	string getKernelLocation ();
 	int* nextLocalWorkSize ();
   int* getGlobalWorkSize ();
+  int* getVirtualLocalWorkSize ();
 	long long getTotalNumFlops ();
 	string getKernelName ();
 	int getWorkDim ();
@@ -249,6 +253,7 @@ private:
   // Variables below only belong to the OpenCL version of the code
   int* globalWorkSize;
   int* localWorkSize;
+  int* virtualLocalWorkSize;
   int currentLocalWorkSizeIndex;
   int workDim;
   int vectorSize;

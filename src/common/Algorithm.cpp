@@ -191,6 +191,12 @@ Algorithm& Algorithm::workGroupSizeIs (int* workGroupSize) {
   return *this;
 }
 
+Algorithm& Algorithm::virtualWorkGroupSizeIs (int* virtualWorkGroupSize) {
+  this->virtualLocalWorkSize = virtualWorkGroupSize;
+
+  return *this;
+}
+
 Algorithm& Algorithm::memReuseFactorIs (int memoryReuseFactor) {
   this->memoryReuseFactor = memoryReuseFactor;
 
@@ -555,55 +561,89 @@ Algorithm& Algorithm::generateForsSimpleV1 (bool onlyMeta) {
     int counter = 0;
     for (int i = numberOfNestedForLoops-1; i >= 0; i--) {
       WorkItemSet workItemSet = forLoops.at(i);
-      if (workItemSet.getDependency() == false) {
-        if (numberOfNestedForLoops == 3){
-					if (i == 0) {
+      if (numberOfNestedForLoops == 3){
+				if (i == 0) {
+          if (workItemSet.getDependency() == false) {
           	oss << getIndent () << "const int ZGL = get_global_id(" << counter << ");" << endl;
           	oss << getIndent () << "const int ZGRid = get_group_id(" << counter << ");" << endl;
 						oss << getIndent () << "const int ZGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int ZLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int ZLid = get_local_id(" << counter << ");" << endl;
-          	counter++;
-        	} else if (i == 1) {
+          	oss << getIndent () << "const int ZLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int ZLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItems = workItemSet.getNumOfHomogenousWorkItems();
+            oss << getIndent () << "const int ZGRnum = " << numOfHomogenousWorkItems << "/M;" << endl;
+            oss << getIndent () << "const int ZLSize = M;" << endl; 
+          }
+          counter++;
+        } else if (i == 1) {
+          if (workItemSet.getDependency() == false) {
           	oss << getIndent () << "const int YGL = get_global_id(" << counter << ");" << endl;
           	oss << getIndent () << "const int YGRid = get_group_id(" << counter << ");" << endl;
           	oss << getIndent () << "const int YGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int YLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int ZLid = get_local_id(" << counter << ");" << endl;
-         		counter++;
-        	} else if (i == 2) {
+          	oss << getIndent () << "const int YLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int YLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItems = workItemSet.getNumOfHomogenousWorkItems();
+            oss << getIndent () << "const int YGRnum = " << numOfHomogenousWorkItems << "/N;" << endl;
+            oss << getIndent () << "const int YLSize = N;" << endl;
+          }
+         	counter++;
+        } else if (i == 2) {
+          if (workItemSet.getDependency() == false) {
           	oss << getIndent () << "const int XGL = get_global_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
-            counter++;
-        	}
-        } else if (numberOfNestedForLoops == 2) {
-          if (i == 0) {
-            oss << getIndent () << "const int YGL = get_global_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int YGRid = get_group_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int YGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int YLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int YLid = get_local_id(" << counter << ");" << endl;
-            counter++;
-          } else if (i == 1) {
-            oss << getIndent () << "const int XGL = get_global_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
-            counter++;
+          	oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItems = workItemSet.getNumOfHomogenousWorkItems();
+            oss << getIndent () << "const int XGRnum = " << numOfHomogenousWorkItems << "/P;" << endl;
+            oss << getIndent () << "const int XLSize = N;" << endl;
           }
-        } else if (numberOfNestedForLoops == 1) {
-          if (i == 0) {
-            oss << getIndent () << "const int XGL = get_global_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
-            oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
-            oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
-            counter++;
+          counter++;
+        }
+      } else if (numberOfNestedForLoops == 2) {
+        if (i == 0) {
+          if (workItemSet.getDependency() == false) {
+          	oss << getIndent () << "const int YGL = get_global_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int YGRid = get_group_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int YGRnum = get_num_groups(" << counter << ");" << endl;
+          	oss << getIndent () << "const int YLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int YLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItems = workItemSet.getNumOfHomogenousWorkItems();
+            oss << getIndent () << "const int YGRnum = " << numOfHomogenousWorkItems << "/N;" << endl;
+            oss << getIndent () << "const int YLSize = N;" << endl;
           }
+          counter++;
+        } else if (i == 1) {
+          if (workItemSet.getDependency() == false) {
+          	oss << getIndent () << "const int XGL = get_global_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItem = workItemSet.getNumOfHomogenousWorkItems();
+						oss << getIndent () << "const int XGRnum = " << numOfHomogenousWorkItem << "/P;" << endl;
+            oss << getIndent () << "const int XLSize = P;" << endl;
+          }
+          counter++;
+        }
+      } else if (numberOfNestedForLoops == 1) {
+        if (i == 0) {
+          if (workItemSet.getDependency() == false) {
+          	oss << getIndent () << "const int XGL = get_global_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XGRid = get_group_id(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XGRnum = get_num_groups(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLSize = get_local_size(" << counter << ");" << endl;
+          	oss << getIndent () << "const int XLid = get_local_id(" << counter << ");" << endl;
+          } else if (workItemSet.getDependency() == true) {
+            int numOfHomogenousWorkItem = workItemSet.getNumOfHomogenousWorkItems();
+            oss << getIndent () << "const int XGRnum = " << numOfHomogenousWorkItem << "/P;" << endl;
+            oss << getIndent () << "const int XLSize = P;" << endl;
+          }
+          counter++;
         }
       }
     }
@@ -647,7 +687,8 @@ Algorithm& Algorithm::generateForsSimpleV1 (bool onlyMeta) {
 
     stringstream memAllPerWIPrev;
     memAllPerWIPrev << memAllocationPerWorkItem;
-    indexingFormulasPrev.at(0).at(0) = "(XRGid*XLSize+XLid)*(XLSize*YLSize)*" + memAllPerWIPrev.str() + "-1)";
+    indexingFormulasPrev.at(0).at(0) = "(XGRid*XLSize*" + memAllPerWIPrev.str() + "-1)";
+    //indexingFormulasPrev.at(0).at(0) = "(XRGid*XLSize+XLid)*(XLSize*YLSize)*" + memAllPerWIPrev.str() + "-1)";
     indexingFormulasPrev.at(0).at(1) = "";
 		indexingFormulasPrev.at(0).at(2) = "";
 
@@ -1527,15 +1568,37 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     oss << endl;
 
     oss << getIndent () << "// Start of a new level of for loop" << endl;
-    if (loopIndex == 0) {
+
+    // This part will participate in copying data from global memory into the local
+    // memory. We try to consider the memory coalescing access to reduce the global
+		// memory access as much as possible.
+		// First we define the local memory here
+    int workGroupSize = 1;
+    for (int i = 0; i < numberOfNestedForLoops; i++) {
+			workGroupSize *= virtualLocalWorkSize[i];
+      //workGroupSize *= localWorkSize[i];
+    }
+    if (numOfInstructions != 0) {
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+				oss << getIndent () << "__local float GInL[" << workGroupSize * memAllocationPerWorkItem << "];" << endl;
+      }
+    }
+
+    if ((numberOfNestedForLoops-loopIndex-1) == 2) {
       oss << getIndent () << "for (int Z = 0; Z < " << numOfHomogenousWorkItems << "; Z++){" << endl;
       currentIndentation++;
-    } else if (loopIndex == 1) {
+      oss << getIndent () << "const int ZGRid = Z/M;" << endl;
+      oss << getIndent () << "const int ZLid = Z%M;" << endl;
+    } else if ((numberOfNestedForLoops-loopIndex-1) == 1) {
       oss << getIndent () << "for (int Y = 0; Y < " << numOfHomogenousWorkItems << "; Y++){" << endl;
       currentIndentation++;
-    } else if (loopIndex == 2) {
+      oss << getIndent () << "const int YGRid = Y/N;" << endl;
+      oss << getIndent () << "const int YLid = Y%N;" << endl;
+    } else if ((numberOfNestedForLoops-loopIndex-1) == 0) {
       oss << getIndent () << "for (int X = 0; X < " << numOfHomogenousWorkItems << "; X++){" << endl;
       currentIndentation++;
+      oss << getIndent () << "const int XGRid = X/P;" << endl;
+      oss << getIndent () << "const int XLid = X%P;" << endl;
     }
 
     stringstream baseIndex2;
@@ -1546,30 +1609,24 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     oss << getIndent () << "long baseIndex" << loopIndex+1 << " = " << baseIndex2.str() << ";" << endl;
     oss << getIndent () << "long baseIndexPrev" << loopIndex+1 << " = " << baseIndexPrev2.str() << ";" << endl;
 
-    // This part will participate in copying data from global memory into the local
-    // memory. We try to consider the memory coalescing access to reduce the global
-		// memory access as much as possible.
-		// First we define the local memory here
-    int workGroupSize = 1;
-    for (int i = 0; i < numberOfNestedForLoops; i++) {
-      workGroupSize *= localWorkSize[i];
+    if (numOfInstructions != 0) {
+      if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
+        oss << getIndent () << "for (int i = 0; i < " << memAllocationPerWorkItem << "; i++) {" << endl;
+        this->currentIndentation++;
+        oss << getIndent () << "GInL["
+            << indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex)
+            << "+" << "i*" << workGroupSize << "]"
+            << " = " << "GIn["
+            << "baseIndex" << loopIndex+1 << "+i*" << workGroupSize
+            << "];" << endl;
+        this->currentIndentation--;
+        oss << getIndent () << "}" << endl << endl;
+
+      }
     }
 
     if (numOfInstructions != 0) {
       if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
-				oss << getIndent () << "__local float GInL[" << workGroupSize * memAllocationPerWorkItem << "];" << endl;
-
-				oss << getIndent () << "for (int i = 0; i < " << memAllocationPerWorkItem << "; i++) {" << endl;
-				this->currentIndentation++;
-				oss << getIndent () << "GInL["
-        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex)
-        		<< "+" << "i*" << workGroupSize << "]"
-        		<< " = " << "GIn["
-      			<< "baseIndex" << loopIndex+1 << "+i*" << workGroupSize
-        		<< "];" << endl;
-   			this->currentIndentation--;
-    		oss << getIndent () << "}" << endl << endl;
-
 				oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
         		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
       }
@@ -1963,11 +2020,17 @@ Algorithm& Algorithm::popMetasSimpleV1 () {
       workDim++;
 	}
 
+  if (workDim == 0) workDim = 1;
+
   int numNonDependentIters = 0;
   for (int i = 0; i < numberOfNestedForLoops; i++) {
     if (forLoops.at(i).getDependency() == false)
       numNonDependentIters++;
   }
+
+  if (numNonDependentIters == 0)
+    numNonDependentIters = 1;
+
 	globalWorkSize = new int[numNonDependentIters];
   int counter = 0;
 	for (int i = 0; i < numberOfNestedForLoops; i++) {
@@ -1977,24 +2040,43 @@ Algorithm& Algorithm::popMetasSimpleV1 () {
     }
   }
 
-  // Calculating values of M, N, and P
-  if (numberOfNestedForLoops > 0) {
-    M = forLoops.at(0).getNumOfHomogenousWorkItems();
-    if (numberOfNestedForLoops > 1) {
-      N = forLoops.at(1).getNumOfHomogenousWorkItems();
-      if (numberOfNestedForLoops > 2) {
-        P = forLoops.at(2).getNumOfHomogenousWorkItems();
-      } else {
-        P = 1;
-      }
-    } else {
-      N = 1;
-      P = 1;
+	if (counter == 0) {
+    for (int i = 0; i < numNonDependentIters; i++) {
+      globalWorkSize[i] = 1;
     }
-  } else {
-    M = 1;
-    N = 1;
-    P = 1;
+  }
+
+  // Calculating values of M, N, and P
+  // if (numberOfNestedForLoops > 0) {
+  //  M = forLoops.at(0).getNumOfHomogenousWorkItems();
+  //  if (numberOfNestedForLoops > 1) {
+  //    N = forLoops.at(1).getNumOfHomogenousWorkItems();
+  //    if (numberOfNestedForLoops > 2) {
+  //      P = forLoops.at(2).getNumOfHomogenousWorkItems();
+  //    } else {
+  //      P = 1;
+  //    }
+  //  } else {
+  //    N = 1;
+  //    P = 1;
+  //  }
+  //} else {
+  //  M = 1;
+  //  N = 1;
+  //  P = 1;
+  // }
+
+  M = 1;
+  N = 1;
+  P = 1;
+	for (int i = 0; i < numberOfNestedForLoops; i++) {
+    if (i == 0) {
+      P = getVirtualLocalWorkSize()[0];
+    } else if (i == 1) {
+			N = getVirtualLocalWorkSize()[1];
+    } else if (i == 2) {
+			M = getVirtualLocalWorkSize()[2];
+    }
   }
 
 	// Calculating GIn Size here
@@ -2054,6 +2136,10 @@ int* Algorithm::nextLocalWorkSize () {
 
 int* Algorithm::getGlobalWorkSize () {
   return globalWorkSize;
+}
+
+int* Algorithm::getVirtualLocalWorkSize () {
+  return virtualLocalWorkSize;
 }
 
 long long Algorithm::getTotalNumFlops () {
