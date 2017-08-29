@@ -8,6 +8,8 @@
 #define VERIFICATION false
 #define GENERATE_PTX true
 
+#define SWI_MODE true
+
 const std::string currentDateTime() {
   char            fmt[64], buf[64];
   struct timeval  tv;
@@ -549,11 +551,15 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
           //     << "--and total number of floating point operations as " << algorithm->getTotalNumFlops ()
           //     << endl;
         Event evKernel (algorithm->getKernelName ());
+#if SWI_MODE==false
         err = clEnqueueNDRangeKernel (queue, kernel, algorithm->getWorkDim(),
 	                                    NULL,
                                       globalWorkSize,
                                       localMemSize,
                                       0, NULL, &evKernel.CLEvent());
+#else
+        err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+#endif
         CL_CHECK_ERROR (err);
         err = clWaitForEvents (1, &evKernel.CLEvent());
         //cout << "err is " << err << endl;

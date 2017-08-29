@@ -21,11 +21,13 @@
 #define VERBOSE false
 #define VERIFICATION false
 #define TEMP_INIT_VALUE 1.0
+// Single work item mode
+#define SWI_MODE false
 
 using namespace std;
 
-int executionMode = ExecutionMode::ALL;
-int targetDevice = TargetDevice::GPU;
+int executionMode = ExecutionMode::GENERATION;
+int targetDevice = TargetDevice::FPGA;
 
 /*
 struct _algorithm_type {
@@ -186,8 +188,8 @@ void RunBenchmark (cl_device_id id,
   // This part we autho generate multiple kernels, each one takes care of
   // loop's depth of 1.
   // Setting work grup size as 64, 128, 256, 512, 1025
-
-	for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
+	/*
+	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     // Setting Memory Allocation per work item as 2, 4, 8, 16, 32, 64
 		for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 32;
@@ -211,32 +213,40 @@ void RunBenchmark (cl_device_id id,
 				vWGS[0] = workGroupSize;
 
         algorithmFactory.createNewAlgorithm ()
-          .targetDeviceIs (AlgorithmTargetDevice::GPU)
+          .targetDeviceIs (AlgorithmTargetDevice::FPGA)
           .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           .NameIs (string("WGS") + to_string(workGroupSize)
                    +string("MAPI") + to_string(memAllocationPerWorkItem)
-                   +string("LL") + to_string(loopLength))
+#if SWI_MODE==true
+          				 +string("LL") + to_string(loopLength)
+          				 +string("SWI"))
+#else
+          				 +string("LL") + to_string(loopLength))
+#endif
           .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
 					.workGroupSizeIs (WGS)
           .virtualWorkGroupSizeIs(vWGS)
           .memReuseFactorIs (1024)
           .startKernelFunctionSimpleV1 ()
           //.createFor (0, true, loopLength, "temp += GIn[@] * 1.5f", 1, false, 2)
-          .createFor (128, true, loopLength, "temp += GIn[@] * 1.5f", 1,true, 2)
+          .createFor (128, true, loopLength, "temp += GIn[@] * 1.5f", 1,false, 2)
 					.generateForsSimpleV1 (onlyMeta)
 					.popMetasSimpleV1 ()
           .endKernelFunction ()
           .verbose ()
-          .writeToFile (string("/home/users/saman/shoc/kernel")
+          .writeToFile (string("/home/user/sbiookag/shoc-fpga/kernel")
                         + string("WGS") + to_string(workGroupSize)
                         + string("MAPI") + to_string(memAllocationPerWorkItem)
                         + string("LL") + to_string(loopLength)
+#if SWI_MODE==true
+                        + string("SWI")
+#endif
                         + string(".cl"));
         kernelCounter++;
       }
     }
   }
-
+	*/
 	/*
   for (int workGroupSize = 16; workGroupSize <= 32; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
@@ -251,6 +261,69 @@ void RunBenchmark (cl_device_id id,
     }
   }
 	*/
+
+  for (int workGroupSize = 16; workGroupSize <= 32; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 32;
+         memAllocationPerWorkItem *= 2) {
+
+      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize * memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength1 = 256; loopLength1 <= 1024; loopLength1 *= 2) {
+        for (int loopLength2 = 256; loopLength2 <= 1024; loopLength2 *= 2) {
+        	int *WGS = new int[2];
+        	int *vWGS = new int[2];
+        	WGS[0] = workGroupSize;
+					WGS[1] = workGroupSize;
+        	vWGS[0] = workGroupSize;
+          vWGS[1] = workGroupSize;
+
+        	algorithmFactory.createNewAlgorithm ()
+          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          	.NameIs (string("WGS") + to_string(workGroupSize) +
+                   string("x") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE == true
+                   string("LL1") + to_string(loopLength1) +
+                   string("LL2") + to_string(loopLength2) +
+                   string("SWI"))
+#else
+          				 string("LL1") + to_string(loopLength1) +
+          				 string("LL2") + to_string(loopLength2))
+#endif
+          	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+             .workGroupSizeIs (WGS)
+             .virtualWorkGroupSizeIs (vWGS)
+             .memReuseFactorIs (1024)
+             .startKernelFunctionSimpleV1 ()
+             .createFor	(0, false, loopLength1, "temp += GIn[@] * 1.5f", 1, false, 2)
+             .createFor	(1024, false, loopLength2, "temp += GIn[@] * 1.5f", 1,false, 2)
+             .generateForsSimpleV1 (onlyMeta)
+             .popMetasSimpleV1 ()
+             .endKernelFunction ()
+             .verbose ()
+             .writeToFile (string("/home/user/sbiookag/shoc-fpga/kernel") +
+                     			 string("WGS") + to_string(workGroupSize) +
+                     			 string("x") + to_string(workGroupSize) +
+                           string("MAPI") + to_string(memAllocationPerWorkItem) +
+                           string("LL1") + to_string(loopLength1) +
+                           string("LL2") + to_string(loopLength2) +
+#if SWI_MODE==true
+										       string("SWI") +
+#endif
+                           string(".cl"));
+
+             kernelCounter++;
+      	}
+      }
+    }
+  }
+
   if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
 		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
 
