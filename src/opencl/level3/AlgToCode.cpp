@@ -26,8 +26,8 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
-int targetDevice = TargetDevice::GPU;
+int executionMode = ExecutionMode::GENERATION;
+int targetDevice = TargetDevice::FPGA;
 
 /*
 struct _algorithm_type {
@@ -283,7 +283,7 @@ void RunBenchmark (cl_device_id id,
           vWGS[1] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
+          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("x") + to_string(workGroupSize) +
@@ -307,7 +307,7 @@ void RunBenchmark (cl_device_id id,
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/users/saman/shoc/kernel") +
+             .writeToFile (string("/home/user/sbiookag/shoc-fpga/kernel") +
                      			 string("WGS") + to_string(workGroupSize) +
                      			 string("x") + to_string(workGroupSize) +
                            string("MAPI") + to_string(memAllocationPerWorkItem) +
