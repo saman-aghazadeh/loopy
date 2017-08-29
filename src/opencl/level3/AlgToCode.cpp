@@ -26,8 +26,8 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::GENERATION;
-int targetDevice = TargetDevice::FPGA;
+int executionMode = ExecutionMode::CALCULATION;
+int targetDevice = TargetDevice::GPU;
 
 /*
 struct _algorithm_type {
@@ -262,15 +262,15 @@ void RunBenchmark (cl_device_id id,
   }
 	*/
 
-  for (int workGroupSize = 16; workGroupSize <= 32; workGroupSize *= 2) {
+  for (int workGroupSize = 8; workGroupSize <= 32; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 32;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+      if (workGroupSize * workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
         continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
+      if (workGroupSize * workGroupSize * memAllocationPerWorkItem > 4096)
         continue;
 
       for (int loopLength1 = 256; loopLength1 <= 1024; loopLength1 *= 2) {
@@ -283,7 +283,7 @@ void RunBenchmark (cl_device_id id,
           vWGS[1] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("x") + to_string(workGroupSize) +
@@ -301,13 +301,13 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-             .createFor	(0, false, loopLength1, "temp += GIn[@] * 1.5f", 1, false, 2)
-             .createFor	(1024, false, loopLength2, "temp += GIn[@] * 1.5f", 1,false, 2)
+             .createFor	(0, false, loopLength1, "temp += GIn[@] * 1.5f", 1, true, 2)
+             .createFor	(1024, false, loopLength2, "temp += GIn[@] * 1.5f", 1, true, 2)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/shoc-fpga/kernel") +
+             .writeToFile (string("/home/users/saman/shoc/kernel") +
                      			 string("WGS") + to_string(workGroupSize) +
                      			 string("x") + to_string(workGroupSize) +
                            string("MAPI") + to_string(memAllocationPerWorkItem) +
