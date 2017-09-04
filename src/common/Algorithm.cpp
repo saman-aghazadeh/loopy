@@ -203,7 +203,13 @@ Algorithm& Algorithm::memReuseFactorIs (int memoryReuseFactor) {
   return *this;
 }
 
-Algorithm& Algorithm::NameIs (string kernelName) {
+Algorithm& Algorithm::NameIs (string name) {
+  this->currentName = name;
+
+  return *this;
+}
+
+Algorithm& Algorithm::KernelNameIs (string kernelName) {
   this->currentKernelName = kernelName;
 
   return *this;
@@ -1467,10 +1473,26 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
 
   if (loopIndex == 0) {
     oss << getIndent () << "// Just a private variable" << endl;
-    if (vectorSize == 1)
-      oss << getIndent () << "float temp = 1.0;" << endl;
-    else
+    if (vectorSize == 1) {
+      oss << getIndent () << "float temp1 = 1.0;" << endl;
+      oss << getIndent () << "float temp2 = 1.0;" << endl;
+      oss << getIndent () << "float temp3 = 1.0;" << endl;
+      oss << getIndent () << "float temp4 = 1.0;" << endl;
+      oss << getIndent () << "float tempOut;" << endl;
+      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float NF = (float) N;" << endl;
+			oss << getIndent () << "float PF = (float) P;" << endl;
+    }
+    else {
       oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
+      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float NF = (float) N;" << endl;
+      oss << getIndent () << "float PF = (float) P;" << endl;
+      oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
+    }
     oss << endl;
   }
 
@@ -1533,28 +1555,30 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     // calculated value into the memory.
     if (leaf == true) {
       if (vectorSize == 1) {
+				oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
             << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
-            << "] = temp;" << endl;
+            << "] = tempOut;" << endl;
       } else {
+        oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
             << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
-            << "] = temp.s0";
+            << "] = tempOut.s0";
         for (int i = 1; i < vectorSize; i++) {
           if (i < 10)
-						oss << " + " << "temp.s" << i;
+						oss << " + " << "tempOut.s" << i;
           else if (i == 10)
-            oss << " + " << "temp.sA";
+            oss << " + " << "tempOut.sA";
           else if (i == 11)
-            oss << " + " << "temp.sB";
+            oss << " + " << "tempOut.sB";
           else if (i == 12)
-            oss << " + " << "temp.sC";
+            oss << " + " << "tempOut.sC";
           else if (i == 13)
-            oss << " + " << "temp.sD";
+            oss << " + " << "tempOut.sD";
           else if (i == 14)
-            oss << " + " << "temp.sE";
+            oss << " + " << "tempOut.sE";
           else if (i == 15)
-            oss << " + " << "temp.sF";
+            oss << " + " << "tempOut.sF";
       	}
         oss << ";" << endl;
       }
@@ -1656,29 +1680,31 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
     // If this is the last nested for loop, we will go on and write the
     // calculated value into the memory.
     if (leaf == true) {
-      if (vectorSize == 1)
+      if (vectorSize == 1) {
+				oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
             << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
-            << "] = temp;" << endl;
-      else {
+            << "] = tempOut;" << endl;
+      } else {
+        oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
             << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
-            << "] = temp.s0";
+            << "] = tempOut.s0";
         for (int i = 0; i < vectorSize; i++) {
           if (i < 10)
-            oss << " + " << "temp.s" << i;
+            oss << " + " << "tempOut.s" << i;
           else if (i == 10)
-            oss << " + " << "temp.sA";
+            oss << " + " << "tempOut.sA";
           else if (i == 11)
-            oss << " + " << "temp.sB";
+            oss << " + " << "tempOut.sB";
           else if (i == 12)
-            oss << " + " << "temp.sC";
+            oss << " + " << "tempOut.sC";
           else if (i == 13)
-            oss << " + " << "temp.sD";
+            oss << " + " << "tempOut.sD";
           else if (i == 14)
-            oss << " + " << "temp.sE";
+            oss << " + " << "tempOut.sE";
           else if (i == 15)
-            oss << " + " << "temp.sF";
+            oss << " + " << "tempOut.sF";
         }
         oss << ";" << endl;
       }
@@ -2148,6 +2174,10 @@ long long Algorithm::getTotalNumFlops () {
 
 string Algorithm::getKernelName () {
   return currentKernelName;
+}
+
+string Algorithm::getName  () {
+  return currentName;
 }
 
 int Algorithm::getWorkDim () {

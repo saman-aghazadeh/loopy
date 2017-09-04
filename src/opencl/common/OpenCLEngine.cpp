@@ -573,7 +573,7 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
         double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
 				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
         //sprintf (lwsString, "%d", wsBegin);
-        resultDB.AddResult (string(algorithm->getKernelName ()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
+        resultDB.AddResult (string(algorithm->getName ()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
 
         CL_CHECK_ERROR (err);
       }

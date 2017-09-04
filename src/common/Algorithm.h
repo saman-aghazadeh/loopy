@@ -110,8 +110,11 @@ public:
   // can reflect that behaviour.
 	Algorithm& memReuseFactorIs (int memoryReuseFactor);
 
-	// Set the kernel name
-  Algorithm& NameIs (string kernelName);
+	// Set the name
+  Algorithm& NameIs (string name);
+
+  // Set the kernel name
+	Algorithm& KernelNameIs (string kernelName);
 
 	// Start definition of the kernel function headerB
   Algorithm& startKernelFunction ();
@@ -224,6 +227,7 @@ public:
   int* getVirtualLocalWorkSize ();
 	long long getTotalNumFlops ();
 	string getKernelName ();
+  string getName ();
 	int getWorkDim ();
   int getM ();
   int getN ();
@@ -245,6 +249,7 @@ private:
 	vector<WorkItemSet> forLoops;
   int numberOfNestedForLoops;
   string currentKernelName;
+  string currentName;
   bool onlyMeta;
   ostringstream oss;
 
