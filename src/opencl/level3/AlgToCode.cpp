@@ -326,10 +326,10 @@ void RunBenchmark (cl_device_id id,
     }
   }
   */
-  
-  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
+
+  for (int workGroupSize = 128; workGroupSize <= 512; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 32;
+         memAllocationPerWorkItem <= 16;
          memAllocationPerWorkItem *= 2) {
 
       if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
@@ -338,7 +338,7 @@ void RunBenchmark (cl_device_id id,
       if (workGroupSize * memAllocationPerWorkItem > 4096)
         continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 512; loopLength <= 1048576; loopLength *= 2) {
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
@@ -351,24 +351,37 @@ void RunBenchmark (cl_device_id id,
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
+                   string("OPS") + to_string(1024) +
                    string("SWI"))
 #else
-            			 string("LL") + to_string(loopLength))
+            			 string("LL") + to_string(loopLength) +
+            			 string("OPS") + to_string(1024))
+#endif
+        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(1024) +
+                   string("SWI"))
+#else
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(1024))
 #endif
           	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
              .workGroupSizeIs (WGS)
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-             .createFor	(1024, false, loopLength, "temp += temp * M", 1, false, 2)
+             .createFor	(1024/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/users/saman/shoc/alt/kernel") +
+             .writeToFile (string("/home/users/saman/shoc/GAP3/kernel") +
                      			 string("WGS") + to_string(workGroupSize) +
                            string("MAPI") + to_string(memAllocationPerWorkItem) +
-                           string("LL") + to_string(loopLength) +
+                           string("LL") + string("X") +
+													 string("OPS") + to_string(1024) +
 #if SWI_MODE==true
 										       string("SWI") +
 #endif
@@ -378,7 +391,271 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
-	
+
+  for (int workGroupSize = 128; workGroupSize <= 512; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem *= 2) {
+
+      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize * memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength = 512; loopLength <= 1048576; loopLength *= 2) {
+        	int *WGS = new int[1];
+        	int *vWGS = new int[1];
+        	WGS[0] = workGroupSize;
+        	vWGS[0] = workGroupSize;
+
+        	algorithmFactory.createNewAlgorithm ()
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
+          	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          	.NameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + to_string(loopLength) +
+                   string("OPS") + to_string(512) +
+                   string("SWI"))
+#else
+            			 string("LL") + to_string(loopLength) +
+            			 string("OPS") + to_string(512))
+#endif
+        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(512) +
+                   string("SWI"))
+#else
+           				 string("LL") + string("X") +
+           				 string("OPS") + to_string(512))
+#endif
+
+          	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+             .workGroupSizeIs (WGS)
+             .virtualWorkGroupSizeIs (vWGS)
+             .memReuseFactorIs (1024)
+             .startKernelFunctionSimpleV1 ()
+             .createFor	(512/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2)
+             .generateForsSimpleV1 (onlyMeta)
+             .popMetasSimpleV1 ()
+             .endKernelFunction ()
+             .verbose ()
+             .writeToFile (string("/home/users/saman/shoc/GAP3/kernel") +
+                     			 string("WGS") + to_string(workGroupSize) +
+                           string("MAPI") + to_string(memAllocationPerWorkItem) +
+                           string("LL") + string("X") +
+													 string("OPS") + to_string(512) +
+#if SWI_MODE==true
+										       string("SWI") +
+#endif
+                           string(".cl"));
+
+             kernelCounter++;
+      	}
+    }
+  }
+
+  for (int workGroupSize = 128; workGroupSize <= 512; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem *= 2) {
+
+      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize * memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength = 512; loopLength <= 1048576; loopLength *= 2) {
+        	int *WGS = new int[1];
+        	int *vWGS = new int[1];
+        	WGS[0] = workGroupSize;
+        	vWGS[0] = workGroupSize;
+
+        	algorithmFactory.createNewAlgorithm ()
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
+          	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)	
+          	.NameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + to_string(loopLength) +
+                   string("OPS") + to_string(256) +
+                   string("SWI"))
+#else
+            			 string("LL") + to_string(loopLength) +
+            			 string("OPS") + to_string(256))
+#endif
+        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(256) +
+                   string("SWI"))
+#else
+           				 string("LL") + string("X") +
+           				 string("OPS") + to_string(256))
+#endif
+          	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+             .workGroupSizeIs (WGS)
+             .virtualWorkGroupSizeIs (vWGS)
+             .memReuseFactorIs (1024)
+             .startKernelFunctionSimpleV1 ()
+             .createFor	(256/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2)
+             .generateForsSimpleV1 (onlyMeta)
+             .popMetasSimpleV1 ()
+             .endKernelFunction ()
+             .verbose ()
+             .writeToFile (string("/home/users/saman/shoc/GAP3/kernel") +
+                     			 string("WGS") + to_string(workGroupSize) +
+                           string("MAPI") + to_string(memAllocationPerWorkItem) +
+                           string("LL") + string("X") +
+													 string("OPS") + to_string(256) +
+#if SWI_MODE==true
+										       string("SWI") +
+#endif
+                           string(".cl"));
+
+             kernelCounter++;
+      	}
+    }
+  }
+
+  for (int workGroupSize = 128; workGroupSize <= 512; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem *= 2) {
+
+      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize * memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength = 512; loopLength <= 1048576; loopLength *= 2) {
+        	int *WGS = new int[1];
+        	int *vWGS = new int[1];
+        	WGS[0] = workGroupSize;
+        	vWGS[0] = workGroupSize;
+
+        	algorithmFactory.createNewAlgorithm ()
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
+          	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          	.NameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + to_string(loopLength) +
+                   string("OPS") + to_string(128) +
+                   string("SWI"))
+#else
+            			 string("LL") + to_string(loopLength) +
+            			 string("OPS") + to_string(128))
+#endif
+        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(128) +
+                   string("SWI"))
+#else
+           				 string("LL") + string("X") +
+           				 string("OPS") + to_string(128))
+#endif
+
+          	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+             .workGroupSizeIs (WGS)
+             .virtualWorkGroupSizeIs (vWGS)
+             .memReuseFactorIs (1024)
+             .startKernelFunctionSimpleV1 ()
+             .createFor	(128/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2)
+             .generateForsSimpleV1 (onlyMeta)
+             .popMetasSimpleV1 ()
+             .endKernelFunction ()
+             .verbose ()
+             .writeToFile (string("/home/users/saman/shoc/GAP3/kernel") +
+                     			 string("WGS") + to_string(workGroupSize) +
+                           string("MAPI") + to_string(memAllocationPerWorkItem) +
+                           string("LL") + string("X") +
+													 string("OPS") + to_string(128) +
+#if SWI_MODE==true
+										       string("SWI") +
+#endif
+                           string(".cl"));
+
+             kernelCounter++;
+      	}
+    }
+  }
+
+  for (int workGroupSize = 128; workGroupSize <= 512; workGroupSize *= 2) {
+    for (int memAllocationPerWorkItem = 2;
+         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem *= 2) {
+
+      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+        continue;
+
+      if (workGroupSize * memAllocationPerWorkItem > 4096)
+        continue;
+
+      for (int loopLength = 512; loopLength <= 1048576; loopLength *= 2) {
+        	int *WGS = new int[1];
+        	int *vWGS = new int[1];
+        	WGS[0] = workGroupSize;
+        	vWGS[0] = workGroupSize;
+
+        	algorithmFactory.createNewAlgorithm ()
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
+          	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          	.NameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + to_string(loopLength) +
+                   string("OPS") + to_string(64) +
+                   string("SWI"))
+#else
+            			 string("LL") + to_string(loopLength) +
+            			 string("OPS") + to_string(64))
+#endif
+        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+                   string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   string("LL") + string("X") +
+                   string("OPS") + to_string(64) +
+                   string("SWI"))
+#else
+           				 string("LL") + string("X") +
+           				 string("OPS") + to_string(64))
+#endif
+
+          	 .memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+             .workGroupSizeIs (WGS)
+             .virtualWorkGroupSizeIs (vWGS)
+             .memReuseFactorIs (1024)
+             .startKernelFunctionSimpleV1 ()
+             .createFor	(64/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2)
+             .generateForsSimpleV1 (onlyMeta)
+             .popMetasSimpleV1 ()
+             .endKernelFunction ()
+             .verbose ()
+             .writeToFile (string("/home/users/saman/shoc/GAP3/kernel") +
+                     			 string("WGS") + to_string(workGroupSize) +
+                           string("MAPI") + to_string(memAllocationPerWorkItem) +
+                           string("LL") + string("X") +
+													 string("OPS") + to_string(64) +
+#if SWI_MODE==true
+										       string("SWI") +
+#endif
+                           string(".cl"));
+
+             kernelCounter++;
+      	}
+    }
+  }
+
+
   if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
 		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
 
