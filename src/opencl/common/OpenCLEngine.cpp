@@ -8,7 +8,7 @@
 #define VERIFICATION false
 #define GENERATE_PTX true
 
-#define SWI_MODE false
+#define SWI_MODE true
 
 const std::string currentDateTime() {
   char            fmt[64], buf[64];

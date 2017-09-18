@@ -219,7 +219,7 @@ Algorithm& Algorithm::startKernelFunction () {
 
   if (algorithmTargetLanguage == AlgorithmTargetLanguage::OpenCL ) {
   	oss << "__kernel void " << this->currentKernelName << "("
-        << "const __global float *GIn, __global float *GOut" << ") {"
+        << "const __global float * restrict GIn, __global float * restrict GOut" << ") {"
         << endl;
 		this->currentIndentation++;
   } else if (algorithmTargetLanguage == AlgorithmTargetLanguage::CUDA) {
@@ -234,7 +234,7 @@ Algorithm& Algorithm::startKernelFunctionV2 () {
 
   if (algorithmTargetLanguage == AlgorithmTargetLanguage::OpenCL) {
     oss << "__kernel void " << this->currentKernelName << "("
-        << "const __global float *GIn, __global float *GOut,"
+        << "const __global float * restrict GIn, __global float * restrict GOut,"
         << " const int M, const int N, const int P) {" << endl;
     this->currentIndentation++;
   } else if (algorithmTargetLanguage == AlgorithmTargetLanguage::CUDA) {
@@ -248,7 +248,7 @@ Algorithm& Algorithm::startKernelFunctionV3 () {
 
   if (algorithmTargetLanguage == AlgorithmTargetLanguage::OpenCL) {
     oss << "__kernel void " << this->currentKernelName << "("
-        << "const __global float *GIn, __global float *GOut,"
+        << "const __global float * restrict GIn, __global float * restrict GOut,"
         << " const int M, const int N, const int P) {" << endl;
     this->currentIndentation++;
   } else if (algorithmTargetLanguage == AlgorithmTargetLanguage::CUDA) {
@@ -260,7 +260,7 @@ Algorithm& Algorithm::startKernelFunctionSimpleV1 () {
 
   if (algorithmTargetLanguage == AlgorithmTargetLanguage::OpenCL) {
     oss << "__kernel void " << this->currentKernelName << "("
-        << "const __global float *GIn, __global float *GOut,"
+        << "const __global float * restrict GIn, __global float * restrict GOut,"
         << " const int M, const int N, const int P) {" << endl;
     this->currentIndentation++;
   } else if (algorithmTargetLanguage == AlgorithmTargetLanguage::CUDA) {
@@ -1474,24 +1474,14 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
   if (loopIndex == 0) {
     oss << getIndent () << "// Just a private variable" << endl;
     if (vectorSize == 1) {
-      oss << getIndent () << "float temp1 = 1.0;" << endl;
-      oss << getIndent () << "float temp2 = 1.0;" << endl;
-      oss << getIndent () << "float temp3 = 1.0;" << endl;
-      oss << getIndent () << "float temp4 = 1.0;" << endl;
-      oss << getIndent () << "float tempOut;" << endl;
       oss << getIndent () << "float MF = (float) M;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
 			oss << getIndent () << "float PF = (float) P;" << endl;
     }
     else {
-      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
-      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
-      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
-      oss << getIndent () << "float" << vectorSize << " temp = 1.0;" << endl;
       oss << getIndent () << "float MF = (float) M;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
       oss << getIndent () << "float PF = (float) P;" << endl;
-      oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
     }
     oss << endl;
   }
@@ -1535,6 +1525,8 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
         		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
       }
     }
+
+
     CircularNumberGenerator CNG (memAllocationPerWorkItem);
     for (int i = 0; i < numOfInstructions; i++) {
       string formulaRepl (formula);
@@ -1543,6 +1535,7 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
       // should be really accessed in this work item.
 
       replacement << "baseIndex" << loopIndex+1 << " + " << CNG.next() << "*" << workGroupSize;
+      replace (formulaRepl, "@", replacement.str());
       replace (formulaRepl, "@", replacement.str());
       if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
       	replace (formulaRepl, "GIn", "GInL");
@@ -1656,6 +1649,20 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
       }
     }
 
+    if (vectorSize == 1) {
+      oss << getIndent () << "float temp1 = 1.0;" << endl;
+      oss << getIndent () << "float temp2 = 1.0;" << endl;
+      oss << getIndent () << "float temp3 = 1.0;" << endl;
+      oss << getIndent () << "float temp4 = 1.0;" << endl;
+      oss << getIndent () << "float tempOut;" << endl;
+    } else {
+      oss << getIndent () << "float" << vectorSize << " temp1 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp2 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp3 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp4 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
+    }
+
 		CircularNumberGenerator CNG (memAllocationPerWorkItem);
     for (int i = 0; i < numOfInstructions; i++) {
 			string formulaRepl (formula);
@@ -1670,6 +1677,8 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
       replacementIdx1 << "baseIndex" << loopIndex+1 << " + " << cngNext << "*" << totalGroupSize;
       replacementIdx2 << "baseIndexPrev" << loopIndex+1 << " + " << cngNext << "*" << totalGroupSize;
 			replace (formulaRepl, "@", replacementIdx1.str());
+      replace (formulaRepl, "@", replacementIdx1.str());
+      replace (formulaRepl, "!", replacementIdx2.str());
       replace (formulaRepl, "!", replacementIdx2.str());
       if (useLocalMem && algorithmTargetDevice != AlgorithmTargetDevice::FPGA) {
       	replace (formulaRepl, "GIn", "GInL");
