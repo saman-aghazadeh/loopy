@@ -26,8 +26,8 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::GENERATION;
-int targetDevice = TargetDevice::FPGA;
+int executionMode = ExecutionMode::ALL;
+int targetDevice = TargetDevice::GPU;
 
 /*
 struct _algorithm_type {
@@ -136,26 +136,25 @@ void RunBenchmark (cl_device_id id,
   int kernelCounter = 1;
   bool localMemory = false;
 
-	/*
-  for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+      //  continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 4096)
+      //  continue;
 
-      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
         	vWGS[0] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
@@ -164,10 +163,10 @@ void RunBenchmark (cl_device_id id,
                    string("OPS") + to_string(1024) +
                    string("SWI"))
 #else
-            			 string("LL") + to_string("X") +
+            			 string("LL") + to_string(loopLength) +
             			 string("OPS") + to_string(1024))
 #endif
-        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+        		.KernelNameIs (string("WGS") + string("X") +
                    string("MAPI") + string("X") +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
@@ -182,13 +181,13 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-                           .createFor	(1024/2, true, loopLength, "temp1 += temp1 * MF", 1, false, 2*2)
+             .createFor	(1024/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2*4)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/GAP1SWI/kernel") +
-                     			 string("WGS") + to_string(workGroupSize) +
+             .writeToFile (string("/home/users/saman/Algs/1For/nodep/GAP3/kernel") +
+                     			 string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
@@ -197,7 +196,7 @@ void RunBenchmark (cl_device_id id,
 #endif
 	                         string("OPS") + to_string(1024) +
 #if SWI_MODE==true
-						   						 string("SWID") +
+						   						 string("SWI") +
 #endif
                            string(".cl"));
 
@@ -206,26 +205,26 @@ void RunBenchmark (cl_device_id id,
     }
   }
 
-  for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+      //  continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 4096)
+      //  continue;
 
-      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
-        if (loopLength == 262144) break;
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+        //if (loopLength == 262144) break;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
         	vWGS[0] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
@@ -234,10 +233,10 @@ void RunBenchmark (cl_device_id id,
                    string("OPS") + to_string(512) +
                    string("SWI"))
 #else
-            			 string("LL") + string("X") +
+            			 string("LL") + to_string(loopLength) +
             			 string("OPS") + to_string(512))
 #endif
-        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+        		.KernelNameIs (string("WGS") + string("X") +
                    string("MAPI") + string("X") +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
@@ -253,13 +252,13 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-             .createFor	(512/2, true, loopLength, "temp1 += temp1 * MF", 1, false, 2*2)
+             .createFor	(512/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2*4)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/GAP1SWI/kernel") +
-                     			 string("WGS") + to_string(workGroupSize) +
+             .writeToFile (string("/home/users/saman/Algs/1For/nodep/GAP3/kernel") +
+                     			 string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
@@ -268,7 +267,7 @@ void RunBenchmark (cl_device_id id,
 #endif
 	                         string("OPS") + to_string(512) +
 #if SWI_MODE==true
-						               string("SWID") +
+						               string("SWI") +
 #endif
                            string(".cl"));
 
@@ -277,26 +276,26 @@ void RunBenchmark (cl_device_id id,
     }
   }
 
-  for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     break;
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+                           //continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
-        continue;
+                           //if (workGroupSize * memAllocationPerWorkItem > 4096)
+                           //continue;
 
-      for (int loopLength = 65568; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
         	vWGS[0] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)	
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
@@ -305,10 +304,10 @@ void RunBenchmark (cl_device_id id,
                    string("OPS") + to_string(256) +
                    string("SWI"))
 #else
-            			 string("LL") + string("X") +
+            			 string("LL") + to_string(loopLength) +
             			 string("OPS") + to_string(256))
 #endif
-        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+        		.KernelNameIs (string("WGS") + string("X") +
                    string("MAPI") + string("X") +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
@@ -323,13 +322,13 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-             .createFor	(256/2, true, loopLength, "temp1 += temp1 * MF", 1, true, 2*2)
+             .createFor	(256/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, true, 2*4)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/GAP1SWI/kernel") +
-                     	     string("WGS") + to_string(workGroupSize) +
+             .writeToFile (string("/home/users/saman/Algs/1For/nodep/GAP3/kernel") +
+                     	     string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
@@ -338,7 +337,7 @@ void RunBenchmark (cl_device_id id,
 #endif
 		                       string("OPS") + to_string(256) +
 #if SWI_MODE==true
-		                       string("SWID") +
+		                       string("SWI") +
 #endif
                            string(".cl"));
 
@@ -347,26 +346,26 @@ void RunBenchmark (cl_device_id id,
     }
   }
 
-  for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+      //continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
-        continue;
+      //if (workGroupSize * memAllocationPerWorkItem > 4096)
+      //continue;
 
-      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
-        if (loopLength == 524288) continue;
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+        //if (loopLength == 524288) continue;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
         	vWGS[0] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
@@ -375,10 +374,10 @@ void RunBenchmark (cl_device_id id,
                    string("OPS") + to_string(128) +
                    string("SWI"))
 #else
-            			 string("LL") + string("X") +
+            			 string("LL") + to_string(loopLength) +
             			 string("OPS") + to_string(128))
 #endif
-        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+        		.KernelNameIs (string("WGS") + string("X") +
                    string("MAPI") + string("X") +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
@@ -394,22 +393,22 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-             .createFor	(128/2, true, loopLength, "temp1 += temp1 * MF", 1, false, 2*2)
+             .createFor	(128/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2*4)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/GAP1SWI/kernel") +
-                     	     string("WGS") + to_string(workGroupSize) +
+             .writeToFile (string("/home/users/saman/Algs/1For/nodep/GAP3/kernel") +
+                     	     string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
 #else
-                           string("LL") + to_string("X") +
+                           string("LL") + string("X") +
 #endif
 				                   string("OPS") + to_string(128) +
 #if SWI_MODE==true
-						               string("SWID") +
+						               string("SWI") +
 #endif
                            string(".cl"));
 
@@ -418,26 +417,26 @@ void RunBenchmark (cl_device_id id,
     }
   }
 
-  for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  for (int workGroupSize = 64; workGroupSize <= 1024; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
-         memAllocationPerWorkItem <= 16;
+         memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
 
-      if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
-        continue;
+                     //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+                     //continue;
 
-      if (workGroupSize * memAllocationPerWorkItem > 4096)
-        continue;
+                     //if (workGroupSize * memAllocationPerWorkItem > 4096)
+                     //continue;
 
-      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
-        if (loopLength == 262144) break;
+      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+                     //if (loopLength == 262144) break;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
         	vWGS[0] = workGroupSize;
 
         	algorithmFactory.createNewAlgorithm ()
-          	.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          	.targetDeviceIs (AlgorithmTargetDevice::GPU)
           	.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
           	.NameIs (string("WGS") + to_string(workGroupSize) +
                    string("MAPI") + to_string(memAllocationPerWorkItem) +
@@ -446,17 +445,17 @@ void RunBenchmark (cl_device_id id,
                    string("OPS") + to_string(64) +
                    string("SWI"))
 #else
-            			 string("LL") + string("X") +
+            			 string("LL") + to_string(loopLength) +
             			 string("OPS") + to_string(64))
 #endif
-        		.KernelNameIs (string("WGS") + to_string(workGroupSize) +
+        		.KernelNameIs (string("WGS") + string("X") +
                    string("MAPI") + string("X") +
 #if SWI_MODE==true
                    string("LL") + to_string(loopLength) +
                    string("OPS") + to_string(64) +
                    string("SWI"))
 #else
-           				 string("LL") + string("X") +
+               string("LL") + string("X") +
            				 string("OPS") + to_string(64))
 #endif
 
@@ -465,13 +464,13 @@ void RunBenchmark (cl_device_id id,
              .virtualWorkGroupSizeIs (vWGS)
              .memReuseFactorIs (1024)
              .startKernelFunctionSimpleV1 ()
-                .createFor	(64/2, true, loopLength, "temp1 += temp1 * MF", 1, false, 2*2)
+             .createFor	(64/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2*4)
              .generateForsSimpleV1 (onlyMeta)
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/GAP1SWI/kernel") +
-                          string("WGS") + to_string(workGroupSize) +
+             .writeToFile (string("/home/users/saman/Algs/1For/nodep/GAP3/kernel") +
+                          string("WGS") + string("X") +
                           string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
@@ -480,7 +479,7 @@ void RunBenchmark (cl_device_id id,
 #endif
 						               string("OPS") + to_string(64) +
 #if SWI_MODE==true
-					                 string("SWID") +
+					                 string("SWI") +
 #endif
                            string(".cl"));
 
@@ -488,8 +487,8 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
-	*/
 
+	/*
 	for (int workGroupSize1 = 16; workGroupSize1 <= 16; workGroupSize1 *= 2) {
     for (int workGroupSize2 = 16; workGroupSize2 <= 16; workGroupSize2 *= 2) {
     	for (int memAllocationPerWorkItem = 2;
@@ -504,17 +503,17 @@ void RunBenchmark (cl_device_id id,
             vWGS[0] = workGroupSize1; vWGS[1] = workGroupSize2;
 
             algorithmFactory.createNewAlgorithm ()
-              .targetDeviceIs (AlgorithmTargetDevice::FPGA)
+              .targetDeviceIs (AlgorithmTargetDevice::GPU)
               .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
               .NameIs (string("WGSF") + to_string(workGroupSize1) +
                        string("WGSS") + to_string(workGroupSize2) +
-                       string("MAPI") + string("X") +
-                       string("LLF") + string("X") +
-                       string("LLS") + string("X") +
+                       string("MAPI") + to_string(memAllocationPerWorkItem) +
+                       string("LLF") + to_string(loopLength1) +
+                       string("LLS") + to_string(loopLength2) +
                        string("OPSF") + to_string(0) +
                        string("OPSS") + to_string(1024))
-              .KernelNameIs (string("WGSF") + to_string(workGroupSize1) +
-                             string("WGSS") + to_string(workGroupSize2) +
+              .KernelNameIs (string("WGSF") + string("X") +
+                             string("WGSS") + string("X") +
                              string("MAPI") + string("X") +
                              string("LLF") + string("X") +
                              string("LLS") + string("X") +
@@ -532,7 +531,7 @@ void RunBenchmark (cl_device_id id,
               .popMetasSimpleV1 ()
               .endKernelFunction ()
               .verbose ()
-              .writeToFile (string("/home/user/sbiookag/Algs/2For/nodep/GAP0/kernel")+
+              .writeToFile (string("/home/users/saman/Algs/2For/nodep/GAP0/kernel")+
                             string("WGSF") + string("X") +
                             string("WGSS") + string("X") +
                             string("MAPI") + string("X") +
@@ -547,7 +546,7 @@ void RunBenchmark (cl_device_id id,
       }
     }
   }
-
+	*/
 	if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL)
 		openCLEngine.executionCL (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory);
 

@@ -1526,6 +1526,19 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
       }
     }
 
+    if (vectorSize == 1) {
+      oss << getIndent () << "float temp1 = 1.0;" << endl;
+      oss << getIndent () << "float temp2 = 1.0;" << endl;
+      oss << getIndent () << "float temp3 = 1.0;" << endl;
+      oss << getIndent () << "float temp4 = 1.0;" << endl;
+      oss << getIndent () << "float tempOut;" << endl;
+    } else {
+      oss << getIndent () << "float" << vectorSize << " temp1 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp2 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp3 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " temp4 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
+    }
 
     CircularNumberGenerator CNG (memAllocationPerWorkItem);
     for (int i = 0; i < numOfInstructions; i++) {
