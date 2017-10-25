@@ -30,6 +30,8 @@
 #include <unistd.h> // readlink, chdir
 #endif
 
+#include <iostream>
+
 namespace aocl_utils {
 
 static const char *const VERSION_STR = "170";
@@ -372,6 +374,7 @@ cl_program createProgramFromBinary(cl_context context, const char *binary_file_n
 
   // Load the binary.
   size_t binary_size;
+  std::cout << "Binary file name " << binary_file_name << std::endl;
   scoped_array<unsigned char> binary(loadBinaryFile(binary_file_name, &binary_size));
   if(binary == NULL) {
     checkError(CL_INVALID_PROGRAM, "Failed to load binary file");

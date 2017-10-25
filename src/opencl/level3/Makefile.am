@@ -18,10 +18,14 @@ serialopencldir = $(bindir)/Serial/OpenCL
 
 # What programs should be installed in the bin/Serial/OpenCL destination?
 serialopencl_PROGRAMS = AlgToCode \
-												AlgTypeGeneration
+												AlgTypeGeneration \
+												AlgToCodeOps
 
 AlgToCode_SOURCES						=	AlgToCode.cpp main.cpp
 AlgToCode_LDADD							=	$(OCL_LIBS) $(LIBS)
 
 AlgTypeGeneration_SOURCES 	= AlgTypeGeneration.cpp main.cpp
 AlgTypeGeneration_LDADD			= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeOps_SOURCES				= AlgToCodeOps.cpp main.cpp
+AlgToCodeOps_LDADD					= $(OCL_LIBS) $(LIBS)

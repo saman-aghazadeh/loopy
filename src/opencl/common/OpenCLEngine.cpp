@@ -1,6 +1,12 @@
 #include "OpenCLEngine.h"
 #include "NumberGenerator.h"
 #include <sys/time.h>
+#include <unistd.h>
+#include <chrono>
+#include <ctime>
+
+using namespace std;
+using namespace std::chrono;
 
 #define VERBOSE true
 #define PRIVATE_VECTOR_SIZE 5
@@ -131,6 +137,24 @@ bool OpenCLEngine<T>::refillMemObject (cl_command_queue queue,
                               0, NULL, &evWriteData.CLEvent());
   CL_CHECK_ERROR (err);
   err = clWaitForEvents (1, &evWriteData.CLEvent());
+  CL_CHECK_ERROR (err);
+
+  return true;
+}
+
+template <class T>
+bool OpenCLEngine<T>::readbackMemObject (cl_command_queue queue,
+                                         cl_mem *memObject, int singleElementSize,
+                                         const long long memSize, T* data) {
+  cl_int err;
+
+  Event evReadbackData ("readback_data");
+  err = clEnqueueReadBuffer (queue, *memObject, true, 0,
+                             memSize * singleElementSize, data,
+                             0, NULL, &evReadbackData.CLEvent());
+  err = clFinish (queue);
+  CL_CHECK_ERROR (err);
+  err = clWaitForEvents (1, &evReadbackData.CLEvent());
   CL_CHECK_ERROR (err);
 
   return true;
@@ -483,9 +507,9 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
 
     // It's time to fill values M, N, and P in version 2 of generator
     if (algorithm->getIsV2 ()) {
-      int *M = new int;
-			int *N = new int;
-      int *P = new int;
+      float *M = new float;
+			float *N = new float;
+      float *P = new float;
       M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
       err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
       CL_CHECK_ERROR (err);
@@ -497,7 +521,6 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
       CL_CHECK_ERROR (err);
     }
 
-    cout << "Hello" << endl;
 
     // Set up input memory for data, first half = second half
     for (int j = 0; j < GInSize; j++)
@@ -507,8 +530,18 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     while ((wsBegin = algorithm->nextLocalWorkSize ()) != NULL) {
 
       char lwsString[10] = {'\0'};
+      sprintf (lwsString, "%d", *wsBegin);
+      cout << "wsBegin: " << *wsBegin << endl;
+			//cout << algorithm->getName() << "-lws" << lwsString << "-" << precision << "-" << "wallclock" << " ";
+
       for (int pas = 0; pas < npasses; ++pas) {
 
+				//struct timeval timeStart;
+        //struct timeval timeEnd;
+
+        //gettimeofday (&timeStart, NULL);
+
+        //high_resolution_clock::time_point t1 = high_resolution_clock::now();
         refillMemObject (queue, &mem_GIn, (int) sizeof (T), GInSize, hostMem_GIn);
         refillMemObject (queue, &mem_GOut, (int) sizeof (T), GOutSize, hostMem_GOut);
 
@@ -520,10 +553,12 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
 
         // It's time to fill values M, N, and P in version 2 of generator
         if (algorithm->getIsV2 ()) {
-          int *M = new int;
-          int *N = new int;
-          int *P = new int;
-          M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
+          float *M = new float;
+          float *N = new float;
+          float *P = new float;
+          // TODO: Should be un-commented. This is only for testing
+          //M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
+          M[0] = 0.05; N[0] = 0.05; P[0] = 0.05;
           err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
           CL_CHECK_ERROR (err);
 
@@ -552,31 +587,66 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
           //     << endl;
         Event evKernel (algorithm->getKernelName ());
 #if SWI_MODE==false
+        //struct timeval timeStart;
+        //struct timeval timeEnd;
+        //gettimeofday (&timeStart, NULL);
+        clFinish (queue);
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
         err = clEnqueueNDRangeKernel (queue, kernel, algorithm->getWorkDim(),
 	                                    NULL,
                                       globalWorkSize,
                                       localMemSize,
                                       0, NULL, &evKernel.CLEvent());
+
 #else
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
 #endif
         CL_CHECK_ERROR (err);
+        err = clFinish (queue);
+        CL_CHECK_ERROR (err);
         err = clWaitForEvents (1, &evKernel.CLEvent());
+        CL_CHECK_ERROR (err);
+        //cout << "millisEnd: " << millisEnd << endl;
+        //gettimeofday (&timeEnd, NULL);
+        //long millisStart = timeStart.tv_usec;
+				//long millisStart = (timeStart.tv_sec * 1000) + (timeStart.tv_usec/1000);
+        //cout << "millisStart: " << millisStart << "," << timeStart.tv_sec << endl;
+        //long millisEnd = (timeEnd.tv_sec * 1000) + (timeEnd.tv_usec/1000);
+        //long millisEnd = timeEnd.tv_usec;
+        //cout << "millisEnd: " << millisEnd << "," << timeEnd.tv_sec << endl;
+                                                                      //long totalTime = (millisEnd - millisStart);
         //cout << "err is " << err << endl;
         //CL_CHECK_ERROR (err);
 
-        evKernel.FillTimingInfo ();
+        //usleep (100000);
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
+        evKernel.FillTimingInfo ();
+        readbackMemObject (queue, &mem_GOut, (int) sizeof (T), GOutSize, hostMem_GOut);
+        //cout << "Start Time: " << evKernel.StartTime() << endl;
+        //cout << "End Time: " << evKernel.EndTime() << endl;
+        //cout << "Total Time: " << evKernel.StartEnRuntime () << endl;
+        //cout << "Total Time: " << totalTime << endl;
+        //cout << "millisEnd: " << millisEnd << endl;
         //double TNF = algorithm->getTotalNumFlops ();
-        //double time = evKernel.SubmitEndRuntime ();
-        //cout << "TNF: " << TNF << ", Time: " << time << endl;
-        double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
+        //double time = evKernel.StartEndRuntime ();
+        //gettimeofday (&timeEnd, NULL);
+        //high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        cout << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(evKernel.StartEndRuntime()) << endl;
+        //double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
+        double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2 - t1).count());
 				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
-        //sprintf (lwsString, "%d", wsBegin);
         resultDB.AddResult (string(algorithm->getName ()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
+
+				if (VERIFICATION) {
+					//algorithm->verify(hostMem_GOut, GOutSize, algorithm->getM(), algorithm->getN(), algorithm->getP(),
+          //                  algorithm->getGlobalWorkSize()[0], wsBegin[0]);
+          algorithm->verify(hostMem_GOut, GOutSize, 0.05, 0.05, 0.05, algorithm->getGlobalWorkSize()[0], wsBegin[0]);
+        }
 
         CL_CHECK_ERROR (err);
       }
+      cout << endl;
     }
 
     err = clReleaseKernel (kernel);

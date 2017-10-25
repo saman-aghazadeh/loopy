@@ -59,6 +59,9 @@ public:
   void setFops (int fops);
   int getFops ();
 
+  void setLoopCarriedDepDegree (int loopCarriedDepDegree);
+  int getLoopCarriedDepDegree ();
+
 private:
 	int numOfInstructions;
   bool dependency;
@@ -67,6 +70,7 @@ private:
   int vectorSize;
 	bool useLocalMem;
   int fops;
+  int loopCarriedDepDegree;
 };
 
 class Algorithm {
@@ -116,6 +120,16 @@ public:
   // Set the kernel name
 	Algorithm& KernelNameIs (string kernelName);
 
+	// set verification functio+n
+  Algorithm& verificationFunctionIs (void (*verify)
+                                     (float* GOut,
+                                      int GOutSize,
+                                      float M,
+                                      float N,
+                                      float P,
+                                      long LL,
+                                      int localSize));
+
 	// Start definition of the kernel function headerB
   Algorithm& startKernelFunction ();
 
@@ -129,6 +143,12 @@ public:
   // Version Simple 1 of starting a kernel.
 	Algorithm& startKernelFunctionSimpleV1 ();
 
+	// Version Simple 2 of starting a kernel. This one enables
+  // one specific feature to have data dependent batches of
+  // loop iterations. Using that, one can control the
+  // degree of parallelness in their system.
+  Algorithm& startKernelFunctionSimpleV2 ();
+
   // this will terminate the kernel function initiation
 	Algorithm& endKernelFunction ();
 
@@ -136,7 +156,7 @@ public:
   // dependency realizes the unrollment of loop into parallel version or not.
 	Algorithm& createFor (int numberOfInstructions, bool dependency, int loopLength,
                         string formula, int vectorSize, bool useLocalMem,
-                        int fops);
+                        int fops, int loopCarriedDepDegree);
 
   // This will be called after sequential calls into createFor.
   // This will generata the body of the kernel.
@@ -195,6 +215,22 @@ public:
                                   vector<vector<string> >& indexingFormulasPrev,
                                   vector<vector<string> >& indexingLocalMem);
 
+	// This is the second simple generation of kernel generator. Basically it's
+  // going to generate the simplest version, which omits the
+  // involvement of the memory access. This tries to rule out
+  // memory effect.
+  Algorithm& generateForsSimpleV2 (bool onlyMeta);
+
+
+	// Generates the body of a single for loop for the simple
+  // version2. This function will be called recursively, untill
+  // it finishes.
+  Algorithm& generateSingleForSimpleV2 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
+
   // Writes the created kernel into a file
   Algorithm& writeToFile (string fileName);
 
@@ -219,6 +255,10 @@ public:
   // third version of the algorithm.
   Algorithm& popMetasSimpleV1 ();
 
+  // generate all meta information of the algorithm, for the
+  // third version of the algorithm.
+	Algorithm& popMetasSimpleV2 ();
+
   long long getGInSize ();
   long long getGOutSize ();
 	string getKernelLocation ();
@@ -238,6 +278,10 @@ public:
   int getAlgorithmTargetLanguage ();
 
   Algorithm& verbose();
+
+  // Pointer to verification function
+	void (*verify)(float*, int, float, float, float, long, int);
+
 private:
 
   int currentIndentation;
@@ -273,6 +317,7 @@ private:
   // that should be allocated on the device
   long long GInSize;
   long long GOutSize;
+
 
   void PERROR (string errorString);
 

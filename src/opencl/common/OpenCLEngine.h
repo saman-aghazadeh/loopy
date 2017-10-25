@@ -46,6 +46,11 @@ public:
                         const long long memSize,
                         T* data);
 
+  bool readbackMemObject (cl_command_queue queue,
+                          cl_mem *buffer, int singleElementSize,
+                          const long long memSize,
+                          T* data);
+
   // Cleaning up the allocated resources
   void cleanup (cl_program, cl_kernel kernel, cl_mem memObject);
 
