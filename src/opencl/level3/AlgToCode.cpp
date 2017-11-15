@@ -27,7 +27,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::GENERATION;
 int targetDevice = TargetDevice::FPGA;
 
 /*
@@ -137,6 +137,8 @@ void RunBenchmark (cl_device_id id,
   int kernelCounter = 1;
   bool localMemory = false;
 
+
+  /*
   for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 2;
@@ -148,7 +150,7 @@ void RunBenchmark (cl_device_id id,
       //if (workGroupSize * memAllocationPerWorkItem > 4096)
       //  continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
@@ -188,7 +190,7 @@ void RunBenchmark (cl_device_id id,
             .popMetasSimpleV1 ()
             .endKernelFunction ()
             .verbose ()
-            .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP1-FloatParam2/kernel") +
+            .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-Loop/kernel") +
                      			 string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -206,7 +208,8 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
-
+	*/
+	/*
   for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 2;
@@ -218,7 +221,7 @@ void RunBenchmark (cl_device_id id,
       //if (workGroupSize * memAllocationPerWorkItem > 4096)
       //  continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
         //if (loopLength == 262144) break;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
@@ -259,7 +262,7 @@ void RunBenchmark (cl_device_id id,
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP1-FloatParam2/kernel") +
+             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-Loop/kernel") +
                      			 string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -277,9 +280,10 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
+  */
+  /*
 
   for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
-    break;
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 2;
          memAllocationPerWorkItem *= 2) {
@@ -290,7 +294,7 @@ void RunBenchmark (cl_device_id id,
                            //if (workGroupSize * memAllocationPerWorkItem > 4096)
                            //continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
         	WGS[0] = workGroupSize;
@@ -329,8 +333,8 @@ void RunBenchmark (cl_device_id id,
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP1-FloatParam2/kernel") +
-                     	     string("WGS") + string("X") +
+             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-Loop/kernel") +
+                           string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
                            string("LL") + to_string(loopLength) +
@@ -347,7 +351,8 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
-
+  */
+  /*
   for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 2;
@@ -359,7 +364,7 @@ void RunBenchmark (cl_device_id id,
       //if (workGroupSize * memAllocationPerWorkItem > 4096)
       //continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
         //if (loopLength == 524288) continue;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
@@ -400,7 +405,7 @@ void RunBenchmark (cl_device_id id,
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP1-FloatParam2/kernel") +
+             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-Loop/kernel") +
                      	     string("WGS") + string("X") +
                            string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -418,7 +423,8 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
-
+	*/
+  /*
   for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     for (int memAllocationPerWorkItem = 2;
          memAllocationPerWorkItem <= 2;
@@ -430,7 +436,7 @@ void RunBenchmark (cl_device_id id,
                      //if (workGroupSize * memAllocationPerWorkItem > 4096)
                      //continue;
 
-      for (int loopLength = 131072; loopLength <= 1048576; loopLength *= 2) {
+      for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
                      //if (loopLength == 262144) break;
         	int *WGS = new int[1];
         	int *vWGS = new int[1];
@@ -471,7 +477,7 @@ void RunBenchmark (cl_device_id id,
              .popMetasSimpleV1 ()
              .endKernelFunction ()
              .verbose ()
-             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP1-FloatParam2/kernel") +
+             .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-Loop/kernel") +
                           string("WGS") + string("X") +
                           string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -489,6 +495,81 @@ void RunBenchmark (cl_device_id id,
       	}
     }
   }
+	*/
+  
+	for (int ops = 8; ops <= 1024; ops = ops * 2) {
+  	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+    	for (int memAllocationPerWorkItem = 2;
+         	memAllocationPerWorkItem <= 2;
+         	memAllocationPerWorkItem *= 2) {
+
+                     //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
+                     //continue;
+
+                     //if (workGroupSize * memAllocationPerWorkItem > 4096)
+                     //continue;
+
+      	for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
+                     //if (loopLength == 262144) break;
+        		int *WGS = new int[1];
+        		int *vWGS = new int[1];
+        		WGS[0] = workGroupSize;
+        		vWGS[0] = workGroupSize;
+
+        		algorithmFactory.createNewAlgorithm ()
+          		.targetDeviceIs (AlgorithmTargetDevice::FPGA)
+          		.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
+          		.NameIs (string("WGS") + to_string(workGroupSize) +
+                   	string("MAPI") + to_string(memAllocationPerWorkItem) +
+#if SWI_MODE==true
+                   	string("LL") + to_string(loopLength) +
+                   	string("OPS") + to_string(ops) +
+                   	string("SWI"))
+#else
+            			 	string("LL") + to_string(loopLength) +
+            			 	string("OPS") + to_string(ops))
+#endif
+        			.KernelNameIs (string("WGS") + string("X") +
+                   	string("MAPI") + string("X") +
+#if SWI_MODE==true
+                   	string("LL") + to_string(loopLength) +
+                   	string("OPS") + to_string(ops) +
+                   	string("SWI"))
+#else
+               		 	string("LL") + string("X") +
+           				 	string("OPS") + to_string(ops))
+#endif
+             	.verificationFunctionIs (verifyWGSXMAPIXLLXOPS64GAP0)
+          	 	.memAllocationPerWorkItemIs (memAllocationPerWorkItem)
+              .workGroupSizeIs (WGS)
+              .virtualWorkGroupSizeIs (vWGS)
+             	.memReuseFactorIs (1024)
+             	.startKernelFunctionSimpleV1 ()
+             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 0)
+             	.generateForsSimpleV1 (onlyMeta)
+             	.popMetasSimpleV1 ()
+             	.endKernelFunction ()
+             	.verbose ()
+             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam/kernel") +
+                          	string("WGS") + string("X") +
+                          	string("MAPI") + string("X") +
+#if SWI_MODE==true
+                           	string("LL") + to_string(loopLength) +
+#else
+                           	string("LL") + string("X") +
+#endif
+						               	string("OPS") + to_string(ops) +
+#if SWI_MODE==true
+					                 	string("SWI") +
+#endif
+                           	string(".cl"));
+
+             	kernelCounter++;
+      		}
+    	}
+  	}
+	}
+	
 
 	/*
 	for (int workGroupSize1 = 16; workGroupSize1 <= 16; workGroupSize1 *= 2) {
@@ -497,7 +578,7 @@ void RunBenchmark (cl_device_id id,
            memAllocationPerWorkItem <= 16;
            memAllocationPerWorkItem *= 2) {
 
-				for (int loopLength1 = 256; loopLength1 <= 1024; loopLength1 *= 2) {
+				for (int loopLength1 = 256; loopLength1 <= 1024; loopLength1 *= 2)1{
           for (int loopLength2 = 256; loopLength2 <= 1024; loopLength2 *=2 ) {
             int *WGS = new int[2];
             int *vWGS = new int[2];

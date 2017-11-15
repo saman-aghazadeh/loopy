@@ -70,7 +70,7 @@ void Event::FillTimingInfo(const int idx)
     for (int i=sidx ; i<=eidx ; ++i) {
        cl_int err;
        err = clGetEventProfilingInfo(event[i], CL_PROFILING_COMMAND_QUEUED,
-                                     sizeof(cl_ulong), &queuedTime[i], NULL);
+                                      sizeof(cl_ulong), &queuedTime[i], NULL);
        CL_CHECK_ERROR(err);
        err = clGetEventProfilingInfo(event[i], CL_PROFILING_COMMAND_SUBMIT,
                                      sizeof(cl_ulong), &submitTime[i], NULL);

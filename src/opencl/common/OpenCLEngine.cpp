@@ -599,6 +599,8 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
                                       0, NULL, &evKernel.CLEvent());
 
 #else
+        clFinish (queue);
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
 #endif
         CL_CHECK_ERROR (err);
@@ -632,11 +634,11 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
         //double time = evKernel.StartEndRuntime ();
         //gettimeofday (&timeEnd, NULL);
         //high_resolution_clock::time_point t2 = high_resolution_clock::now();
-        cout << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(evKernel.StartEndRuntime()) << endl;
-        //double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
-        double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2 - t1).count());
+        cout << algorithm->getKernelLocation() << "-" << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(evKernel.StartEndRuntime()) << endl;
+        double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
+        //double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2-t1).count());
 				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
-        resultDB.AddResult (string(algorithm->getName ()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
+        resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
 
 				if (VERIFICATION) {
 					//algorithm->verify(hostMem_GOut, GOutSize, algorithm->getM(), algorithm->getN(), algorithm->getP(),

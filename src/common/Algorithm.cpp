@@ -1674,12 +1674,12 @@ Algorithm& Algorithm::generateSingleForSimpleV1 (int loopIndex,
   if (loopIndex == 0) {
     oss << getIndent () << "// Just a private variable" << endl;
     if (vectorSize == 1) {
-      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
 			oss << getIndent () << "float PF = (float) P;" << endl;
     }
     else {
-      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
       oss << getIndent () << "float PF = (float) P;" << endl;
     }

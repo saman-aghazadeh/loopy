@@ -27,7 +27,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::GENERATION;
+int executionMode = ExecutionMode::CALCULATION;
 int targetDevice = TargetDevice::FPGA;
 
 /*
@@ -124,6 +124,8 @@ void RunBenchmark (cl_device_id id,
 	srand (time(NULL));
 	OpenCLEngine<float> openCLEngine (ctx, id, executionMode, targetDevice, tests);
 
+	int cus[9] = {1, 5, 15, 25, 35, 45, 55, 65, 75};
+
   bool onlyMeta = true;
   if (executionMode == ExecutionMode::GENERATION)
     onlyMeta = false;
@@ -137,7 +139,7 @@ void RunBenchmark (cl_device_id id,
   int kernelCounter = 1;
   bool localMemory = false;
 
-	for (int ops = 8; ops <= 1024; ops *= 2) {
+	for (int cuNum = 0; cuNum < 9; cuNum++) {
   	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
@@ -150,6 +152,7 @@ void RunBenchmark (cl_device_id id,
       	//  continue;
 
       	for (int loopLength = 131072; loopLength <= 2097152; loopLength *= 2) {
+          //for (int loopLength = 131072; loopLength <= 131072; loopLength *= 2) {
         		int *WGS = new int[1];
         		int *vWGS = new int[1];
         		WGS[0] = workGroupSize;
@@ -162,21 +165,21 @@ void RunBenchmark (cl_device_id id,
                    	string("MAPI") + to_string(memAllocationPerWorkItem) +
 #if SWI_MODE==true
                    	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
+                   	string("OPS") + to_string(16) +
                    	string("SWI"))
 #else
             			 	string("LL") + to_string(loopLength) +
-            			 	string("OPS") + to_string(ops))
+            			 	string("OPS") + to_string(16))
 #endif
         			.KernelNameIs (string("WGS") + string("X") +
                    	string("MAPI") + string("X") +
 #if SWI_MODE==true
                    	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
+                   	string("OPS") + to_string(16) +
                    	string("SWI"))
 #else
                    	string("LL") + string("X") +
-                 		string("OPS") + to_string(ops))
+                 		string("OPS") + to_string(16))
 #endif
       			 	.verificationFunctionIs (verifyWGSXMAPIXLLXOPS1024GAP0)
           	 	.memAllocationPerWorkItemIs (memAllocationPerWorkItem)
@@ -184,12 +187,12 @@ void RunBenchmark (cl_device_id id,
              	.virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV1 ()
-             	.createFor	(ops/4, false, loopLength, "temp1 += temp1 * MF; temp2 += temp2 * NF; temp3 += temp3 * PF; temp4 += temp4 * MF", 1, false, 2*4, 0)
+             	.createFor	(16, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 0)
              	.generateForsSimpleV1 (onlyMeta)
              	.popMetasSimpleV1 ()
              	.endKernelFunction ()
              	.verbose ()
-             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP3-MultiOps/kernel") +
+             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-MultiCUs-OPS16/kernel") +
                      			 	string("WGS") + string("X") +
                            	string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -197,11 +200,11 @@ void RunBenchmark (cl_device_id id,
 #else
                            	string("LL") + string("X") +
 #endif
-	                         	string("OPS") + to_string(ops) +
+	                         	string("OPS") + to_string(16) +
 #if SWI_MODE==true
 						   						 	string("SWI") +
 #endif
-                           	string(".cl"));
+                           	string("-") + to_string(cus[cuNum]) + string("cu.cl"));
 
              	kernelCounter++;
       		}
