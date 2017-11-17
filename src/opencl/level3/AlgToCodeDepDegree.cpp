@@ -27,7 +27,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::GENERATION;
 int targetDevice = TargetDevice::FPGA;
 
 /*
@@ -544,13 +544,13 @@ void RunBenchmark (cl_device_id id,
               .workGroupSizeIs (WGS)
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
-             	.startKernelFunctionSimpleV1 ()
-             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 0)
-             	.generateForsSimpleV1 (onlyMeta)
-             	.popMetasSimpleV1 ()
+             	.startKernelFunctionSimpleV2 ()
+             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 2)
+             	.generateForsSimpleV2 (onlyMeta)
+             	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam/kernel") +
+             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-DepDegree/kernel") +
                           	string("WGS") + string("X") +
                           	string("MAPI") + string("X") +
 #if SWI_MODE==true

@@ -1979,12 +1979,12 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
   if (loopIndex == 0) {
     oss << getIndent () << "// Just a private variable" << endl;
     if (vectorSize == 1) {
-      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
 			oss << getIndent () << "float PF = (float) P;" << endl;
     }
     else {
-      oss << getIndent () << "float MF = (float) M;" << endl;
+      oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
       oss << getIndent () << "float PF = (float) P;" << endl;
     }
@@ -1998,9 +1998,9 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
     stringstream baseIndex2;
 		baseIndex2 << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex);
 
-    if (numOfInstructions != 0) {
-      oss << getIndent () << "long baseIndex" << loopIndex+1 << " = " << baseIndex2.str() << ";" << endl;
-    }
+    //if (numOfInstructions != 0) {
+    //  oss << getIndent () << "long baseIndex" << loopIndex+1 << " = " << baseIndex2.str() << ";" << endl;
+    //}
 
     // This part will participate in copying data from global memory into the local
     // memory. We try to consider the memory coalescing access to reduce the global
@@ -2026,9 +2026,14 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
    			this->currentIndentation--;
     		oss << getIndent () << "}" << endl << endl;
 
-				oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
-        		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
+				//oss << getIndent () << "baseIndex" << loopIndex+1 << " = "
+        //		<< indexingLocalMem.at(numberOfNestedForLoops-1).at(loopIndex) << ";" << endl;
       }
+    }
+
+		if (loopCarriedDepDegree != 1) {
+      oss << getIndent () << "for (int lcdd = 0; lcdd < " << loopCarriedDepDegree << "; lcdd++) {" << endl;
+      this->currentIndentation++;
     }
 
     if (vectorSize == 1) {
@@ -2043,11 +2048,6 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
       oss << getIndent () << "float" << vectorSize << " temp3 = 1.0;" << endl;
       oss << getIndent () << "float" << vectorSize << " temp4 = 1.0;" << endl;
       oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
-    }
-
-		if (loopCarriedDepDegree != 1) {
-      oss << getIndent () << "for (int lcdd = 0; lcdd < " << loopCarriedDepDegree << "; lcdd++) {" << endl;
-      this->currentIndentation++;
     }
 
     CircularNumberGenerator CNG (memAllocationPerWorkItem);
@@ -2073,12 +2073,14 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
       if (vectorSize == 1) {
 				oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
-            << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
+          	//<< indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
+          	<< "2*XGL+lcdd"
             << "] = tempOut;" << endl;
       } else {
         oss << getIndent () << "tempOut = temp1 + temp2 + temp3 + temp4;" << endl;
         oss << getIndent () << "GOut["
-            << indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
+          	//<< indexingFormulas.at(numberOfNestedForLoops-1).at(loopIndex)
+          	<< "2*XGL+lcdd"
             << "] = tempOut.s0";
         for (int i = 1; i < vectorSize; i++) {
           if (i < 10)
