@@ -634,9 +634,9 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
         //double time = evKernel.StartEndRuntime ();
         //gettimeofday (&timeEnd, NULL);
         //high_resolution_clock::time_point t2 = high_resolution_clock::now();
-        cout << algorithm->getKernelLocation() << "-" << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
-        //double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.FullOverheadRuntime());
-        double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2-t1).count());
+        cout << algorithm->getKernelLocation() << "-" << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(evKernel.StartEndRuntime()) << endl;
+      	double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
+        //double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2-t1).count());
 				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
         resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
 

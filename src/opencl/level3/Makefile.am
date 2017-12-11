@@ -20,16 +20,24 @@ serialopencldir = $(bindir)/Serial/OpenCL
 serialopencl_PROGRAMS = AlgToCode \
 												AlgTypeGeneration \
 												AlgToCodeOps \
-												AlgToCodeCUs
+												AlgToCodeCUs \
+												AlgToCodeDepDegree \
+												AlgToCodeDepDegreeST
 
-AlgToCode_SOURCES						=	AlgToCode.cpp main.cpp
-AlgToCode_LDADD							=	$(OCL_LIBS) $(LIBS)
+AlgToCode_SOURCES							=	AlgToCode.cpp main.cpp
+AlgToCode_LDADD								=	$(OCL_LIBS) $(LIBS)
 
-AlgTypeGeneration_SOURCES 	= AlgTypeGeneration.cpp main.cpp
-AlgTypeGeneration_LDADD			= $(OCL_LIBS) $(LIBS)
+AlgTypeGeneration_SOURCES 		= AlgTypeGeneration.cpp main.cpp
+AlgTypeGeneration_LDADD				= $(OCL_LIBS) $(LIBS)
 
-AlgToCodeOps_SOURCES				= AlgToCodeOps.cpp main.cpp
-AlgToCodeOps_LDADD					= $(OCL_LIBS) $(LIBS)
+AlgToCodeOps_SOURCES					= AlgToCodeOps.cpp main.cpp
+AlgToCodeOps_LDADD						= $(OCL_LIBS) $(LIBS)
 
 AlgToCodeCUs_SOURCES					= AlgToCodeCUs.cpp main.cpp
-AlgToCodeCUs_LDADD					= $(OCL_LIBS) $(LIBS)
+AlgToCodeCUs_LDADD						= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeDepDegree_SOURCES		= AlgToCodeDepDegree.cpp main.cpp
+AlgToCodeDepDegree_LDADD			= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeDepDegreeST_SOURCES	= AlgToCodeDepDegreeST.cpp main.cpp
+AlgToCodeDepDegreeST_LDADD		=	$(OCL_LIBS) $(LIBS)

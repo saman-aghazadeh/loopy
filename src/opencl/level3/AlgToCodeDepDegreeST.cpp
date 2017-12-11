@@ -23,7 +23,7 @@
 #define VERIFICATION false
 #define TEMP_INIT_VALUE 1.0
 // Single work item mode
-#define SWI_MODE false
+#define SWI_MODE true
 
 using namespace std;
 
@@ -499,7 +499,6 @@ void RunBenchmark (cl_device_id id,
   
 	for (int ops = 8; ops <= 1024; ops = ops * 2) {
   	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
-      if (ops == 512) continue;
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
          	memAllocationPerWorkItem *= 2) {
@@ -523,8 +522,7 @@ void RunBenchmark (cl_device_id id,
                    	string("MAPI") + to_string(memAllocationPerWorkItem) +
 #if SWI_MODE==true
                    	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
+                       string("OPS") + to_string(ops))
 #else
             			 	string("LL") + to_string(loopLength) +
             			 	string("OPS") + to_string(ops))
@@ -533,8 +531,7 @@ void RunBenchmark (cl_device_id id,
                    	string("MAPI") + string("X") +
 #if SWI_MODE==true
                    	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
+                    string("OPS") + to_string(ops))
 #else
                		 	string("LL") + string("X") +
            				 	string("OPS") + to_string(ops))
@@ -545,12 +542,12 @@ void RunBenchmark (cl_device_id id,
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV2 ()
-             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 256)
+             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 2)
              	.generateForsSimpleV2 (onlyMeta)
              	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-DepDegree256/kernel") +
+             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-ST/kernel") +
                           	string("WGS") + string("X") +
                           	string("MAPI") + string("X") +
 #if SWI_MODE==true
@@ -559,9 +556,6 @@ void RunBenchmark (cl_device_id id,
                            	string("LL") + string("X") +
 #endif
 						               	string("OPS") + to_string(ops) +
-#if SWI_MODE==true
-					                 	string("SWI") +
-#endif
                            	string(".cl"));
 
              	kernelCounter++;

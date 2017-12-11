@@ -1979,12 +1979,12 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
   if (loopIndex == 0) {
     oss << getIndent () << "// Just a private variable" << endl;
     if (vectorSize == 1) {
-      oss << getIndent () << "float MF = (float) XGL;" << endl;
+      //oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
 			oss << getIndent () << "float PF = (float) P;" << endl;
     }
     else {
-      oss << getIndent () << "float MF = (float) XGL;" << endl;
+      //oss << getIndent () << "float MF = (float) XGL;" << endl;
       oss << getIndent () << "float NF = (float) N;" << endl;
       oss << getIndent () << "float PF = (float) P;" << endl;
     }
@@ -2041,12 +2041,14 @@ Algorithm& Algorithm::generateSingleForSimpleV2 (int loopIndex,
       oss << getIndent () << "float temp2 = 1.0;" << endl;
       oss << getIndent () << "float temp3 = 1.0;" << endl;
       oss << getIndent () << "float temp4 = 1.0;" << endl;
+      oss << getIndent () << "float MF = (float) lcdd;" << endl;
       oss << getIndent () << "float tempOut;" << endl;
     } else {
       oss << getIndent () << "float" << vectorSize << " temp1 = 1.0;" << endl;
       oss << getIndent () << "float" << vectorSize << " temp2 = 1.0;" << endl;
       oss << getIndent () << "float" << vectorSize << " temp3 = 1.0;" << endl;
       oss << getIndent () << "float" << vectorSize << " temp4 = 1.0;" << endl;
+      oss << getIndent () << "float" << vectorSize << " MF = (float) lcdd;" << endl;
       oss << getIndent () << "float" << vectorSize << " tempOut;" << endl;
     }
 
