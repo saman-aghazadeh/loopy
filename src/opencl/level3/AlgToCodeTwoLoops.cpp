@@ -27,7 +27,7 @@
 
 using namespace std;
 
-int executionMode = ExecutionMode::CALCULATION;
+int executionMode = ExecutionMode::GENERATION;
 int targetDevice = TargetDevice::FPGA;
 
 /*
@@ -498,45 +498,55 @@ void RunBenchmark (cl_device_id id,
 	*/
   
 	for (int ops = 8; ops <= 1024; ops = ops * 2) {
-  	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+  	for (int workGroupSize = 16; workGroupSize <= 16; workGroupSize *= 2) {
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
          	memAllocationPerWorkItem *= 2) {
+
                      //if (workGroupSize * memAllocationPerWorkItem > 1024 && localMemory)
                      //continue;
 
                      //if (workGroupSize * memAllocationPerWorkItem > 4096)
                      //continue;
 
-      	for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
+      	for (int loopLength1 = 256; loopLength1 <= 1024; loopLength1 *= 2) {
+          for (int loopLength2 = 256; loopLength2 <= 1024; loopLength2 *= 2) {
                      //if (loopLength == 262144) break;
-        		int *WGS = new int[1];
-        		int *vWGS = new int[1];
+        		int *WGS = new int[2];
+        		int *vWGS = new int[2];
         		WGS[0] = workGroupSize;
+            WGS[1] = workGroupSize;
         		vWGS[0] = workGroupSize;
+            vWGS[1] = workGroupSize;
 
         		algorithmFactory.createNewAlgorithm ()
           		.targetDeviceIs (AlgorithmTargetDevice::FPGA)
           		.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-          		.NameIs (string("WGS") + to_string(workGroupSize) +
-                   	string("MAPI") + to_string(memAllocationPerWorkItem) +
+          		.NameIs (string("WGSF") + to_string(workGroupSize) +
+                       string("WGSS") + to_string(workGroupSize) +
+                   		 string("MAPI") + to_string(memAllocationPerWorkItem) +
 #if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
+                   		 string("LLF") + to_string(loopLength1) +
+                       string("LLS") + to_string(loopLength2) +
+                   		 string("OPS") + to_string(ops) +
+                   		 string("SWI"))
 #else
-            			 	string("LL") + to_string(loopLength) +
-            			 	string("OPS") + to_string(ops))
+            			 		 string("LLF") + to_string(loopLength1) +
+              				 string("LLS") + to_string(loopLength2) +
+            			 		 string("OPS") + to_string(ops))
 #endif
-        			.KernelNameIs (string("WGS") + string("X") +
-                   	string("MAPI") + string("X") +
+        			.KernelNameIs (string("WGSF") + string("X") +
+                             string("WGSS") + string("X") +
+                   		 			 string("MAPI") + string("X") +
 #if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
+                   		 			 string("LLF") + to_string(loopLength1) +
+                             string("LLS") + to_string(loopLength2) +
+                   		 			 string("OPS") + to_string(ops) +
+                   		 			 string("SWI"))
 #else
-               		 	string("LL") + string("X") +
-           				 	string("OPS") + to_string(ops))
+               		 		 			 string("LLF") + string("X") +
+                 						 string("LLS") + string("X") +
+           				 		 			 string("OPS") + to_string(ops))
 #endif
              	.verificationFunctionIs (verifyWGSXMAPIXLLXOPS64GAP0)
           	 	.memAllocationPerWorkItemIs (memAllocationPerWorkItem)
@@ -544,18 +554,22 @@ void RunBenchmark (cl_device_id id,
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV2 ()
-             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 256)
+              .createFor (0, false, loopLength1, "temp1 += temp1 * MF", 1, false, 2, 0)
+             	.createFor (ops, false, loopLength2, "temp1 += temp1 * MF", 1, false, 2, 0)
              	.generateForsSimpleV2 (onlyMeta)
              	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-            	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-DepDegree256-II-Cond3/kernel") +
-                          	string("WGS") + string("X") +
+             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-TwoLoops/kernel") +
+                          	string("WGSF") + string("X") +
+                            string("WGSS") + string("X") +
                           	string("MAPI") + string("X") +
 #if SWI_MODE==true
-                           	string("LL") + to_string(loopLength) +
+                           	string("LLF") + to_string(loopLength1) +
+                            string("LLS") + to_string(loopLength2) +
 #else
-                           	string("LL") + string("X") +
+                           	string("LLF") + string("X") +
+                            string("LLS") + string("X") +
 #endif
 						               	string("OPS") + to_string(ops) +
 #if SWI_MODE==true
@@ -565,12 +579,13 @@ void RunBenchmark (cl_device_id id,
 
              	kernelCounter++;
       		}
+    		}
     	}
   	}
 	}
 	
 
-/*
+	/*
 	for (int workGroupSize1 = 16; workGroupSize1 <= 16; workGroupSize1 *= 2) {
     for (int workGroupSize2 = 16; workGroupSize2 <= =16; workGroupSize2 *= 2) {
     	for (int memAllocationPerWorkItem = 2;
@@ -607,6 +622,7 @@ void RunBenchmark (cl_device_id id,
               .virtualWorkGroupSizeIs (vWGS)
               .memReuseFactorIs (1024)
               .startKernelFunctionSimpleV1 ()
+              .createFor (0, false, loopLength1, "temp1 += temp1 * MF", 1, false, 2)
               .createFor (1024, false, loopLength2, "temp1 += temp1 * MF", 1, false, 2)
               .generateForsSimpleV1 (onlyMeta)
               .popMetasSimpleV1 ()

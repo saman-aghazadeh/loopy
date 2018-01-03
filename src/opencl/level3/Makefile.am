@@ -22,7 +22,8 @@ serialopencl_PROGRAMS = AlgToCode \
 												AlgToCodeOps \
 												AlgToCodeCUs \
 												AlgToCodeDepDegree \
-												AlgToCodeDepDegreeST
+												AlgToCodeDepDegreeST \
+												AlgToCodeTwoLoops
 
 AlgToCode_SOURCES							=	AlgToCode.cpp main.cpp
 AlgToCode_LDADD								=	$(OCL_LIBS) $(LIBS)
@@ -41,3 +42,6 @@ AlgToCodeDepDegree_LDADD			= $(OCL_LIBS) $(LIBS)
 
 AlgToCodeDepDegreeST_SOURCES	= AlgToCodeDepDegreeST.cpp main.cpp
 AlgToCodeDepDegreeST_LDADD		=	$(OCL_LIBS) $(LIBS)
+
+AlgToCodeTwoLoops_SOURCES			=	AlgToCodeTwoLoops.cpp main.cpp
+AlgToCodeTwoLoops_LDADD				= $(OCL_LIBS) $(LIBS)
