@@ -23,7 +23,12 @@ serialopencl_PROGRAMS = AlgToCode \
 												AlgToCodeCUs \
 												AlgToCodeDepDegree \
 												AlgToCodeDepDegreeST \
-												AlgToCodeTwoLoops
+												AlgToCodeTwoLoops \
+												AlgToCodeInterleaving \
+												AlgToCodeUnrollTest \
+												AlgToCodeUnfolding \
+												AlgToCodeInterleaving2 \
+												AlgToCodeUnfolding2
 
 AlgToCode_SOURCES							=	AlgToCode.cpp main.cpp
 AlgToCode_LDADD								=	$(OCL_LIBS) $(LIBS)
@@ -45,3 +50,18 @@ AlgToCodeDepDegreeST_LDADD		=	$(OCL_LIBS) $(LIBS)
 
 AlgToCodeTwoLoops_SOURCES			=	AlgToCodeTwoLoops.cpp main.cpp
 AlgToCodeTwoLoops_LDADD				= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeInterleaving_SOURCES	=	AlgToCodeInterleaving.cpp main.cpp
+AlgToCodeInterleaving_LDADD		= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeUnrollTest_SOURCES		= AlgToCodeUnrollTest.cpp main.cpp
+AlgToCodeUnrollTest_LDADD			= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeUnfolding_SOURCES		= AlgToCodeUnfolding.cpp main.cpp
+AlgToCodeUnfolding_LDADD			= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeInterleaving2_SOURCES	= AlgToCodeInterleaving2.cpp main.cpp
+AlgToCodeInterleaving2_LDADD		= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeUnfolding2_SOURCES		= AlgToCodeUnfolding2.cpp main.cpp
+AlgToCodeUnfolding2_LDADD			= $(OCL_LIBS) $(LIBS)

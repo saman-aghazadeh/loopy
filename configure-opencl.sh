@@ -1,1 +1,1 @@
-./configure CPPFLAGS="-I/usr/local/cuda-8.0/include -std=c++11" LDFLAGS="-L/usr/local/cuda-8.0/lib64" 
+./configure CPPFLAGS="-I/home/tools/altera/16.0-pro/hld/host/include -std=c++11" LDFLAGS="-L/home/tools/altera/16.0-pro/hld/host/linux64/lib"

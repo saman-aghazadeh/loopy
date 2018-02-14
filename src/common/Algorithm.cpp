@@ -2698,6 +2698,8 @@ Algorithm& Algorithm::popMetasSimpleV2 () {
 
     newFlops *= ((long long)(forLoops.at(i).getNumOfInstructions())
                  * (long long)(forLoops.at(i).getNumOfHomogenousWorkItems()));
+    // This is a fast and simple hack for a basic checking of something. Should be changed immediately
+    //newFlops *= ((long long)16) * (long long)(forLoops.at(i).getNumOfHomogenousWorkItems());
     for (int j = i-1; j >= 0; j--)
       newFlops *= ((long long)(forLoops.at(j).getNumOfHomogenousWorkItems()));
 
