@@ -500,7 +500,7 @@ void RunBenchmark (cl_device_id id,
 	int workGroupSizes[13] = {1, 2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256}; 
 
 	for (int ops = 4; ops <= 4; ops = ops * 2) {
-    for (int workGroupSizeIndex = 0; workGroupSizeIndex < 13; workGroupSizeIndex++) {
+    for (int workGroupSizeIndex = 3; workGroupSizeIndex < 4; workGroupSizeIndex++) {
       int workGroupSize = workGroupSizes[workGroupSizeIndex];
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;

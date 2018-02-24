@@ -20,6 +20,11 @@ public:
   enum targetLanguage {CUDA, OpenCL};
 };
 
+class OperationalIntensity {
+public:
+  enum operationalIntensity {HALF, ONE, TWO, FOUR, EIGHT, SIXTEEN};
+};
+
 class CircularNumberGenerator {
 public:
 	CircularNumberGenerator (int topBound);
@@ -130,6 +135,9 @@ public:
                                       long LL,
                                       int localSize));
 
+  // set operational intensity of the kernel
+	Algorithm& operationalIntensityIs (int operationalIntensity);
+
 	// Start definition of the kernel function headerB
   Algorithm& startKernelFunction ();
 
@@ -148,6 +156,30 @@ public:
   // loop iterations. Using that, one can control the
   // degree of parallelness in their system.
   Algorithm& startKernelFunctionSimpleV2 ();
+
+  // This is the next generation of our simple functions.
+  // In this version we got memory access as well.
+  // This version only support one neseted for loops.
+  // More nested for loop will be supported in future
+  // versions.
+  Algorithm& startKernelFunctionFullV1 ();
+
+	// This is a completion of full version 1,
+  // which replace global memory accesses with
+  // local version
+  Algorithm& startKernelFunctionFullV2 ();
+
+	// Almost the same as full version 1, but this
+  // time memory access is unoptimized as much
+  // as possible.
+  Algorithm& startKernelFunctionFullV3 ();
+
+  // The same as V3, but using local memory instead
+  Algorithm& startKernelFunctionFullV4 ();
+
+  // Almost the same as version 1, this time
+  // optimize for FPGA memory access. 
+	Algorithm& startKernelFunctionFullV1FPGA ();
 
   // this will terminate the kernel function initiation
 	Algorithm& endKernelFunction ();
@@ -230,6 +262,49 @@ public:
                                   vector<vector<string> >& indexingFormulasPrev,
                                   vector<vector<string> >& indexingLocalMem);
 
+	Algorithm& generateForsFullV1 (bool onlyMeta);
+
+  // Generates the body of a single for loop for the simple
+  // version full 1. This function will be called recursively,
+  // until it finishes.
+	Algorithm& generateSingleForFullV1 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
+	Algorithm& generateForsFullV2 (bool onlyMeta);
+
+  // Generates the body of a single for loop for the simple
+  // version full 2. This function will be called recursively.
+  // until it finishes.
+  Algorithm& generateSingleForFullV2 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
+	Algorithm& generateForsFullV3 (bool onlyMeta);
+
+  // Generates the body of a single for loop for the version three. 
+	Algorithm& generateSingleForFullV3 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
+	Algorithm& generateForsFullV1FPGA (bool onlyMeta);
+
+  Algorithm& generateSingleForFullV1FPGA (int loopIndex,
+                                          vector<vector<string> >& indexingFormulas,
+                                          vector<vector<string> >& indexingFormulasPrev,
+                                          vector<vector<string> >& indexingLocalMem);
+
+	Algorithm& generateForsFullV4 (bool onlyMeta);
+
+  // Generate the body of a single for loop for the version four.
+  Algorithm& generateSingleForFullV4 (int loopIndex,
+                                  vector<vector<string> >& indexingFormulas,
+                                  vector<vector<string> >& indexingFormulasPrev,
+                                  vector<vector<string> >& indexingLocalMem);
+
 
   // Writes the created kernel into a file
   Algorithm& writeToFile (string fileName);
@@ -259,6 +334,22 @@ public:
   // third version of the algorithm.
 	Algorithm& popMetasSimpleV2 ();
 
+  // generate all meta information of the algorithm, for the
+  // first full version.
+	Algorithm& popMetasFullV1 ();
+
+  // generate all meta information of the algorithm, for the
+  // second full version.
+	Algorithm& popMetasFullV2 ();
+
+	// generate all meta information of the algorithm, for the
+  // third full version.
+	Algorithm& popMetasFullV3 ();
+
+  // generate all meta information of the algorithm, for the
+  // fourth full version.
+  Algorithm& popMetasFullV4 ();
+
   long long getGInSize ();
   long long getGOutSize ();
 	string getKernelLocation ();
@@ -272,6 +363,7 @@ public:
   int getM ();
   int getN ();
   int getP ();
+  int getOperationalIntensity ();
 	bool getIsV2 ();
 
 	int getAlgorithmTargetDevice ();
@@ -292,6 +384,7 @@ private:
   int memoryReuseFactor;
 	vector<WorkItemSet> forLoops;
   int numberOfNestedForLoops;
+  int operationalIntensity;
   string currentKernelName;
   string currentName;
   bool onlyMeta;

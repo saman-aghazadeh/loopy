@@ -496,9 +496,12 @@ void RunBenchmark (cl_device_id id,
     }
   }
 	*/
-  
-	for (int ops = 8; ops <= 128; ops = ops * 2) {
-    for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
+
+	int unrollFactor = 0;
+  int unrolls[] = {1, 8, 16, 24, 40, 48, 56, 64, 72, 96, 104, 112, 120, 128};
+	for (int unrollIndex = 0; unrollIndex < 14; unrollIndex++) {
+    unrollFactor = unrolls[unrollIndex];
+      int workGroupSize = 256;
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
          	memAllocationPerWorkItem *= 2) {
@@ -509,7 +512,6 @@ void RunBenchmark (cl_device_id id,
                      //continue;
 
       	for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
-                     //if (loopLength == 262144) break;
         		int *WGS = new int[1];
         		int *vWGS = new int[1];
         		WGS[0] = workGroupSize;
@@ -518,54 +520,27 @@ void RunBenchmark (cl_device_id id,
         		algorithmFactory.createNewAlgorithm ()
           		.targetDeviceIs (AlgorithmTargetDevice::FPGA)
           		.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-          		.NameIs (string("WGS") + to_string(workGroupSize) +
-                   	string("MAPI") + to_string(memAllocationPerWorkItem) +
-#if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
-#else
-            			 	string("LL") + to_string(loopLength) +
-            			 	string("OPS") + to_string(ops))
-#endif
-        			.KernelNameIs (string("WGS") + string("X") +
-                   	string("MAPI") + string("X") +
-#if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                   	string("OPS") + to_string(ops) +
-                   	string("SWI"))
-#else
-               		 	string("LL") + string("X") +
-           				 	string("OPS") + to_string(ops))
-#endif
-             	.verificationFunctionIs (verifyWGSXMAPIXLLXOPS64GAP0)
+          		.NameIs (string("WGS") + to_string(workGroupSize)
+                       + string("MAPI") + to_string(memAllocationPerWorkItem)
+                       + string("LL") + to_string(loopLength)
+                       + string("OPS") + to_string(8)
+                       + string("UF") + to_string(unrollFactor))
+        			.KernelNameIs (string("unroll") + to_string(unrollFactor))
           	 	.memAllocationPerWorkItemIs (memAllocationPerWorkItem)
               .workGroupSizeIs (WGS)
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV2 ()
-              .createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 128)
+              .createFor	(1, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 128)
              	.generateForsSimpleV2 (onlyMeta)
              	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-            	.writeToFile (string("/home/user/sbiookag/Algs/GAP0-Full-OIHALF-DepDegree128/kernel") +
-                          	string("WGS") + string("X") +
-                          	string("MAPI") + string("X") +
-#if SWI_MODE==true
-                           	string("LL") + to_string(loopLength) +
-#else
-                           	string("LL") + string("X") +
-#endif
-						               	string("OPS") + to_string(ops) +
-#if SWI_MODE==true
-					                 	string("SWI") +
-#endif
-                           	string(".cl"));
+            	.writeToFile (string("/home/user/sbiookag/Algs/unfolding3/unroll") +
+                            to_string(unrollFactor) +  string(".cl"));
 
              	kernelCounter++;
       		}
-    	}
   	}
 	}
 	
