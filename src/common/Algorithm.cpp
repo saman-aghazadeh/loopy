@@ -868,7 +868,7 @@ Algorithm& Algorithm::generateForsSimpleV2 (bool onlyMeta) {
         }
       } else if (numberOfNestedForLoops == 2) {
         if (i == 0) {
-          if (workItemSet.getDependency() == false) {
+          if ( workItemSet.getDependency() == false) {
           	oss << getIndent () << "const int YGL = get_global_id(" << counter << ");" << endl;
           	oss << getIndent () << "const int YGRid = get_group_id(" << counter << ");" << endl;
           	oss << getIndent () << "const int YGRnum = get_num_groups(" << counter << ");" << endl;
@@ -983,6 +983,14 @@ Algorithm& Algorithm::generateForsSimpleV2 (bool onlyMeta) {
 
     generateSingleForSimpleV2 (0, indexingFormulas, indexingFormulasPrev, indexingLocalMem);
   }
+
+  return *this;
+
+}
+
+Algorithm& Algorithm::generateForsMatrixMultiplication (bool onlyMeta) {
+
+	this->onlyMeta = onlyMeta;
 
   return *this;
 
@@ -4502,7 +4510,6 @@ Algorithm& Algorithm::generateSingleForFullV1FPGA (int loopIndex,
 
 }
 
-
 Algorithm& Algorithm::writeToFile (string fileName) {
 
   if (!onlyMeta) {
@@ -4615,6 +4622,21 @@ Algorithm& Algorithm::verificationFunctionIs (void (*verify)
 
   return *this;
 
+}
+
+Algorithm& Algorithm::verificationFunctionIs (void (*verify)
+                                              (float* A,
+                                               float* B,
+                                               float* C,
+                                               float* R,
+                                               int A_height, int A_width,
+                                               int B_height, int B_width,
+                                               int C_height, int C_width,
+                                               int batch_size)) {
+  // Do verification
+  this->verifyMatrixPipeline = verify;
+
+  return *this;
 }
 
 Algorithm& Algorithm::operationalIntensityIs (int operationalIntensity) {

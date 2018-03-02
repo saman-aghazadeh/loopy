@@ -135,6 +135,14 @@ public:
                                       long LL,
                                       int localSize));
 
+  Algorithm& verificationFunctionIs (void (*verify)
+                                     (float* A, float* B,
+                                      float* C, float* R,
+                                      int A_height, int A_width,
+                                      int B_height, int B_width,
+                                      int C_height, int C_width,
+                                      int batch_size));
+
   // set operational intensity of the kernel
 	Algorithm& operationalIntensityIs (int operationalIntensity);
 
@@ -253,6 +261,9 @@ public:
   // memory effect.
   Algorithm& generateForsSimpleV2 (bool onlyMeta);
 
+  // a mockup for "for" generation in matrix multiplication
+  // just being able to handle onlyMeta parameter
+  Algorithm& generateForsMatrixMultiplication (bool onlyMeta);
 
 	// Generates the body of a single for loop for the simple
   // version2. This function will be called recursively, untill
@@ -373,6 +384,7 @@ public:
 
   // Pointer to verification function
 	void (*verify)(float*, int, float, float, float, long, int);
+	void (*verifyMatrixPipeline) (float*, float*, float*, float*, int, int, int, int, int, int, int);
 
 private:
 

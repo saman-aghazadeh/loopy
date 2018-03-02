@@ -25,3 +25,7 @@ Algorithm* AlgorithmFactory::nextAlgorithm () {
   else
     return NULL;
 }
+
+void AlgorithmFactory::resetIndex () {
+  this->index = 0;
+}

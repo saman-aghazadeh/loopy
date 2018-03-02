@@ -29,7 +29,8 @@ serialopencl_PROGRAMS = AlgToCode \
 												AlgToCodeUnfolding \
 												AlgToCodeInterleaving2 \
 												AlgToCodeUnfolding2 \
-												AlgToCodeUnfolding3
+												AlgToCodeUnfolding3 \
+											  AlgToCodeMatrixMultiplicationPipeline
 
 AlgToCode_SOURCES								=	AlgToCode.cpp main.cpp
 AlgToCode_LDADD									=	$(OCL_LIBS) $(LIBS)
@@ -69,3 +70,6 @@ AlgToCodeUnfolding2_LDADD				= $(OCL_LIBS) $(LIBS)
 
 AlgToCodeUnfolding3_SOURCES			= AlgToCodeUnfolding3.cpp main.cpp
 AlgToCodeUnfolding3_LDADD				= $(OCL_LIBS) $(LIBS)
+
+AlgToCodeMatrixMultiplicationPipeline_SOURCES			= AlgToCodeMatrixMultiplicationPipeline.cpp main.cpp
+AlgToCodeMatrixMultiplicationPipeline_LDADD				= $(OCL_LIBS) $(LIBS)

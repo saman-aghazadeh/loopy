@@ -12,7 +12,8 @@ public:
   ~AlgorithmFactory ();
 
 	Algorithm& createNewAlgorithm ();
-	Algorithm* nextAlgorithm();
+ 	Algorithm* nextAlgorithm();
+  void resetIndex ();
 
 private:
 	vector<Algorithm*> algorithms;
