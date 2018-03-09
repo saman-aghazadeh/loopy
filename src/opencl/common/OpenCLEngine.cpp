@@ -12,7 +12,7 @@ using namespace std::chrono;
 #define VERBOSE true
 #define PRIVATE_VECTOR_SIZE 5
 #define TEMP_INIT_VALUE 1.0
-#define VERIFICATION true
+#define VERIFICATION false
 #define GENERATE_PTX true
 
 #define SWI_MODE false
@@ -921,11 +921,11 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
 		//CL_CHECK_ERROR (err);
 
 		const size_t GWS1[3] = {A_height, B_width, batch_size};
-    const size_t LWS1[3] = {32, 32, 1};
+    const size_t LWS1[3] = {8, 8, 1};
 
 
     const size_t GWS2[3] = {A_height, C_width, batch_size};
-    const size_t LWS2[3] = {32, 32, 1};
+    const size_t LWS2[3] = {8, 8, 1};
 
 		Event evKernel1 ("Kernel1");
     Event evKernel2 ("Kernel2");
@@ -943,13 +943,13 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
                                   NULL,
                                   &evKernel1.CLEvent());
 
-		clFinish (queue);
+		//clFinish (queue);
     CL_CHECK_ERROR (err);
-    err = clFinish (queue);
+    //err = clFinish (queue);
     CL_CHECK_ERROR (err);
-    err = clWaitForEvents (1, &evKernel1.CLEvent());
+    //err = clWaitForEvents (1, &evKernel1.CLEvent());
     CL_CHECK_ERROR (err);
-    evKernel1.FillTimingInfo ();
+    //evKernel1.FillTimingInfo ();
 
 		err = clEnqueueNDRangeKernel (queue,
                                   kernel2,
@@ -961,23 +961,28 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
                                   NULL,
                                   &evKernel2.CLEvent());
 
-    clFinish (queue);
+    //clFinish (queue);
     CL_CHECK_ERROR (err);
-    err =clFinish (queue);
+    //err =clFinish (queue);
     CL_CHECK_ERROR (err);
     err = clWaitForEvents (1, &evKernel2.CLEvent());
     CL_CHECK_ERROR (err);
 
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
+		clFinish (queue);
+
 		evKernel2.FillTimingInfo ();
 
 		readbackMemObject (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
 
-		cout << algorithm->getKernelLocation () << "-" << algorithm->getName() << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
+		cout << algorithm->getKernelLocation () << "-" << algorithm->getName() << " " << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
 
-		double gflops = (((A_height * B_width) * 2 * A_width) + ((A_height * C_width) * 2 * B_width)) / (double)(duration_cast<nanoseconds>(t2-t1).count());
+		double gflops = (((A_height * B_width) * 2 * A_width) * batch_size + ((A_height * C_width) * 2 * B_width) * batch_size) / (double)(duration_cast<nanoseconds>(t2-t1).count());
+
     resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size), sizeStr, "GFLOPS", gflops );
+
+    resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), sizeStr, "Matrix/ms", batch_size / ((double)(duration_cast<nanoseconds>(t2-t1).count()) / 1000000));
 
     if (VERIFICATION) {
       algorithm->verifyMatrixPipeline (hostMem_A, hostMem_B, hostMem_C, verification_R,
@@ -1025,8 +1030,8 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   delete[] hostMem_I;
   delete[] verification_R;
 
-
 }
+
 
 template <class T>
 string OpenCLEngine<T>::preparedVarDeclFormula (char *varDeclFormula, int depth) {

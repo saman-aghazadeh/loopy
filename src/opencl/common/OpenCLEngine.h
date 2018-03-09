@@ -86,7 +86,7 @@ public:
                     AlgorithmFactory& algorithmFactory);
 
   // Executing Matrix Pipeline Example
-	void executeMatrixPipeline (cl_device_id,
+	void executeMatrixPipeline (cl_device_id id,
                               cl_context ctx,
                               cl_command_queue queue,
                               ResultDatabase &resultDB,
@@ -97,6 +97,19 @@ public:
                               int B_height, int B_width,
                               int C_height, int C_width,
                               int batch_size);
+
+  // Executing Matrix Pipeline Example V3
+	void executeMatrixPipelineV3 (cl_device_id id,
+                                cl_context ctx,
+                                cl_command_queue queue,
+                                ResultDatabase &resultDB,
+                                OptionParser &op,
+                                char* precision,
+                                AlgorithmFactory& algorithmFactory,
+                                int A_height, int A_width,
+                                int B_height, int B_width,
+                                int C_height, int C_width,
+                                int batch_size);
 
   // Validating correctness of given benchmark meta information
   void validate_benchmark ();

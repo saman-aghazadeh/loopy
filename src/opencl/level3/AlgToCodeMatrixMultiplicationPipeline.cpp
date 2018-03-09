@@ -140,18 +140,18 @@ void RunBenchmark (cl_device_id id,
 	algorithmFactory.createNewAlgorithm ()
     .targetDeviceIs (AlgorithmTargetDevice::GPU)
     .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-    .NameIs ("MatrixMultiplication2")
-    .KernelNameIs ("MatrixMultiplication2")
+    .NameIs ("MatrixMultiplication3")
+    .KernelNameIs ("MatrixMultiplication3")
     .verificationFunctionIs (verifyMatrixMultiplication)
     .generateForsMatrixMultiplication (onlyMeta)
-		.writeToFile (string("/home/users/saman/Algs/mm/MatrixMultiplication2.cl"));
+		.writeToFile (string("/home/users/saman/Algs/mm/MatrixMultiplication3.cl"));
 
 
 	if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL) {
-		for (int i = 32; i < 4096; i=i*2) {
+		for (int i = 1; i < 4096; i=i*2) {
 			cout << "Set batch_size to " << i << endl;
       openCLEngine.executeMatrixPipeline (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory,
-                                          32, 32, 32, 32, 32, 32, i);
+                                          64, 64, 64, 64, 64, 64, i);
       algorithmFactory.resetIndex ();
     }
   }
