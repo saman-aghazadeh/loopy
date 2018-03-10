@@ -17,6 +17,13 @@
 #include "Algorithm.h"
 #include "AlgorithmFactory.h"
 #include "Verify.h"
+#include <thread>
+#include <chrono>
+#include <future>
+
+
+#include <aocl_mmd.h>
+
 
 #define PRIVATE_VECTOR_SIZE 5
 #define VERBOSE false
@@ -115,6 +122,42 @@ struct _algorithm_type tests[] = {
 
 //}
 
+void powerMeasure (cl_device_id id, future<void> futureObj) {
+
+	ofstream myFile;
+  myFile.open ("power.out");
+
+	typedef void* (*get_board_extension_function_address_fn_t)(const char* func_name, cl_device_id device);
+  typedef void* (*aocl_mmd_card_info_fn_t)(const char*, aocl_mmd_info_t, size_t, void*, size_t*);
+
+  void *tempPointer;
+  float power;
+  size_t returnedSize;
+
+  get_board_extension_function_address_fn_t board_extension_function_address =
+    (get_board_extension_function_address_fn_t) clGetExtensionFunctionAddress ("clGetBoardExtensionFunctionAddressAltera");
+
+	if (board_extension_function_address == NULL) {
+    printf ("Failed to get clGetBoardExtensionFunctionAddressAltera\n");
+  }
+
+  tempPointer = board_extension_function_address ("aocl_mmd_card_info", id);
+	aocl_mmd_card_info_fn_t aocl_mmd_card_info_fn = (aocl_mmd_card_info_fn_t)tempPointer;
+
+  if (aocl_mmd_card_info_fn == NULL) {
+    printf ("Failed to get aocl_mmd_card_info_fn address");
+  }
+
+  while (futureObj.wait_for (chrono::milliseconds(1)) == future_status::timeout) {
+  	aocl_mmd_card_info_fn("aclnalla_pcie0", AOCL_MMD_POWER, sizeof(float), (void*) &power, &returnedSize);
+    myFile << "Power is " << power << endl;
+    this_thread::sleep_for (chrono::milliseconds(500));
+  	//printf ("Power = %f W\n", power);
+  }
+
+}
+
+
 void RunBenchmark (cl_device_id id,
                    cl_context ctx,
                    cl_command_queue queue,
@@ -137,6 +180,11 @@ void RunBenchmark (cl_device_id id,
   int kernelCounter = 1;
   bool localMemory = false;
 
+  promise<void> exitSignal;
+  future<void> futureObj = exitSignal.get_future ();
+
+	thread power (powerMeasure, id, move(futureObj));
+
 	algorithmFactory.createNewAlgorithm ()
     .targetDeviceIs (AlgorithmTargetDevice::FPGA)
     .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
@@ -144,7 +192,7 @@ void RunBenchmark (cl_device_id id,
     .KernelNameIs ("MatrixMultiplication")
     .verificationFunctionIs (verifyMatrixMultiplication)
     .generateForsMatrixMultiplication (onlyMeta)
-		.writeToFile (string("/home/users/saman/Algs/mm/MatrixMultiplication.cl"));
+		.writeToFile (string("/home/user/sbiookag/Algs/mm/bin2/MatrixMultiplication.cl"));
 
 
 	if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL) {
@@ -155,6 +203,9 @@ void RunBenchmark (cl_device_id id,
       algorithmFactory.resetIndex ();
     }
   }
+
+	exitSignal.set_value ();
+
 
 }
 
