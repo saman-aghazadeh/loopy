@@ -734,10 +734,24 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
 	if (program == NULL) exit (0);
   if (verbose) cout << "Program Created Successfully!" << endl;
 
-  kernel1 = clCreateKernel (program, (algorithm->getKernelName ()).c_str(), &err);
+  string kernel1Name;
+	if (targetDevice == AlgorithmTargetDevice::FPGA) {
+    kernel1Name = algorithm->getKernelName () + string("1Size8");
+  } else {
+    kernel1Name = algorithm->getKernelName ();
+  }
+
+  string kernel2Name;
+  if (targetDevice == AlgorithmTargetDevice::FPGA) {
+    kernel2Name = algorithm->getKernelName () + string("2Size8");
+  } else {
+    kernel2Name = algorithm->getKernelName ();
+  }
+
+  kernel1 = clCreateKernel (program, kernel1Name.c_str(), &err);
   if (verbose) cout << "Kernel name is " << algorithm->getKernelName () << endl;
   CL_CHECK_ERROR (err);
-	kernel2 = clCreateKernel (program, (algorithm->getKernelName ()).c_str(), &err);
+	kernel2 = clCreateKernel (program, kernel2Name.c_str(), &err);
   CL_CHECK_ERROR (err);
   if (verbose) cout << "Kernel Created Successfully!" << endl;
 
