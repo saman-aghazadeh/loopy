@@ -497,7 +497,7 @@ void RunBenchmark (cl_device_id id,
   }
 	*/
   
-	for (int ops = 8; ops <= 128; ops = ops * 2) {
+	for (int ops = 128; ops <= 1024; ops = ops * 2) {
     for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
@@ -508,7 +508,7 @@ void RunBenchmark (cl_device_id id,
                      //if (workGroupSize * memAllocationPerWorkItem > 4096)
                      //continue;
 
-      	for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
+      	for (int loopLength = 65536; loopLength <= 262144; loopLength *= 2) {
                      //if (loopLength == 262144) break;
         		int *WGS = new int[1];
         		int *vWGS = new int[1];
@@ -544,12 +544,12 @@ void RunBenchmark (cl_device_id id,
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV2 ()
-              .createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 128)
-             	.generateForsSimpleV2 (onlyMeta)
+              .createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 256)
+                 .generateForsSimpleV2 (onlyMeta)
              	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-            	.writeToFile (string("/home/user/sbiookag/Algs/GAP0-Full-OIHALF-DepDegree128/kernel") +
+                 .writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-DepDegree256-II/kernel") +
                           	string("WGS") + string("X") +
                           	string("MAPI") + string("X") +
 #if SWI_MODE==true

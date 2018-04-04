@@ -376,6 +376,7 @@ public:
   int getP ();
   int getOperationalIntensity ();
 	bool getIsV2 ();
+  vector<WorkItemSet>* getForLoop ();
 
 	int getAlgorithmTargetDevice ();
   int getAlgorithmTargetLanguage ();

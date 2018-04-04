@@ -5514,6 +5514,10 @@ bool Algorithm::getIsV2 () {
   return isV2;
 }
 
+vector<WorkItemSet>* Algorithm::getForLoop () {
+  return &forLoops;
+}
+
 int Algorithm::getAlgorithmTargetDevice () {
   return this->algorithmTargetDevice;
 }

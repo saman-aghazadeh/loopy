@@ -182,27 +182,28 @@ void RunBenchmark (cl_device_id id,
 
   promise<void> exitSignal;
   future<void> futureObj = exitSignal.get_future ();
-
+  //
 	thread power (powerMeasure, id, move(futureObj));
 
 	algorithmFactory.createNewAlgorithm ()
     .targetDeviceIs (AlgorithmTargetDevice::FPGA)
     .targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-    .NameIs ("MatrixMultiplication")
-    .KernelNameIs ("MatrixMultiplication")
+    .NameIs ("MatrixMultiplication1Size8")
+    .KernelNameIs ("MatrixMultiplication1Size8")
     .verificationFunctionIs (verifyMatrixMultiplication)
     .generateForsMatrixMultiplication (onlyMeta)
-		.writeToFile (string("/home/user/sbiookag/Algs/mm/bin2/MatrixMultiplication.cl"));
+		.writeToFile (string("/home/user/sbiookag/Algs/mm/bin2/MatrixMultiplication9.cl"));
 
 
 	if (executionMode == ExecutionMode::CALCULATION || executionMode == ExecutionMode::ALL) {
 		for (int i = 1; i < 4096; i=i*2) {
 			cout << "Set batch_size to " << i << endl;
-      openCLEngine.executeMatrixPipeline (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory,
-                                          8, 8, 8, 8, 8, 8, i);
+      openCLEngine.executeMatrixPipeline2 (id, ctx, queue, resultDB, op, (char *)"float", algorithmFactory,
+                                           32, 32, 32, 32, 32, 32, i);
       algorithmFactory.resetIndex ();
     }
   }
+
 
 	exitSignal.set_value ();
 

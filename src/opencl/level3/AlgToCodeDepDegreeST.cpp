@@ -497,7 +497,7 @@ void RunBenchmark (cl_device_id id,
   }
 	*/
   
-	for (int ops = 8; ops <= 1024; ops = ops * 2) {
+	for (int ops = 8; ops <= 512; ops = ops * 2) {
   	for (int workGroupSize = 256; workGroupSize <= 256; workGroupSize *= 2) {
     	for (int memAllocationPerWorkItem = 2;
          	memAllocationPerWorkItem <= 2;
@@ -508,7 +508,7 @@ void RunBenchmark (cl_device_id id,
                      //if (workGroupSize * memAllocationPerWorkItem > 4096)
                      //continue;
 
-      	for (int loopLength = 65536; loopLength <= 1048576; loopLength *= 2) {
+      	for (int loopLength = 16384; loopLength <= 1048576; loopLength *= 2) {
                      //if (loopLength == 262144) break;
         		int *WGS = new int[1];
         		int *vWGS = new int[1];
@@ -518,11 +518,12 @@ void RunBenchmark (cl_device_id id,
         		algorithmFactory.createNewAlgorithm ()
           		.targetDeviceIs (AlgorithmTargetDevice::FPGA)
           		.targetLanguageIs (AlgorithmTargetLanguage::OpenCL)
-          		.NameIs (string("WGS") + to_string(workGroupSize) +
-                   	string("MAPI") + to_string(memAllocationPerWorkItem) +
+          		.NameIs (string("WGS") + string("X") +
+                   	string("MAPI") + string("X") +
 #if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                       string("OPS") + to_string(ops))
+                   	string("LL") + string("X") +
+                    string("OPS") + to_string(8) +
+              			string("ST"))
 #else
             			 	string("LL") + to_string(loopLength) +
             			 	string("OPS") + to_string(ops))
@@ -530,8 +531,9 @@ void RunBenchmark (cl_device_id id,
         			.KernelNameIs (string("WGS") + string("X") +
                    	string("MAPI") + string("X") +
 #if SWI_MODE==true
-                   	string("LL") + to_string(loopLength) +
-                    string("OPS") + to_string(ops))
+                   	string("LL") + string("X") +
+                    string("OPS") + to_string(8) +
+                 		string ("ST"))
 #else
                		 	string("LL") + string("X") +
            				 	string("OPS") + to_string(ops))
@@ -542,20 +544,21 @@ void RunBenchmark (cl_device_id id,
               .virtualWorkGroupSizeIs (vWGS)
              	.memReuseFactorIs (1024)
              	.startKernelFunctionSimpleV2 ()
-             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 2)
+             	.createFor	(ops, false, loopLength, "temp1 += temp1 * MF", 1, false, 2, 1)
              	.generateForsSimpleV2 (onlyMeta)
              	.popMetasSimpleV2 ()
              	.endKernelFunction ()
              	.verbose ()
-             	.writeToFile (string("/home/user/sbiookag/Algs/1For/nodep/GAP0-FloatParam-ST/kernel") +
+             	.writeToFile (string("/home/user/sbiookag/Algs/GAP0-FloatParam-DepDegree/kernel") +
                           	string("WGS") + string("X") +
                           	string("MAPI") + string("X") +
 #if SWI_MODE==true
-                           	string("LL") + to_string(loopLength) +
+                           	string("LL") + string("X") +
 #else
                            	string("LL") + string("X") +
 #endif
 						               	string("OPS") + to_string(ops) +
+                            string("ST") + 
                            	string(".cl"));
 
              	kernelCounter++;

@@ -15,7 +15,7 @@ using namespace std::chrono;
 #define VERIFICATION false
 #define GENERATE_PTX true
 
-#define SWI_MODE false
+#define SWI_MODE true
 
 const std::string currentDateTime() {
   char            fmt[64], buf[64];
@@ -451,6 +451,7 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     Algorithm* algorithm = algorithmFactory.nextAlgorithm ();
     if (algorithm == NULL) break;
 
+    int loopLength = algorithm->getForLoop()->at(0).getNumOfHomogenousWorkItems ();
     if (verbose) cout << "current algorithm name for execution is: " << algorithm->getKernelName () << endl;
 
     cl_program program;
@@ -512,13 +513,18 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
 			float *N = new float;
       float *P = new float;
       M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
-      err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
+#if SWI_MODE==false
+      err = clSetKernelArg (kernel, 2, sizeof (float), (void *)M);
+#else
+      M[0] = loopLength;
+      err = clSetKernelArg (kernel, 2, sizeof (float), (void *)M);
+#endif
       CL_CHECK_ERROR (err);
 
-      err = clSetKernelArg (kernel, 3, sizeof (int), (void *)N);
+      err = clSetKernelArg (kernel, 3, sizeof (float), (void *)N);
       CL_CHECK_ERROR (err);
 
-      err = clSetKernelArg (kernel, 4, sizeof (int), (void *)P);
+      err = clSetKernelArg (kernel, 4, sizeof (float), (void *)P);
       CL_CHECK_ERROR (err);
     }
 
@@ -560,13 +566,16 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
           // TODO: Should be un-commented. This is only for testing
           //M[0] = algorithm->getM(); N[0] = algorithm->getN(); P[0] = algorithm->getP();
           M[0] = 0.05; N[0] = 0.05; P[0] = 0.05;
-          err = clSetKernelArg (kernel, 2, sizeof (int), (void *)M);
+#if SWI_MODE==true
+          M[0] = loopLength;
+#endif
+          err = clSetKernelArg (kernel, 2, sizeof (float), (void *)M);
           CL_CHECK_ERROR (err);
 
-          err = clSetKernelArg (kernel, 3, sizeof (int), (void *)N);
+          err = clSetKernelArg (kernel, 3, sizeof (float), (void *)N);
           CL_CHECK_ERROR (err);
 
-          err = clSetKernelArg (kernel, 4, sizeof (int), (void *)P);
+          err = clSetKernelArg (kernel, 4, sizeof (float), (void *)P);
           CL_CHECK_ERROR (err);
         }
 
@@ -574,10 +583,14 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
         size_t* globalWorkSize = new size_t[algorithm->getWorkDim()];
         size_t* localMemSize = new size_t[algorithm->getWorkDim()];
 
+				int skip = 0;
+
         for (int i = 0; i < algorithm->getWorkDim(); i++) {
           globalWorkSize[i] = (size_t) algorithm->getGlobalWorkSize()[i];
-          localMemSize[i] = (size_t) wsBegin[i];
+          if (globalWorkSize[i] < 256) skip = 1;
+          else localMemSize[i] = wsBegin[i];
         }
+        if (skip == 1) break;
         //size_t localWorkSize[1];
         //globalWorkSize[0] = algorithm->getGlobalWorkSize ();
         //localWorkSize[0] = wsBegin;
@@ -636,10 +649,12 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
         //gettimeofday (&timeEnd, NULL);
         //high_resolution_clock::time_point t2 = high_resolution_clock::now();
         cout << algorithm->getKernelLocation() << "-" << algorithm->getName() << "-lws" << lwsString << "-" << precision << " " << (double)(evKernel.StartEndRuntime()) << endl;
+        cout << "Calculating gflops" << endl;
       	double gflop = (double)algorithm->getTotalNumFlops () / (double)(evKernel.StartEndRuntime());
         //double gflop = (double)algorithm->getTotalNumFlops () / (double)(duration_cast<nanoseconds>(t2-t1).count());
 				//sprintf (sizeStr, "Size: %07d", algorithm->getGlobalWorkSize ());
-        resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
+        cout << "Adding to database" << endl;
+        resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-ll") + to_string(loopLength) + string("-lws") + string (lwsString) + string ("-") + string(precision), sizeStr, "GFLOPS", gflop);
 
 				if (VERIFICATION) {
 					//algorithm->verify(hostMem_GOut, GOutSize, algorithm->getM(), algorithm->getN(), algorithm->getP(),
@@ -652,6 +667,8 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
       cout << endl;
     }
 
+    cout << "Releasing" << endl;
+
     err = clReleaseKernel (kernel);
     CL_CHECK_ERROR (err);
     err = clReleaseProgram (program);
@@ -661,9 +678,14 @@ void OpenCLEngine<T>::executionCL (cl_device_id id,
     err = clReleaseMemObject (mem_GOut);
     CL_CHECK_ERROR (err);
 
+		cout << "deleting" << endl;
+
     delete[] hostMem_GIn;
+    cout << "Delete Gin" << endl;
     delete[] hostMem_GOut;
+    cout << "Delete GOut" << endl;
     delete[] verification_GOut;
+    cout << "Delete verification" << endl;
 	}
 
 }
@@ -682,8 +704,10 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
                                              int batch_size) {
 
 	int verbose = true;
-  int npasses = 5;
+  int npasses = 10;
+  double totalOffset = 0;
   int err;
+  cl_int clErr;
   char sizeStr[128];
 
   T *hostMem_A;
@@ -698,6 +722,12 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   cl_mem mem_I;
   cl_mem mem_C;
   cl_mem mem_R;
+
+	if (verbose) cout << "Creating queue for the second kernel" << endl;
+
+  cl_command_queue second_queue = clCreateCommandQueue (ctx, id, CL_QUEUE_PROFILING_ENABLE, &clErr);
+  CL_CHECK_ERROR (clErr);
+
 
   if (verbose) cout << "Start Execution!" << endl;
 
@@ -749,9 +779,10 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   }
 
   kernel1 = clCreateKernel (program, kernel1Name.c_str(), &err);
-  if (verbose) cout << "Kernel name is " << algorithm->getKernelName () << endl;
+  if (verbose) cout << "Kernel name is " << kernel1Name << endl;
   CL_CHECK_ERROR (err);
 	kernel2 = clCreateKernel (program, kernel2Name.c_str(), &err);
+  if (verbose) cout << "Kernel name is " << kernel2Name << endl;
   CL_CHECK_ERROR (err);
   if (verbose) cout << "Kernel Created Successfully!" << endl;
 
@@ -779,16 +810,28 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   createMemObjects (queue, &mem_B, (int) sizeof (T), BSize, hostMem_B);
   CL_CHECK_ERROR (err);
 
-  if (verbose) cout << "Create mem object for I matrix" << endl;
-	createMemObjects (queue, &mem_I, (int) sizeof (T), ISize, hostMem_I);
+  if (targetDevice == TargetDevice::GPU) {
+  	if (verbose) cout << "Create mem object for I matrix" << endl;
+		createMemObjects (queue, &mem_I, (int) sizeof (T), ISize, hostMem_I);
+  }
 
-  if (verbose) cout << "Create mem object for C matrix" << endl;
-  createMemObjects (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
-  CL_CHECK_ERROR (err);
+  if (targetDevice == TargetDevice::GPU) {
+  	if (verbose) cout << "Create mem object for C matrix" << endl;
+  	createMemObjects (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+  	CL_CHECK_ERROR (err);
 
-  if (verbose) cout << "Create mem object for R matrix" << endl;
-	createMemObjects (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
-  CL_CHECK_ERROR (err);
+  	if (verbose) cout << "Create mem object for R matrix" << endl;
+		createMemObjects (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
+  	CL_CHECK_ERROR (err);
+  } else {
+  	if (verbose) cout << "Create mem object for C matrix" << endl;
+  	createMemObjects (second_queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+  	CL_CHECK_ERROR (err);
+
+  	if (verbose) cout << "Create mem object for R matrix" << endl;
+		createMemObjects (second_queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
+  	CL_CHECK_ERROR (err);
+  }
 
 	if (verbose) cout << "Start setting arguments for kernel 1" << endl;
 
@@ -798,26 +841,46 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   err = clSetKernelArg (kernel1, 1, sizeof (cl_mem), (void *)&mem_B);
   CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *)&mem_I);
-  CL_CHECK_ERROR (err);
+  if (targetDevice == AlgorithmTargetDevice::GPU) {
+  	err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *)&mem_I);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_height);
-	CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_height);
+		CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&A_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&A_width);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_height);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_height);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&B_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&B_width);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 7, sizeof (int), (void *)&A_height);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 7, sizeof (int), (void *)&A_height);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel1, 8, sizeof (int), (void *)&B_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel1, 8, sizeof (int), (void *)&B_width);
+  	CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 9, sizeof (int), (void *)&batch_size);
+    CL_CHECK_ERROR (err);
+  } else {
+    err = clSetKernelArg (kernel1, 2, sizeof (int), (void *)&A_height);
+    CL_CHECK_ERROR (err);
+
+		err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_width);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&B_height);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_width);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&batch_size);
+    CL_CHECK_ERROR (err);
+  }
 
 	//err = clSetKernelArg (kernel1, 9, sizeof (int), (void *)batch_size);
   //CL_CHECK_ERROR (err);
@@ -826,32 +889,55 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
 
 	if (verbose) cout << "Start setting arguments for kernel 2" << endl;
 
-  err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_I);
-  CL_CHECK_ERROR (err);
+  if (targetDevice == AlgorithmTargetDevice::GPU) {
+  	err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_I);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *)&mem_C);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *)&mem_C);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *)&mem_R);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *)&mem_R);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&A_height);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&A_height);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&B_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&B_width);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_height);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_height);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&C_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&C_width);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 7, sizeof (int), (void *)&A_height);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 7, sizeof (int), (void *)&A_height);
+  	CL_CHECK_ERROR (err);
 
-  err = clSetKernelArg (kernel2, 8, sizeof (int), (void *)&C_width);
-  CL_CHECK_ERROR (err);
+  	err = clSetKernelArg (kernel2, 8, sizeof (int), (void *)&C_width);
+  	CL_CHECK_ERROR (err);
+  } else {
+    err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_C);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *)&mem_R);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 2, sizeof (int), (void *)&A_height);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&B_width);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&C_height);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_width);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&batch_size);
+    CL_CHECK_ERROR (err);
+  }
 
     //err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)batch_size);
     //CL_CHECK_ERROR (err);
@@ -872,7 +958,12 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   for (int pas = 0; pas < npasses; pas++) {
   	refillMemObject (queue, &mem_A, (int) sizeof (T), ASize, hostMem_A);
     refillMemObject (queue, &mem_B, (int) sizeof (T), BSize, hostMem_B);
-    refillMemObject (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+    if (targetDevice == TargetDevice::GPU)
+    	refillMemObject (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+    else
+			refillMemObject (second_queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+
+		cout << "Start setting arguments for kernel 1" << endl;
 
     err = clSetKernelArg (kernel1, 0, sizeof (cl_mem), (void *)&mem_A);
     CL_CHECK_ERROR (err);
@@ -880,60 +971,104 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
     err = clSetKernelArg (kernel1, 1, sizeof (cl_mem), (void *)&mem_B);
 		CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *)&mem_I);
-    CL_CHECK_ERROR (err);
+    if (targetDevice == TargetDevice::GPU) {
+    	err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *)&mem_I);
+    	CL_CHECK_ERROR (err);
 
-		err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_height);
-    CL_CHECK_ERROR (err);
+			err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_height);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&A_width);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&A_width);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_height);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_height);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&B_width);
-  	CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&B_width);
+  		CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 7, sizeof (int), (void *)&A_height);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel1, 7, sizeof (int), (void *)&A_height);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel1, 8, sizeof (int), (void *)&B_width);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel1, 8, sizeof (int), (void *)&B_width);
+    	CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel1, 9, sizeof (int), (void *)&batch_size);
+      CL_CHECK_ERROR (err);
+    } else {
+      err = clSetKernelArg (kernel1, 2, sizeof (int), (void *)&A_height);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)&A_width);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel1, 4, sizeof (int), (void *)&B_height);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel1, 5, sizeof (int), (void *)&B_width);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel1, 6, sizeof (int), (void *)&batch_size);
+      CL_CHECK_ERROR (err);
+    }
 
 		//err = clSetKernelArg (kernel1, 3, sizeof (int), (void *)batch_size);
     //CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_I);
-		CL_CHECK_ERROR (err);
+		cout << "Start setting argument for kernel 2" << endl;
 
-    err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *)&mem_C);
-		CL_CHECK_ERROR (err);
+    if (targetDevice == TargetDevice::GPU) {
+    	err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_I);
+			CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *)&mem_R);
-		CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *)&mem_C);
+			CL_CHECK_ERROR (err);
 
-		err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&A_height);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *)&mem_R);
+			CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&B_width);
-    CL_CHECK_ERROR (err);
+			err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&A_height);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_height);
-    CL_CHECK_ERROR (err);
+   		err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&B_width);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&C_width);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_height);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 7, sizeof (int), (void *)&A_height);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&C_width);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 8, sizeof (int), (void *)&C_width);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 7, sizeof (int), (void *)&A_height);
+    	CL_CHECK_ERROR (err);
 
-    //err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)batch_size);
-		//CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 8, sizeof (int), (void *)&C_width);
+    	CL_CHECK_ERROR (err);
 
+    	err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)batch_size);
+			CL_CHECK_ERROR (err);
+    } else {
+      err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *)&mem_C);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void*)&mem_R);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 2, sizeof (int), (void *)&A_height);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)&B_width);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 4, sizeof (int), (void *)&C_height);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 5, sizeof (int), (void *)&C_width);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 6, sizeof (int), (void *)&batch_size);
+      CL_CHECK_ERROR (err);
+    }
 		const size_t GWS1[3] = {A_height, B_width, batch_size};
     const size_t LWS1[3] = {8, 8, 1};
 
@@ -945,58 +1080,79 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
     Event evKernel2 ("Kernel2");
 
     clFinish (queue);
+    clFinish (second_queue);
 
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
-		err = clEnqueueNDRangeKernel (queue,
-                                  kernel1,
-                                  3,
-                                  NULL,
-                                  GWS1,
-                                  LWS1,
-                                  0,
-                                  NULL,
-                                  &evKernel1.CLEvent());
+    if (targetDevice == TargetDevice::GPU) {
+			err = clEnqueueNDRangeKernel (queue,
+                                  	kernel1,
+                                  	3,
+                                  	NULL,
+                                  	GWS1,
+                                  	LWS1,
+                                  	0,
+                                  	NULL,
+                                  	&evKernel1.CLEvent());
+    } else {
+      err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+    }
 
 		//clFinish (queue);
-    CL_CHECK_ERROR (err);
+    //CL_CHECK_ERROR (err);
     //err = clFinish (queue);
-    CL_CHECK_ERROR (err);
+    //CL_CHECK_ERROR (err);
     //err = clWaitForEvents (1, &evKernel1.CLEvent());
     CL_CHECK_ERROR (err);
     //evKernel1.FillTimingInfo ();
 
-		err = clEnqueueNDRangeKernel (queue,
-                                  kernel2,
-                                  3,
-                                  NULL,
-                                  GWS2,
-                                  LWS2,
-                                  0,
-                                  NULL,
-                                  &evKernel2.CLEvent());
+    if (targetDevice == TargetDevice::GPU) {
+			err = clEnqueueNDRangeKernel (queue,
+                                  	kernel2,
+                                  	3,
+                                  	NULL,
+                                  	GWS2,
+                                  	LWS2,
+                                  	0,
+                                  	NULL,
+                                  	&evKernel2.CLEvent());
+    } else {
+      err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+    }
 
     //clFinish (queue);
-    CL_CHECK_ERROR (err);
+    //CL_CHECK_ERROR (err);
     //err =clFinish (queue);
     CL_CHECK_ERROR (err);
     err = clWaitForEvents (1, &evKernel2.CLEvent());
+    err = clWaitForEvents (1, &evKernel1.CLEvent());
     CL_CHECK_ERROR (err);
 
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
 		clFinish (queue);
+    clFinish (second_queue);
 
 		evKernel2.FillTimingInfo ();
 
+		cout << "Reading back mem object" << endl;
+
+    if (pas >= 2)
+			//totalOffset += (duration_cast<nanoseconds>(t2-t1).count());
+      totalOffset += evKernel2.StartEndRuntime ();
+
 		readbackMemObject (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
 
-		cout << algorithm->getKernelLocation () << "-" << algorithm->getName() << " " << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
+		cout << algorithm->getKernelLocation () << "-" << algorithm->getName() << "-" << batch_size << " " << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
 
 		double gflops = (((A_height * B_width) * 2 * A_width) * batch_size + ((A_height * C_width) * 2 * B_width) * batch_size) / (double)(duration_cast<nanoseconds>(t2-t1).count());
 
-    resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size), sizeStr, "GFLOPS", gflops );
-
-    resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), sizeStr, "Matrix/ms", batch_size / ((double)(duration_cast<nanoseconds>(t2-t1).count()) / 1000000));
+    if (pas >= 2) {
+    	resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size), string(), "GFLOPS", gflops );
+ 			
+    	//resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / (((double)(duration_cast<nanoseconds>(t2-t1).count()) - this->offset) / 1000000.0));
+    	resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / ((evKernel2.StartEndRuntime() - this->offset) / 1000000.0));
+    	//resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / (((double)(duration_cast<nanoseconds>(t2-t1).count())) / 1000000.0));
+    }
 
     if (VERIFICATION) {
       algorithm->verifyMatrixPipeline (hostMem_A, hostMem_B, hostMem_C, verification_R,
@@ -1020,7 +1176,14 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
 
     CL_CHECK_ERROR (err);
   }
+
+  if (batch_size == 1)
+  	this->offset = (totalOffset / (npasses-2)) * 0.85;
+
+  cout << "offset is " << this->offset << endl;
   cout << endl;
+
+  cout << "time to release" << endl;
 
   err = clReleaseKernel (kernel1);
   CL_CHECK_ERROR (err);
@@ -1032,10 +1195,359 @@ void OpenCLEngine<T>::executeMatrixPipeline (cl_device_id id,
   CL_CHECK_ERROR (err);
   err = clReleaseMemObject (mem_C);
   CL_CHECK_ERROR (err);
-	err = clReleaseMemObject (mem_I);
-  CL_CHECK_ERROR (err);
+  if (targetDevice == TargetDevice::GPU) {
+		err = clReleaseMemObject (mem_I);
+  	CL_CHECK_ERROR (err);
+  }
   err = clReleaseMemObject (mem_R);
   CL_CHECK_ERROR (err);
+
+  clReleaseCommandQueue (second_queue);
+
+
+  delete[] hostMem_A;
+  delete[] hostMem_B;
+  delete[] hostMem_C;
+  delete[] hostMem_R;
+  delete[] hostMem_I;
+  delete[] verification_R;
+
+}
+
+template <class T>
+void OpenCLEngine<T>::executeMatrixPipeline2 (cl_device_id id,
+                                             cl_context ctx,
+                                             cl_command_queue queue,
+                                             ResultDatabase &resultDB,
+                                             OptionParser &op,
+                                             char* precision,
+                                             AlgorithmFactory& algorithmFactory,
+                                             int A_height, int A_width,
+                                             int B_height, int B_width,
+                                             int C_height, int C_width,
+                                             int batch_size) {
+
+	int verbose = true;
+  int npasses = 10;
+  double totalOffset = 0;
+  int err;
+  cl_int clErr;
+  char sizeStr[128];
+
+  T *hostMem_A;
+  T *hostMem_B;
+  T *hostMem_I;
+  T *hostMem_C;
+  T *hostMem_R;
+  T *verification_R;
+
+  cl_mem mem_A;
+  cl_mem mem_B;
+  cl_mem mem_I;
+  cl_mem mem_C;
+  cl_mem mem_R;
+
+	//if (verbose) cout << "Creating queue for the second kernel" << endl;
+
+  //cl_command_queue second_queue = clCreateCommandQueue (ctx, id, CL_QUEUE_PROFILING_ENABLE, &clErr);
+  //CL_CHECK_ERROR (clErr);
+
+
+  if (verbose) cout << "Start Execution!" << endl;
+
+  Algorithm* algorithm = algorithmFactory.nextAlgorithm ();
+
+
+	cl_program program;
+  cl_kernel kernel;
+
+  long long ASize = A_height * A_width * batch_size;
+  long long BSize = B_height * B_width * batch_size;
+  long long ISize = A_height * B_width * batch_size;
+  long long CSize = C_height * C_width * batch_size;
+  long long RSize = A_height * C_width * batch_size;
+
+	hostMem_A = new T[ASize];
+  hostMem_B = new T[BSize];
+  hostMem_I = new T[ISize];
+  hostMem_C = new T[CSize];
+  hostMem_R = new T[RSize];
+	verification_R = new T[RSize];
+
+
+	int targetDevice = algorithm->getAlgorithmTargetDevice ();
+	if (targetDevice == AlgorithmTargetDevice::GPU) {
+    if (verbose) cout << algorithm->getKernelLocation() << endl;
+    program = createProgram ((algorithm->getKernelLocation ()).c_str());
+  } else if (targetDevice == AlgorithmTargetDevice::FPGA) {
+    string kernelLoc = algorithm->getKernelLocation ();
+    program = createProgram (kernelLoc.substr(0, kernelLoc.size()-3).c_str());
+  }
+
+	if (program == NULL) exit (0);
+  if (verbose) cout << "Program Created Successfully!" << endl;
+
+  string kernelName;
+	//if (targetDevice == AlgorithmTargetDevice::FPGA) {
+    kernelName = algorithm->getKernelName ();
+    //} else {
+    //kernel1Name = algorithm->getKernelName ();
+    //}
+
+    //string kernel2Name;
+    //if (targetDevice == AlgorithmTargetDevice::FPGA) {
+    //kernel2Name = algorithm->getKernelName () + string("2Size8");
+    //} else {
+    //kernel2Name = algorithm->getKernelName ();
+    //}
+
+  kernel = clCreateKernel (program, kernelName.c_str(), &err);
+  if (verbose) cout << "Kernel name is " << kernelName << endl;
+  CL_CHECK_ERROR (err);
+	//kernel2 = clCreateKernel (program, kernel2Name.c_str(), &err);
+  //if (verbose) cout << "Kernel name is " << kernel2Name << endl;
+  //CL_CHECK_ERROR (err);
+  if (verbose) cout << "Kernel Created Successfully!" << endl;
+
+  if (GENERATE_PTX) {
+    size_t bin_sz;
+    err = clGetProgramInfo (program, CL_PROGRAM_BINARY_SIZES,
+                            sizeof(size_t), &bin_sz, NULL);
+
+    // Read binary (PTX File) to memory buffer
+    unsigned char* bin = (unsigned char*) malloc (bin_sz);
+    err = clGetProgramInfo (program, CL_PROGRAM_BINARIES,
+                            sizeof(unsigned char *), &bin, NULL);
+
+    FILE* fp = fopen ("binary.ptx", "wb");
+    fwrite (bin, sizeof(char), bin_sz, fp);
+    fclose (fp);
+    free (bin);
+  }
+
+  if (verbose) cout << "Create mem object for A matrix" << endl;
+  createMemObjects (queue, &mem_A, (int) sizeof (T), ASize, hostMem_A);
+  CL_CHECK_ERROR (err);
+
+  if (verbose) cout << "Create mem object for B matrix" << endl;
+  createMemObjects (queue, &mem_B, (int) sizeof (T), BSize, hostMem_B);
+  CL_CHECK_ERROR (err);
+
+  if (verbose) cout << "Create mem object for C matrix" << endl;
+  createMemObjects (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+  CL_CHECK_ERROR (err);
+
+  if (verbose) cout << "Create mem object for R matrix" << endl;
+	createMemObjects (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
+  CL_CHECK_ERROR (err);
+
+	if (verbose) cout << "Start setting arguments for kernel 1" << endl;
+
+  err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_A);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_B);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 2, sizeof (cl_mem), (void *)&mem_C);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 3, sizeof (cl_mem), (void *)&mem_R);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 4, sizeof (int), (void *)&A_height);
+  CL_CHECK_ERROR (err);
+
+	err = clSetKernelArg (kernel, 5, sizeof (int), (void *)&A_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 6, sizeof (int), (void *)&B_height);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 7, sizeof (int), (void *)&B_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 8, sizeof (int), (void *)&C_height);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 9, sizeof (int), (void *)&C_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 10, sizeof (int), (void *)&batch_size);
+  CL_CHECK_ERROR (err);
+
+	//err = clSetKernelArg (kernel1, 9, sizeof (int), (void *)batch_size);
+  //CL_CHECK_ERROR (err);
+
+	if (verbose) cout << "Setting arguments for kernel  is completed!" << endl;
+
+    //err = clSetKernelArg (kernel2, 3, sizeof (int), (void *)batch_size);
+    //CL_CHECK_ERROR (err);
+
+  if (verbose) cout << "Setting arguments for kernel 2 is completed!" << endl;
+
+  // Setup input memories for A, B, and C
+  for (int i = 0; i < ASize; i++) {
+    hostMem_A[i] = (T)(drand48()*5.0);
+  }
+  for (int i = 0; i < BSize; i++) {
+    hostMem_B[i] = (T)(drand48()*5.0);
+  }
+  for (int i = 0; i < CSize; i++) {
+    hostMem_C[i] = (T)(drand48()*5.0);
+  }
+
+  for (int pas = 0; pas < npasses; pas++) {
+  	refillMemObject (queue, &mem_A, (int) sizeof (T), ASize, hostMem_A);
+    refillMemObject (queue, &mem_B, (int) sizeof (T), BSize, hostMem_B);
+    refillMemObject (queue, &mem_C, (int) sizeof (T), CSize, hostMem_C);
+
+		cout << "Start setting arguments for kernel" << endl;
+
+  err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *)&mem_A);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *)&mem_B);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 2, sizeof (cl_mem), (void *)&mem_C);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 3, sizeof (cl_mem), (void *)&mem_R);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 4, sizeof (int), (void *)&A_height);
+  CL_CHECK_ERROR (err);
+
+	err = clSetKernelArg (kernel, 5, sizeof (int), (void *)&A_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 6, sizeof (int), (void *)&B_height);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 7, sizeof (int), (void *)&B_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 8, sizeof (int), (void *)&C_height);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 9, sizeof (int), (void *)&C_width);
+  CL_CHECK_ERROR (err);
+
+  err = clSetKernelArg (kernel, 10, sizeof (int), (void *)&batch_size);
+  CL_CHECK_ERROR (err);
+
+
+		const size_t GWS1[3] = {A_height, B_width, batch_size};
+    const size_t LWS1[3] = {8, 8, 1};
+
+
+    const size_t GWS2[3] = {A_height, C_width, batch_size};
+    const size_t LWS2[3] = {8, 8, 1};
+
+		Event evKernel ("Kernel");
+
+    clFinish (queue);
+
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    if (targetDevice == TargetDevice::GPU) {
+			err = clEnqueueNDRangeKernel (queue,
+                                  	kernel,
+                                  	3,
+                                  	NULL,
+                                  	GWS1,
+                                  	LWS1,
+                                  	0,
+                                  	NULL,
+                                  	&evKernel.CLEvent());
+    } else {
+      err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+    }
+
+		//clFinish (queue);
+    //CL_CHECK_ERROR (err);
+    //err = clFinish (queue);
+    //CL_CHECK_ERROR (err);
+    //err = clWaitForEvents (1, &evKernel1.CLEvent());
+    //evKernel1.FillTimingInfo ();
+    //clFinish (queue);
+    //CL_CHECK_ERROR (err);
+    //err =clFinish (queue);
+    CL_CHECK_ERROR (err);
+    err = clWaitForEvents (1, &evKernel.CLEvent());
+    CL_CHECK_ERROR (err);
+    evKernel.FillTimingInfo ();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+		clFinish (queue);
+
+		cout << "Reading back mem object" << endl;
+
+    if (pas >= 2)
+			//totalOffset += (duration_cast<nanoseconds>(t2-t1).count());
+    	totalOffset += evKernel.StartEndRuntime ();
+
+		readbackMemObject (queue, &mem_R, (int) sizeof (T), RSize, hostMem_R);
+
+		cout << algorithm->getKernelLocation () << "-" << algorithm->getName() << "-" << batch_size << " " << (double)(duration_cast<nanoseconds>(t2-t1).count()) << endl;
+
+		double gflops = (((A_height * B_width) * 2 * A_width) * batch_size + ((A_height * C_width) * 2 * B_width) * batch_size) / (double)(duration_cast<nanoseconds>(t2-t1).count());
+
+    if (pas >= 2) {
+    	resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size), string(), "GFLOPS", gflops );
+
+    	//resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / (((double)(duration_cast<nanoseconds>(t2-t1).count()) - this->offset) / 1000000.0));
+    	resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / ((evKernel.StartEndRuntime () - this->offset) / 1000000.0));
+    	//resultDB.AddResult (string(algorithm->getKernelLocation ()) + string("-") + string(algorithm->getName()) + string("-") + string("b") + to_string(batch_size) + string("-") + string("outRate"), string(), "Matrix/ms", batch_size / (((double)(duration_cast<nanoseconds>(t2-t1).count())) / 1000000.0));
+    }
+
+    if (VERIFICATION) {
+      algorithm->verifyMatrixPipeline (hostMem_A, hostMem_B, hostMem_C, verification_R,
+                                       A_height, A_width,
+                                       B_height, B_width,
+                                       C_height, C_width,
+                                       batch_size);
+
+      if (verbose) cout << "Verification is done, now we get into comparison!" << endl;
+
+      for (int element = 0; element < A_height*C_width*batch_size; element++) {
+        float diff = verification_R[element] - hostMem_R[element];
+        if (diff > 0.1 || diff < -0.1) {
+          cout << "[ERROR] Verification Failed!" << endl;
+          break;
+        }
+      }
+
+     	cout << "Verification Passed!" << endl;
+    }
+
+    CL_CHECK_ERROR (err);
+  }
+
+   if (batch_size == 1)
+   	this->offset = (totalOffset / (npasses-2)) * 0.88;
+
+  cout << "offset is " << this->offset << endl;
+  cout << endl;
+
+  cout << "time to release" << endl;
+
+  err = clReleaseKernel (kernel);
+  CL_CHECK_ERROR (err);
+  err = clReleaseMemObject (mem_A);
+  CL_CHECK_ERROR (err);
+  err = clReleaseMemObject (mem_B);
+  CL_CHECK_ERROR (err);
+  err = clReleaseMemObject (mem_C);
+  CL_CHECK_ERROR (err);
+  if (targetDevice == TargetDevice::GPU) {
+		err = clReleaseMemObject (mem_I);
+  	CL_CHECK_ERROR (err);
+  }
+  err = clReleaseMemObject (mem_R);
+  CL_CHECK_ERROR (err);
+
+
 
   delete[] hostMem_A;
   delete[] hostMem_B;
