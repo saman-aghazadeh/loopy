@@ -5,169 +5,25 @@
 #include <string>
 using namespace std;
 
-#include "TestS4VfloatD256Form1MUnrol0U0LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U0LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U8LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U8LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U16LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U16LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U0LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U0LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U8LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U8LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U16LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U16LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U0LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U0LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U8LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U8LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U16LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol0U16LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U0LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U0LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U8LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U8LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U16LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol0U16LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U0LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U0LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U8LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U8LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U16LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U16LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U0LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U0LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U8LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U8LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U16LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U16LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U0LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U0LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U8LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U8LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U16LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol0U16LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U0LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U0LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U8LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U8LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U16LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol0U16LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM0RAND.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM1RAND.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM0RAND.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM1RAND.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM0SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM0RAND.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM1SEQ.h"
-#include "TestS4VfloatD256Form1MUnrol1U0LM1RAND.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM0SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM0RAND.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM1SEQ.h"
-#include "TestS4VfloatD512Form1MUnrol1U0LM1RAND.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM0RAND.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM1RAND.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM0RAND.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM1RAND.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM0SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM0RAND.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM1SEQ.h"
-#include "TestS2VfloatD256Form1MUnrol1U0LM1RAND.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM0SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM0RAND.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM1SEQ.h"
-#include "TestS2VfloatD512Form1MUnrol1U0LM1RAND.h"
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS8.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS16.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS32.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS64.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS128.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS256.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS512.h";
+#include "GAP0-FloatParam-DepDegree1/kernelWGSXMAPIXLLXOPS1024.h";
 
-map<string, void(*)(float*, float*, int, int, int, int)> kernelMaps;
+map<string, void(*)(const float*, float*, const float, const float, const float, int, int)> kernelMaps;
 void init_kernel_map () {
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U0LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U0LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U8LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U8LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U16LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U16LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U0LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U0LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U8LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U8LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U16LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U16LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U0LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U0LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U8LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U8LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U16LM0SEQ")] = TestS4VfloatD256Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol0U16LM1SEQ")] = TestS4VfloatD256Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U0LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U0LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U8LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U8LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U16LM0SEQ")] = TestS4VfloatD512Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol0U16LM1SEQ")] = TestS4VfloatD512Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U0LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U0LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U8LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U8LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U16LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U16LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U0LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U0LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U8LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U8LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U16LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U16LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U0LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U0LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U8LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U8LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U16LM0SEQ")] = TestS2VfloatD256Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol0U16LM1SEQ")] = TestS2VfloatD256Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U0LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U0LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U8LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U8LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U8LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U8LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U16LM0SEQ")] = TestS2VfloatD512Form1MUnrol0U16LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol0U16LM1SEQ")] = TestS2VfloatD512Form1MUnrol0U16LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM0SEQ")] = TestS4VfloatD256Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM0RAND")] = TestS4VfloatD256Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM1SEQ")] = TestS4VfloatD256Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM1RAND")] = TestS4VfloatD256Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM0SEQ")] = TestS4VfloatD512Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM0RAND")] = TestS4VfloatD512Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM1SEQ")] = TestS4VfloatD512Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM1RAND")] = TestS4VfloatD512Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM0SEQ")] = TestS4VfloatD256Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM0RAND")] = TestS4VfloatD256Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM1SEQ")] = TestS4VfloatD256Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD256Form1MUnrol1U0LM1RAND")] = TestS4VfloatD256Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM0SEQ")] = TestS4VfloatD512Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM0RAND")] = TestS4VfloatD512Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM1SEQ")] = TestS4VfloatD512Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS4VfloatD512Form1MUnrol1U0LM1RAND")] = TestS4VfloatD512Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM0SEQ")] = TestS2VfloatD256Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM0RAND")] = TestS2VfloatD256Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM1SEQ")] = TestS2VfloatD256Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM1RAND")] = TestS2VfloatD256Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM0SEQ")] = TestS2VfloatD512Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM0RAND")] = TestS2VfloatD512Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM1SEQ")] = TestS2VfloatD512Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM1RAND")] = TestS2VfloatD512Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM0SEQ")] = TestS2VfloatD256Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM0RAND")] = TestS2VfloatD256Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM1SEQ")] = TestS2VfloatD256Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD256Form1MUnrol1U0LM1RAND")] = TestS2VfloatD256Form1MUnrol1U0LM1RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM0SEQ")] = TestS2VfloatD512Form1MUnrol1U0LM0SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM0RAND")] = TestS2VfloatD512Form1MUnrol1U0LM0RAND_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM1SEQ")] = TestS2VfloatD512Form1MUnrol1U0LM1SEQ_wrapper;
-	kernelMaps[string("TestS2VfloatD512Form1MUnrol1U0LM1RAND")] = TestS2VfloatD512Form1MUnrol1U0LM1RAND_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS8")] = WGSXMAPIXLLXOPS8_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS16")] = WGSXMAPIXLLXOPS16_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS32")] = WGSXMAPIXLLXOPS32_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS64")] = WGSXMAPIXLLXOPS64_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS128")] = WGSXMAPIXLLXOPS128_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS256")] = WGSXMAPIXLLXOPS256_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS512")] = WGSXMAPIXLLXOPS512_wrapper;
+	kernelMaps[string("kernelWGSXMAPIXLLXOPS1024")] = WGSXMAPIXLLXOPS1024_wrapper;
 }
 
 #endif // CUDAKERNELEXECUTION_h_
