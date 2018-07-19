@@ -34,7 +34,7 @@ __kernel void Stream( __global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 	#pragma unroll UNROLL_FACTOR
-	for (int gid = 0; gid < num_iterations; gid++) {
+	for (int gid = 0; gid < numIterations; gid++) {
 #endif
 
 	A[gid] = B[gid] + alpha * C[gid];
