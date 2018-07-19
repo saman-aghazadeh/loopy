@@ -60,7 +60,7 @@ double ResultDatabase::Result::GetPercentile(double q) const
     double index = ((n + 1.) * q / 100.) - 1;
 
     vector<double> sorted = value;
-    sort(sorted.begin(), sorted.end());
+    //sort(sorted.begin(), sorted.end());
 
     if (n == 2)
         return (sorted[0] * (1 - q/100.)  +  sorted[1] * (q/100.));
@@ -189,7 +189,7 @@ void ResultDatabase::DumpDetailed(ostream &out)
 {
     vector<Result> sorted(results);
 
-    sort(sorted.begin(), sorted.end());
+    //sort(sorted.begin(), sorted.end());
 
     int maxtrials = 1;
     for (int i=0; i<sorted.size(); i++)
@@ -277,7 +277,7 @@ void ResultDatabase::DumpSummary(ostream &out)
 {
     vector<Result> sorted(results);
 
-    sort(sorted.begin(), sorted.end());
+    //sort(sorted.begin(), sorted.end());
 
     // TODO: in big parallel runs, the "trials" are the procs
     // and we really don't want to print them all out....
@@ -367,7 +367,7 @@ void ResultDatabase::DumpCsv(string fileName)
     bool emptyFile;
     vector<Result> sorted(results);
 
-    sort(sorted.begin(), sorted.end());
+    //sort(sorted.begin(), sorted.end());
 
     //Check to see if the file is empty - if so, add the headers
     emptyFile = this->IsFileEmpty(fileName);

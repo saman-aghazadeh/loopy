@@ -1,1 +1,1 @@
-SUBDIRS=common level3
+SUBDIRS=common level3 idioms
