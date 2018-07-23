@@ -30,6 +30,15 @@ __kernel void Stream( __global DTYPE* restrict A,
 {
 #ifdef GPU
 	const int gid = get_global_id(0);
+  const int lid = get_local_id(0);
+  const int lSize = get_local_size(0);
+
+	__local DTYPE localB[256];
+  __local DTYPE localC[256];
+	__local DTYPE localA[256];
+
+	localB[lid] = B[gid];
+  localC[lid] = C[gid];
 #endif
 
 #ifdef FPGA_NDRANGE
@@ -41,7 +50,8 @@ __kernel void Stream( __global DTYPE* restrict A,
 	for (int gid = 0; gid < numIterations; gid++) {
 #endif
 
-	A[gid] = B[gid] + alpha * C[gid];
+	localA[lid] = localB[lid] + alpha * localC[lid];
+  A[gid] = localA[lid];
 
 #ifdef FPGA_SINGLE
 	}

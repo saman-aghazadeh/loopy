@@ -30,6 +30,10 @@ __kernel void Stream( __global DTYPE* restrict A,
 {
 #ifdef GPU
 	const int gid = get_global_id(0);
+  const int groupid = get_group_id(0);
+  const int lsize = get_local_size(0);
+  const int lid = get_local_id(0);
+  const int start = lsize * groupid * PACK + lid;
 #endif
 
 #ifdef FPGA_NDRANGE
@@ -41,7 +45,9 @@ __kernel void Stream( __global DTYPE* restrict A,
 	for (int gid = 0; gid < numIterations; gid++) {
 #endif
 
-	A[gid] = B[gid] + alpha * C[gid];
+	#pragma unroll PACK
+	for (int i = 0; i < PACK; i++)
+		A[start + lsize * i] = B[start + lsize * i] + alpha * C[start + lsize * i];
 
 #ifdef FPGA_SINGLE
 	}

@@ -29,14 +29,16 @@ template <class T> inline std::string toString (const T& t) {
   return ss.str();
 }
 
+void prepareIndexes (void* array, int size);
+
 void addBenchmarkSpecOptions (OptionParser &op) {
 	op.addOption ("min_data_size", OPT_INT, "0", "minimum data size (in Kilobytes)");
   op.addOption ("max_data_size", OPT_INT, "0", "maximum data size (in Kilobytes)");
   op.addOption ("data_type", OPT_STRING, "", "data type (INT or SINGLE or DOUBLE)");
   op.addOption ("kern_loc", OPT_STRING, "", "path to the kernel");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
-  op.addOption ("fpga_op_type", OPT_STRING, "", "fpga type (NDRANGE or SINGLE)");
-	op.addOption ("pack", OPT_STRING, "1", "Packing granularity");
+  op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
+  op.addOption ("pack", OPT_INT, "1", "Packing granularity");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -55,7 +57,7 @@ void RunBenchmark (cl_device_id dev,
 	int localX = 256;
   int globalX = 0;
   int passes = op.getOptionInt("passes");
-  int pack = op.getOptionInt("pack");
+	int pack = op.getOptionInt("pack");
 
 	string dataType = op.getOptionString("data_type");
 	string kernel_location = op.getOptionString("kern_loc");
@@ -76,10 +78,6 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] number of passes is " << passes << endl;
 
-  cl_ulong max_mem_alloc_size;
-  clGetDeviceInfo (dev, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(max_mem_alloc_size), &max_mem_alloc_size, NULL);
-  cout << "[INFO] Maximum mem allocation size is " << max_mem_alloc_size << endl;
-
 	if (device_type == "GPU") {
     flags += "-DGPU ";
   } else if (device_type == "FPGA") {
@@ -99,7 +97,6 @@ void RunBenchmark (cl_device_id dev,
   }
 
   flags += " -DPACK=" + toString(pack);
-
   // First building the program
 
 	if (device_type == "GPU") {
@@ -123,7 +120,7 @@ void RunBenchmark (cl_device_id dev,
   }
 	cout << "[INFO] Program Created Successfully!" << endl;
 
-  err = clBuildProgram (program, 0, NULL, flags.c_str(), NULL, NULL);
+  err = clBuildProgram (program, 1, &dev, flags.c_str(), NULL, NULL);
   cout << "[INFO] Kernel compiled with flags " << flags << endl;
 
   if (err != 0) {
@@ -141,18 +138,25 @@ void RunBenchmark (cl_device_id dev,
   CL_CHECK_ERROR (err);
 
 
-  for (long long unsigned dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
+  for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
 
-    cout << "[INFO] Data size is " << dataSize << endl;
+		cout << "[INFO] data size is " << dataSize << endl;
+
     void *A, *B, *C;
     cl_mem clA, clB, clC;
 
-    cl_kernel streamKernel = clCreateKernel (program, "Stream", &err);
+    cl_kernel streamKernel = clCreateKernel (program, "Random", &err);
     CL_CHECK_ERROR (err);
 
     A = (void *) malloc (dataSize);
     B = (void *) malloc (dataSize);
-    C = (void *) malloc (dataSize);
+    if (dataType == "INT")
+    	C = (void *) malloc ((dataSize/sizeof(int)) * sizeof(unsigned int));
+		else if (dataType == "SINGLE")
+      C = (void *) malloc ((dataSize/sizeof(float)) * sizeof(unsigned int));
+    else if (dataType == "DOUBLE")
+      C = (void *) malloc ((dataSize/sizeof(double)) * sizeof(unsigned int));
+
 
     clA = clCreateBuffer (ctx, CL_MEM_WRITE_ONLY, dataSize, NULL, &err);
     CL_CHECK_ERROR (err);
@@ -160,14 +164,35 @@ void RunBenchmark (cl_device_id dev,
     clB = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
     CL_CHECK_ERROR (err);
 
-    clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
+    if (dataType == "INT") {
+    	clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, (dataSize/sizeof(int)) * sizeof(unsigned int), NULL, &err);
+    	CL_CHECK_ERROR (err);
+    } else if (dataType == "SINGLE") {
+      clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, (dataSize/sizeof(float)) * sizeof(unsigned int), NULL, &err);
+      CL_CHECK_ERROR (err);
+    } else if (dataType == "DOUBLE") {
+			clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, (dataSize/sizeof(double)) * sizeof(unsigned int), NULL, &err);
+      CL_CHECK_ERROR (err);
+    }
+
+    err = clEnqueueWriteBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
     err = clEnqueueWriteBuffer (queue, clB, CL_TRUE, 0, dataSize, B, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
-    err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, dataSize, C, 0, NULL, NULL);
-    CL_CHECK_ERROR (err);
+    if (dataType == "INT") {
+      prepareIndexes (C, (dataSize/sizeof(int)));
+	    err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, (dataSize/sizeof(int)) * sizeof(unsigned int), C, 0, NULL, NULL);
+ 		} else if (dataType == "SINGLE") {
+      prepareIndexes (C, (dataSize/sizeof(float)));
+      err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, (dataSize/sizeof(float)) * sizeof(unsigned int), C, 0, NULL, NULL);
+    } else if (dataType == "DOUBLE") {
+      prepareIndexes (C, (dataSize/sizeof(double)));
+      err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, (dataSize/sizeof(double)) * sizeof(unsigned int), C, 0, NULL, NULL);
+    }
+
+		CL_CHECK_ERROR (err);
 
     err = clSetKernelArg (streamKernel, 0, sizeof (cl_mem), (void *) &clA);
     CL_CHECK_ERROR (err);
@@ -175,37 +200,39 @@ void RunBenchmark (cl_device_id dev,
     err = clSetKernelArg (streamKernel, 1, sizeof (cl_mem), (void *) &clB);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (streamKernel, 2, sizeof (cl_mem), (void *) &clC);
+		err = clSetKernelArg (streamKernel, 2, sizeof (cl_mem), (void *) &clC);
     CL_CHECK_ERROR (err);
 
-    if (dataType == "INT") {
-      int alpha = 2;
-      err = clSetKernelArg (streamKernel, 3, sizeof (int), (void *) &alpha);
-    } else if (dataType == "SINGLE") {
-      float alpha = 2.5;
-      err = clSetKernelArg (streamKernel, 3, sizeof (float), (void *) &alpha);
-    } else if (dataType == "DOUBLE") {
-      double alpha = 2.5;
-      err = clSetKernelArg (streamKernel, 3, sizeof (double), (void *) &alpha);
+    if (device_type == "FPGA") {
+      if (fpga_op_type == "SINGLE") {
+        int lengthX = 0;
+
+        err = clSetKernelArg (streamKernel, 3, sizeof (int), &lengthX);
+        CL_CHECK_ERROR (err);
+      }
     }
-    CL_CHECK_ERROR (err);
 
     clFinish (queue);
     CL_BAIL_ON_ERROR (err);
 
     size_t global_work_size[1];
-    if (dataType == "INT")
+    if (dataType == "INT") {
       global_work_size[0] = (size_t)(dataSize / sizeof(int));
-    else if (dataType == "SINGLE")
+    } else if (dataType == "SINGLE") {
       global_work_size[0] = (size_t)(dataSize / sizeof(float));
-    else if (dataType == "DOUBLE")
+    } else if (dataType == "DOUBLE") {
       global_work_size[0] = (size_t)(dataSize / sizeof(double));
+    }
 
     global_work_size[0] = global_work_size[0] / pack;
-		cout << "[INFO] global work size is " << global_work_size[0] << endl;
+		cout << "[INFO] global work size is "
+         << global_work_size[0]
+         << endl;
 
     const size_t local_work_size[] = {(size_t)localX};
-		cout << "[INFO] local work size is " << local_work_size[0] << endl;
+		cout << "[INFO] local work size is "
+      	 << local_work_size[0]
+         << endl;
 
     err = clEnqueueNDRangeKernel (queue, streamKernel, 1,
                                   NULL, global_work_size, local_work_size,
@@ -233,18 +260,41 @@ void RunBenchmark (cl_device_id dev,
         resultDB.AddResult ("StreamDOUBLE",
                             toString(dataSize), "MB", evKernel.SubmitEndRuntime());
 
-      err = clEnqueueReadBuffer (queue, clA, CL_TRUE, 0, dataSize, C, 0, 0, &evRead.CLEvent());
+      err = clEnqueueReadBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 0, 0, &evRead.CLEvent());
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
     }
 
+		clReleaseMemObject (clA);
+    clReleaseMemObject (clB);
+		clReleaseKernel (streamKernel);
+		free(A);
+    free(B);
+
   }
 
 
-
+ 
 }
 
 void cleanup () {
   
+}
+
+void prepareIndexes (void* array, int size) {
+
+  srand(time(0));
+
+  for (int i = 0; i < size; i++) {
+    ((unsigned int*)array)[i] = i;
+  }
+
+  for (int i = 0; i < size-1; i++) {
+    int j = i + rand() / (RAND_MAX / (size - i) + 1);
+    int t = ((unsigned int*)array)[j];
+    ((unsigned int*)array)[j] = ((unsigned int*)array)[i];
+    ((unsigned int*)array)[i] = t;
+  }
+
 }

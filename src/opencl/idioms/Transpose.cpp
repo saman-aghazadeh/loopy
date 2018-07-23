@@ -35,8 +35,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("data_type", OPT_STRING, "", "data type (INT or SINGLE or DOUBLE)");
   op.addOption ("kern_loc", OPT_STRING, "", "path to the kernel");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
-  op.addOption ("fpga_op_type", OPT_STRING, "", "fpga type (NDRANGE or SINGLE)");
-	op.addOption ("pack", OPT_STRING, "1", "Packing granularity");
+  op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -52,10 +51,11 @@ void RunBenchmark (cl_device_id dev,
 	long long unsigned  minDataSize = op.getOptionInt("min_data_size") * 1024 * 1024;
 	long long unsigned  maxDataSize = op.getOptionInt("max_data_size") * 1024 * 1024;
 
-	int localX = 256;
+	int localX = 16;
+  int localY = 16;
   int globalX = 0;
+  int globalY = 0;
   int passes = op.getOptionInt("passes");
-  int pack = op.getOptionInt("pack");
 
 	string dataType = op.getOptionString("data_type");
 	string kernel_location = op.getOptionString("kern_loc");
@@ -76,10 +76,6 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] number of passes is " << passes << endl;
 
-  cl_ulong max_mem_alloc_size;
-  clGetDeviceInfo (dev, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(max_mem_alloc_size), &max_mem_alloc_size, NULL);
-  cout << "[INFO] Maximum mem allocation size is " << max_mem_alloc_size << endl;
-
 	if (device_type == "GPU") {
     flags += "-DGPU ";
   } else if (device_type == "FPGA") {
@@ -97,8 +93,6 @@ void RunBenchmark (cl_device_id dev,
   } else if (dataType == "DOUBLE") {
     flags += double_precision;
   }
-
-  flags += " -DPACK=" + toString(pack);
 
   // First building the program
 
@@ -123,7 +117,7 @@ void RunBenchmark (cl_device_id dev,
   }
 	cout << "[INFO] Program Created Successfully!" << endl;
 
-  err = clBuildProgram (program, 0, NULL, flags.c_str(), NULL, NULL);
+  err = clBuildProgram (program, 1, &dev, flags.c_str(), NULL, NULL);
   cout << "[INFO] Kernel compiled with flags " << flags << endl;
 
   if (err != 0) {
@@ -141,32 +135,29 @@ void RunBenchmark (cl_device_id dev,
   CL_CHECK_ERROR (err);
 
 
-  for (long long unsigned dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
+  for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 4) {
 
-    cout << "[INFO] Data size is " << dataSize << endl;
-    void *A, *B, *C;
-    cl_mem clA, clB, clC;
+		cout << "[INFO] data size is " << dataSize << endl;
 
-    cl_kernel streamKernel = clCreateKernel (program, "Stream", &err);
+    void *A, *B;
+    cl_mem clA, clB;
+
+    cl_kernel streamKernel = clCreateKernel (program, "Transpose", &err);
     CL_CHECK_ERROR (err);
 
     A = (void *) malloc (dataSize);
     B = (void *) malloc (dataSize);
-    C = (void *) malloc (dataSize);
 
-    clA = clCreateBuffer (ctx, CL_MEM_WRITE_ONLY, dataSize, NULL, &err);
+    clA = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
     CL_CHECK_ERROR (err);
 
-    clB = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
+    clB = clCreateBuffer (ctx, CL_MEM_WRITE_ONLY, dataSize, NULL, &err);
     CL_CHECK_ERROR (err);
 
-    clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
+    err = clEnqueueWriteBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
     err = clEnqueueWriteBuffer (queue, clB, CL_TRUE, 0, dataSize, B, 0, NULL, NULL);
-    CL_CHECK_ERROR (err);
-
-    err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, dataSize, C, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
     err = clSetKernelArg (streamKernel, 0, sizeof (cl_mem), (void *) &clA);
@@ -175,39 +166,52 @@ void RunBenchmark (cl_device_id dev,
     err = clSetKernelArg (streamKernel, 1, sizeof (cl_mem), (void *) &clB);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (streamKernel, 2, sizeof (cl_mem), (void *) &clC);
-    CL_CHECK_ERROR (err);
+    if (device_type == "FPGA") {
+      if (fpga_op_type == "SINGLE") {
+        int numIterationsX = 0;
+        int numIterationsY = 0;
+        int lengthX = 0;
 
-    if (dataType == "INT") {
-      int alpha = 2;
-      err = clSetKernelArg (streamKernel, 3, sizeof (int), (void *) &alpha);
-    } else if (dataType == "SINGLE") {
-      float alpha = 2.5;
-      err = clSetKernelArg (streamKernel, 3, sizeof (float), (void *) &alpha);
-    } else if (dataType == "DOUBLE") {
-      double alpha = 2.5;
-      err = clSetKernelArg (streamKernel, 3, sizeof (double), (void *) &alpha);
+				err = clSetKernelArg (streamKernel, 2, sizeof (int), &numIterationsX);
+        CL_CHECK_ERROR (err);
+
+        err = clSetKernelArg (streamKernel, 3, sizeof (int), &numIterationsY);
+        CL_CHECK_ERROR (err);
+
+        err = clSetKernelArg (streamKernel, 4, sizeof (int), &lengthX);
+        CL_CHECK_ERROR (err);
+      }
     }
-    CL_CHECK_ERROR (err);
 
     clFinish (queue);
     CL_BAIL_ON_ERROR (err);
 
-    size_t global_work_size[1];
-    if (dataType == "INT")
-      global_work_size[0] = (size_t)(dataSize / sizeof(int));
-    else if (dataType == "SINGLE")
-      global_work_size[0] = (size_t)(dataSize / sizeof(float));
-    else if (dataType == "DOUBLE")
-      global_work_size[0] = (size_t)(dataSize / sizeof(double));
+    size_t global_work_size[2];
+    if (dataType == "INT") {
+      global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof(int))/2)));
+      global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof(int))/2)));
+    } else if (dataType == "SINGLE") {
+      global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof(float))/2)));
+      global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof(float))/2)));
+    } else if (dataType == "DOUBLE") {
+      global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof(double))/2)));
+      global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof(double))/2)));
+    }
 
-    global_work_size[0] = global_work_size[0] / pack;
-		cout << "[INFO] global work size is " << global_work_size[0] << endl;
+		cout << "[INFO] global work size is "
+         << global_work_size[0]
+         << ","
+         << global_work_size[1]
+         << endl;
 
-    const size_t local_work_size[] = {(size_t)localX};
-		cout << "[INFO] local work size is " << local_work_size[0] << endl;
+    const size_t local_work_size[] = {(size_t)localX, (size_t)localY};
+		cout << "[INFO] local work size is "
+      	 << local_work_size[0]
+         << ","
+         << local_work_size[1]
+         << endl;
 
-    err = clEnqueueNDRangeKernel (queue, streamKernel, 1,
+    err = clEnqueueNDRangeKernel (queue, streamKernel, 2,
                                   NULL, global_work_size, local_work_size,
                                   0, NULL, &evKernel.CLEvent());
 		clFinish (queue);
@@ -215,7 +219,7 @@ void RunBenchmark (cl_device_id dev,
 
     for (int iter = 0; iter < passes; iter++) {
 
-      err = clEnqueueNDRangeKernel (queue, streamKernel, 1,
+      err = clEnqueueNDRangeKernel (queue, streamKernel, 2,
                                     NULL, global_work_size, local_work_size,
                                     0, NULL, &evKernel.CLEvent());
 
@@ -233,11 +237,17 @@ void RunBenchmark (cl_device_id dev,
         resultDB.AddResult ("StreamDOUBLE",
                             toString(dataSize), "MB", evKernel.SubmitEndRuntime());
 
-      err = clEnqueueReadBuffer (queue, clA, CL_TRUE, 0, dataSize, C, 0, 0, &evRead.CLEvent());
+      err = clEnqueueReadBuffer (queue, clB, CL_TRUE, 0, dataSize, B, 0, 0, &evRead.CLEvent());
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
     }
+
+		clReleaseMemObject (clA);
+    clReleaseMemObject (clB);
+		clReleaseKernel (streamKernel);
+		free(A);
+    free(B);
 
   }
 

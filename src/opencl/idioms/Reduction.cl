@@ -17,10 +17,8 @@ __attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
-__kernel void Stream( __global DTYPE* restrict A,
-		      __global const DTYPE* restrict B,
-                      __global const DTYPE* restrict C,
-                      const DTYPE alpha
+__kernel void Reduction( __global const DTYPE* restrict A,
+					__global DTYPE* restrict B
 #ifdef FPGA_SINGLE
 		      ,const int numIterations)
 #else
@@ -30,6 +28,11 @@ __kernel void Stream( __global DTYPE* restrict A,
 {
 #ifdef GPU
 	const int gid = get_global_id(0);
+  const int groupid = get_group_id(0);
+  const int lsize = get_local_size(0);
+  const int lid = get_local_id(0);
+  const int start = lsize * groupid * PACK + lid;
+  DTYPE sum[256] = {0};
 #endif
 
 #ifdef FPGA_NDRANGE
@@ -41,7 +44,17 @@ __kernel void Stream( __global DTYPE* restrict A,
 	for (int gid = 0; gid < numIterations; gid++) {
 #endif
 
-	A[gid] = B[gid] + alpha * C[gid];
+	#pragma unroll PACK
+	for (int i = 0; i < PACK; i++) 
+		sum[lid] = sum[lid] + A[start + lsize * i];
+
+	barrier (CLK_GLOBAL_MEM_FENCE);
+  if (lid == 0) {
+		for (int i = 1; i < 256; i++)
+    	sum[0] += sum[i];
+	}
+
+	B[groupid] = sum[0];
 
 #ifdef FPGA_SINGLE
 	}

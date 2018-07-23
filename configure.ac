@@ -490,7 +490,8 @@ AC_CONFIG_FILES([Makefile
                  src/opencl/level2/Makefile
                  src/opencl/level2/s3d/Makefile
                  src/opencl/level2/s3d/epmpi/Makefile
-		 src/opencl/level3/Makefile
+		 						 src/opencl/level3/Makefile
+                 src/opencl/idioms/Makefile
                  src/stability/Makefile
                  src/stability/epmpi/Makefile
                  tools/Makefile

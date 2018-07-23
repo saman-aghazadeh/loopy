@@ -17,7 +17,23 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 serialopencldir = $(bindir)/Serial/OpenCL
 
 # What programs should be installed in the bin/Serial/OpenCL destination?
-serialopencl_PROGRAMS = Stream
+serialopencl_PROGRAMS = Stream \
+												Transpose \
+												Random \
+												Scatter \
+												Reduction
 
 Stream_SOURCES					=	Stream.cpp main.cpp
 Stream_LDADD						= $(OCL_LIBS) $(LIBS)
+
+Transpose_SOURCES				= Transpose.cpp main.cpp
+Transpose_LDADD					= $(OCL_LIBS) $(LIBS)
+
+Random_SOURCES					= Random.cpp main.cpp
+Random_LDADD						= $(OCL_LIBS) $(LIBS)
+
+Scatter_SOURCES					= Scatter.cpp main.cpp
+Scatter_LDADD						= $(OCL_LIBS) $(LIBS)
+
+Reduction_SOURCES				= Reduction.cpp main.cpp
+Reduction_LDADD					= $(OCL_LIBS) $(LIBS)
