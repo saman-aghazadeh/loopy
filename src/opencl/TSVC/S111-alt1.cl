@@ -37,7 +37,6 @@ __kernel void S111 (__global const DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 	#pragma unroll UNROLL_FACTOR
-	#pragma ivdep array(B)
   for (int gid = 0; gid < lll/2; gid += 1) {
 #endif
 
