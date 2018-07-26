@@ -15,7 +15,11 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 
 serialopencldir = $(bindir)/Serial/OpenCL
 
-serialopencl_PROGRAMS = S000
+serialopencl_PROGRAMS = S000 \
+												S111
 
 S000_SOURCES					= S000.cpp main.cpp
 S000_LDADD						= $(OCL_LIBS) $(LIBS)
+
+S111_SOURCES					= S111.cpp main.cpp
+S111_LDADD						= $(OCL_LIBS) $(LIBS)

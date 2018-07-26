@@ -196,6 +196,7 @@ void RunBenchmark (cl_device_id dev,
       global_work_size[0] = (size_t)(dataSize / sizeof (float));
     else if (dataType == "DOUBLE")
       global_work_size[0] = (size_t)(dataSize / sizeof (double));
+    global_work_size[0] = global_work_size[0]/2;
 		cout << "[INFO] global work size is " << global_work_size[0] << endl;
 
     const size_t local_work_size[] = {(size_t)localX};
