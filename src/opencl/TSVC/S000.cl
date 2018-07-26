@@ -13,7 +13,7 @@
 
 #ifdef FPGA_NDRANGE
 __attribute__((reqd_work_group_size(256, 1, 1)))
-__attribute__((num_simd_work_itms(16)))
+__attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
