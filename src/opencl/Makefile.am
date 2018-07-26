@@ -1,1 +1,1 @@
-SUBDIRS=common idioms
+SUBDIRS=common idioms TSVC
