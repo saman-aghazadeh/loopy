@@ -36,6 +36,8 @@ __kernel void S113 (__global DTYPE* restrict AA,
 #endif
 
 #ifdef FPGA_SINGLE
+
+	#pragma loop_coalesce
   for (int i = 1; i < lll; i++) {
   	for (int j = 1; j < lll; j++) {
 			AA[i*lll+j] = AA[(i-1)*lll+(j-1)] + BB[i*lll+j];
