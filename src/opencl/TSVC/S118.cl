@@ -36,11 +36,13 @@ __kernel void S113 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
   for (int i = 1; i < lll; i++) {
+	DTYPE sum = 0.0;
   	#pragma unroll UNROLL_FACTOR
   	for (int j = 0; j < lll; j++ ) {
     	if (j <= i - 1 ) 
-    		A[i] += BB[j*lll+i] * A[i-j-1];
+    		sum += BB[j*lll+i] * A[i-j-1];
     }
+	A[i] = sum;
   }
 #else 
 
