@@ -1,5 +1,5 @@
 //
-// (c) July 30, 2018 Saman Biookaghazadeh @ Arizona State University
+// (c) July 31, 2018 Saman Biookaghazadeh @ Arizona State University
 //
 
 #ifdef INT_PRECISION
@@ -17,7 +17,8 @@ __attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
-__kernel void S113 (__global DTYPE* restrict A,
+
+__kernel void S113 (__global DTYPE* restrict AA,
 										__global DTYPE* restrict BB
 #ifdef FPGA_SINGLE
 										,const int lll)
@@ -36,15 +37,11 @@ __kernel void S113 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
   for (int i = 1; i < lll; i++) {
-	DTYPE sum = 0.0;
-  	#pragma unroll UNROLL_FACTOR
-  	for (int j = 0; j < lll; j++ ) {
-    	if (j <= i - 1 ) 
-    		sum += BB[j*lll+i] * A[i-j-1];
-    }
-	A[i] = sum;
+  	for (int j = 1; j < lll; j++) {
+			AA[i*lll+j] = AA[(i-1)*lll+(j-1)] + BB[i*lll+j];
+		}
   }
-#else 
+#else
 
 
 #endif
