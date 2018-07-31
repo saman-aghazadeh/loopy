@@ -38,7 +38,7 @@ __kernel void S113 (__global DTYPE* restrict A,
   for (int i = 1; i < lll; i++) {
   	#pragma unroll UNROLL_FACTOR
   	for (int j = 0; j <= i - 1; j++ ) {
-    	a[i] += b[j*lll+i] * a[i-j-1];
+    	A[i] += BB[j*lll+i] * A[i-j-1];
     }
   }
 #else 
