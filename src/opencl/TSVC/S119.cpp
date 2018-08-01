@@ -249,6 +249,8 @@ void RunBenchmark (cl_device_id dev,
     clFinish (queue);
     CL_BAIL_ON_ERROR (err);
 
+		cout << "[INFO] Done with warmup" << endl;
+
 		for (int iter = 0; iter < passes; iter++) {
 
       if (dataType == "INT") {
@@ -277,6 +279,7 @@ void RunBenchmark (cl_device_id dev,
       err = clEnqueueWriteBuffer (queue, clAA, CL_TRUE, 0, dataSize, AA, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
+      cout << "[INFO] iteration number " << iter << endl;
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
