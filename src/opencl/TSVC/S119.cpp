@@ -207,13 +207,23 @@ void RunBenchmark (cl_device_id dev,
 
 		if (device_type == "FPGA") {
       if (fpga_op_type == "SINGLE") {
-        int numIterations = 0;
-        if (dataType == "INT") numIterations = dataSize / 4;
-        else if (dataType == "SINGLE") numIterations = dataSize / 4;
-        else if (dataType == "DOUBLE") numIterations = dataSize / 8;
+        int numIterationsX = 0;
+        int numIterationsY = 0;
+        if (dataType == "INT") {
+          numIterationsX = (int)(pow(2, ceil(log2l(dataSize / sizeof (int))/2)));
+          numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (int))/2)));
+        } else if (dataType == "SINGLE") {
+          numIterationsX = (int)(pow(2, ceil(log2l(dataSize / sizeof (float))/2)));
+          numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (float))/2)));
+        } else if (dataType == "DOUBLE") {
+          numIterationsX = (int)(pow(2, ceil(log2l(dataSize / sizeof (double))/2)));
+          numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
+        }
 
-        cout << "[INFO] number of iterations is " << numIterations << endl;
-        err = clSetKernelArg (kernel, 2, sizeof (int), &numIterations);
+        cout << "[INFO] number of iterations is " << numIterationsX << " " << numIterationsY << endl;
+        err = clSetKernelArg (kernel, 2, sizeof (int), &numIterationsX);
+        CL_CHECK_ERROR (err);
+        err = clSetKernelArg (kernel, 3, sizeof (int), &numIterationsY);
         CL_CHECK_ERROR (err);
       }
     }

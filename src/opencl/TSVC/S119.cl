@@ -21,7 +21,8 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 __kernel void S119 (__global DTYPE* restrict AA,
 										__global DTYPE* restrict BB
 #ifdef FPGA_SINGLE
-										,const int lll)
+										,const int llX
+                    ,const int llY)
 #else
 																	)
 #endif
@@ -66,11 +67,11 @@ __kernel void S119 (__global DTYPE* restrict AA,
 
 #ifdef FPGA_SINGLE
 
-  for (int i = 1; i < lll; i++) {
+  for (int i = 1; i < lllX; i++) {
   	#pragma ivdep
     #pragma unroll UNROLL_FACTOR
-  	for (int j = 1; j < lll; j++) {
-			AA[i*lll+j] = AA[(i-1)*lll+(j-1)] + BB[i*lll+j];
+  	for (int j = 1; j < lllY; j++) {
+			AA[i*lllY+j] = AA[(i-1)*lllY+(j-1)] + BB[i*lllY+j];
 		}
   }
 #else
