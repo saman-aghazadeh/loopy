@@ -66,8 +66,9 @@ __kernel void S119 (__global DTYPE* restrict AA,
 
 #ifdef FPGA_SINGLE
 
-	#pragma loop_coalesce
   for (int i = 1; i < lll; i++) {
+  	#pragma ivdep
+    #pragma unroll UNROLL_FACTOR
   	for (int j = 1; j < lll; j++) {
 			AA[i*lll+j] = AA[(i-1)*lll+(j-1)] + BB[i*lll+j];
 		}
