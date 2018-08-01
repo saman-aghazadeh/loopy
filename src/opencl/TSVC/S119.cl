@@ -21,8 +21,8 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 __kernel void S119 (__global DTYPE* restrict AA,
 										__global DTYPE* restrict BB
 #ifdef FPGA_SINGLE
-										,const int llX
-                    ,const int llY)
+										,const int lllX
+                    ,const int lllY)
 #else
 																	)
 #endif
