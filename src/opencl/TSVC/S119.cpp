@@ -220,7 +220,8 @@ void RunBenchmark (cl_device_id dev,
           numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
         }
 
-        cout << "[INFO] number of iterations is " << numIterationsX << " " << numIterationsY << endl;
+	cout << "[INFO] dimensions are " << numIterationsX << " " << numIterationsY << endl; 
+
         err = clSetKernelArg (kernel, 2, sizeof (int), &numIterationsX);
         CL_CHECK_ERROR (err);
         err = clSetKernelArg (kernel, 3, sizeof (int), &numIterationsY);
@@ -289,8 +290,6 @@ void RunBenchmark (cl_device_id dev,
       err = clEnqueueWriteBuffer (queue, clAA, CL_TRUE, 0, dataSize, AA, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
-      cout << "[INFO] iteration number " << iter << endl;
-
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
       } else {
@@ -322,6 +321,7 @@ void RunBenchmark (cl_device_id dev,
       void* BBCPU = (void *) (malloc (dataSize));
 
 	    if (dataType == "INT") {
+		cout << "Sizes are " << sizeX << " " << sizeY << endl;
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
             ((int *)AACPU)[i*sizeY+j] = 1;
@@ -330,7 +330,7 @@ void RunBenchmark (cl_device_id dev,
         }
         for (int i = 1; i < sizeX; i++) {
           for (int j = 1; j < sizeY; j++) {
-            ((int *)AACPU)[i*sizeY+j] = ((int *)AACPU)[(i-1)*sizeY+(j-1)] * ((int *)BBCPU)[i*sizeY+j];
+            ((int *)AACPU)[i*sizeY+j] = ((int *)AACPU)[(i-1)*sizeY+(j-1)] + ((int *)BBCPU)[i*sizeY+j];
           }
         }
         int wrong = 0;
@@ -340,6 +340,9 @@ void RunBenchmark (cl_device_id dev,
               wrong = 1;
               break;
             }
+	    cout << "[INFO] AACPU[" << i*sizeY+j << "]=" 
+		 << ((int *)AACPU)[i*sizeY+j] << " AA[" 
+		 << i*sizeY+j << "]=" << ((int *)AA)[i*sizeY+j] << endl;
             if (((int *)AACPU)[i*sizeY+j] != ((int *)AA)[i*sizeY+j]) {
               wrong = 2;
               break;
@@ -359,7 +362,7 @@ void RunBenchmark (cl_device_id dev,
         }
         for (int i = 1; i < sizeX; i++) {
           for (int j = 1; j < sizeY; j++) {
-				  	((float *)AACPU)[i*sizeY+j] = ((float *)AACPU)[(i-1)*sizeY+(j-1)] * ((float *)BBCPU)[i*sizeY+j];
+				  	((float *)AACPU)[i*sizeY+j] = ((float *)AACPU)[(i-1)*sizeY+(j-1)] + ((float *)BBCPU)[i*sizeY+j];
           }
         }
 				int wrong = 0;
@@ -391,7 +394,7 @@ void RunBenchmark (cl_device_id dev,
         }
         for (int i = 1; i < sizeX; i++) {
           for (int j = 1; j < sizeY; j++) {
-            ((double *)AACPU)[i*sizeY+j] = ((double *)AACPU)[(i-1)*sizeY+(j-1)] * ((double *)BBCPU)[i*sizeY+j];
+            ((double *)AACPU)[i*sizeY+j] = ((double *)AACPU)[(i-1)*sizeY+(j-1)] + ((double *)BBCPU)[i*sizeY+j];
           }
         }
         int wrong = 0;
