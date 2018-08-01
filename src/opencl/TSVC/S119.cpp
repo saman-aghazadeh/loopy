@@ -211,6 +211,8 @@ void RunBenchmark (cl_device_id dev,
         if (dataType == "INT") numIterations = dataSize / 4;
         else if (dataType == "SINGLE") numIterations = dataSize / 4;
         else if (dataType == "DOUBLE") numIterations = dataSize / 8;
+
+        cout << "[INFO] number of iterations is " << numIterations << endl;
         err = clSetKernelArg (kernel, 2, sizeof (int), &numIterations);
         CL_CHECK_ERROR (err);
       }
@@ -230,10 +232,12 @@ void RunBenchmark (cl_device_id dev,
     	global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof (double))/2)));
     	global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
     }
-		cout << "[INFO] global work size is " << global_work_size[0] << " " << global_work_size[1] << endl;
+    if (!(device_type == "FPGA" && fpga_op_type == "SINGLE"))
+			cout << "[INFO] global work size is " << global_work_size[0] << " " << global_work_size[1] << endl;
 
     const size_t local_work_size[] = {(size_t)localX, (size_t)localY};
-		cout << "[INFO] local work size is " << local_work_size[0] << " " << local_work_size[1] << endl;
+    if (!(device_type == "FPGA" && fpga_op_type == "SINGLE"))
+			cout << "[INFO] local work size is " << local_work_size[0] << " " << local_work_size[1] << endl;
 
     if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
       err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
