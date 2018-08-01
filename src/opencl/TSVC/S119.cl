@@ -18,7 +18,7 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 
-__kernel void S113 (__global DTYPE* restrict AA,
+__kernel void S119 (__global DTYPE* restrict AA,
 										__global DTYPE* restrict BB
 #ifdef FPGA_SINGLE
 										,const int lll)
@@ -31,7 +31,7 @@ __kernel void S113 (__global DTYPE* restrict AA,
 	const int gidX = get_global_id(0);
   const int gidY = get_global_id(1);
 
-	cosnt int sizeX = get_global_size(0);
+	const int sizeX = get_global_size(0);
 	const int sizeY = get_global_size(1);
 
 	if (gidX == 0 || gidY == 0) {
@@ -47,7 +47,21 @@ __kernel void S113 (__global DTYPE* restrict AA,
 #endif
 
 #ifdef FPGA_NDRANGE
-	const int gid = get_global_id(0);
+	const int gidX = get_global_id(0);
+  const int gidY = get_global_id(1);
+
+	const int sizeX = get_global_size(0);
+  const int sizeY = get_global_size(1);
+
+	if (gidX == 0 || gidY == 0) {
+		if (gidX != sizeX-1 && gidY != sizeY-1 ) {
+    	int i = 1;
+      int j = 1;
+      for (i = 1, j = 1; i < sizeX && j < sizeY; i++, j++) {
+				AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] + BB[i*sizeY+j];
+			}
+		}
+	}
 #endif
 
 #ifdef FPGA_SINGLE
