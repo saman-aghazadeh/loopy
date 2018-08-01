@@ -293,7 +293,7 @@ void RunBenchmark (cl_device_id dev,
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
       } else {
-      	err = clEnqueueNDRangeKernel (queue, kernel, 1,
+      	err = clEnqueueNDRangeKernel (queue, kernel, 2,
                                     NULL, global_work_size, local_work_size,
                                     0, NULL, &evKernel.CLEvent());
       }
@@ -321,7 +321,6 @@ void RunBenchmark (cl_device_id dev,
       void* BBCPU = (void *) (malloc (dataSize));
 
 	    if (dataType == "INT") {
-		cout << "Sizes are " << sizeX << " " << sizeY << endl;
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
             ((int *)AACPU)[i*sizeY+j] = 1;
@@ -340,9 +339,9 @@ void RunBenchmark (cl_device_id dev,
               wrong = 1;
               break;
             }
-	    cout << "[INFO] AACPU[" << i*sizeY+j << "]=" 
-		 << ((int *)AACPU)[i*sizeY+j] << " AA[" 
-		 << i*sizeY+j << "]=" << ((int *)AA)[i*sizeY+j] << endl;
+	    			//cout << "[INFO] AACPU[" << i*sizeY+j << "]="
+		 				//		 << ((int *)AACPU)[i*sizeY+j] << " AA["
+		 				//		 << i*sizeY+j << "]=" << ((int *)AA)[i*sizeY+j] << endl;
             if (((int *)AACPU)[i*sizeY+j] != ((int *)AA)[i*sizeY+j]) {
               wrong = 2;
               break;
