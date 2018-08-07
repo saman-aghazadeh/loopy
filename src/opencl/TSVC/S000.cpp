@@ -201,18 +201,27 @@ void RunBenchmark (cl_device_id dev,
     const size_t local_work_size[] = {(size_t)localX};
 		cout << "[INFO] local work size is " << local_work_size[0] << endl;
 
-    err = clEnqueueNDRangeKernel (queue, kernel, 1,
-                                  NULL, global_work_size, local_work_size,
-                                  0, NULL, &evKernel.CLEvent());
+
+    if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
+      err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+    } else {
+     	err = clEnqueueNDRangeKernel (queue, kernel, 1,
+                                    NULL, global_work_size, local_work_size,
+                                    0, NULL, &evKernel.CLEvent());
+    }
 
     clFinish (queue);
     CL_BAIL_ON_ERROR (err);
 
 		for (int iter = 0; iter < passes; iter++) {
 
-      err = clEnqueueNDRangeKernel (queue, kernel, 1,
+      if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
+				err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+      } else {
+      	err = clEnqueueNDRangeKernel (queue, kernel, 1,
                                     NULL, global_work_size, local_work_size,
                                     0, NULL, &evKernel.CLEvent());
+      }
 
       clFinish(queue);
       CL_BAIL_ON_ERROR (err);
