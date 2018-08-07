@@ -24,7 +24,8 @@ serialopencl_PROGRAMS = S000 \
 												S119 \
 												S1119 \
 												S122 \
-												S124
+												S124 \
+												S176
 
 S000_SOURCES					= S000.cpp main.cpp
 S000_LDADD						= $(OCL_LIBS) $(LIBS)
@@ -55,3 +56,6 @@ S122_LDADD						= $(OCL_LIBS) $(LIBS)
 
 S124_SOURCES					= S124.cpp main.cpp
 S124_LDADD						= $(OCL_LIBS) $(LIBS)
+
+S176_SOURCES					= S176.cpp main.cpp
+S176_LDADD						= $(OCL_LIBS) $(LIBS)
