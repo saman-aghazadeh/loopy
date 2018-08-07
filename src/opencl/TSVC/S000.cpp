@@ -181,6 +181,13 @@ void RunBenchmark (cl_device_id dev,
 		if (device_type == "FPGA") {
       if (fpga_op_type == "SINGLE") {
         int numIterations = 0;
+        if (dataType == "INT") {
+          numIterations = dataSize / sizeof (int);
+        } else if (dataType == "SINGLE") {
+          numIterations = dataSize / sizeof (int);
+        } else if (dataType == "DOUBLE") {
+          numIterations = dataSize / sizeof (int);
+        }
         err = clSetKernelArg (kernel, 3, sizeof (int), &numIterations);
         CL_CHECK_ERROR (err);
       }
