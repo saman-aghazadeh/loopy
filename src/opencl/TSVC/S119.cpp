@@ -38,6 +38,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("kern_name", OPT_STRING, "", "name of the kernel function");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
+  op.addOption ("verification", OPT_BOOL, "FALSE", "Enable or disable verification after execution!");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -61,6 +62,8 @@ void RunBenchmark (cl_device_id dev,
 	string device_type = op.getOptionString("device_type");
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
+  bool verification = op.getOptionBool("verification");
+  verification = false;
 
 	int localX = 16;
   int localY = 16;
@@ -315,6 +318,8 @@ void RunBenchmark (cl_device_id dev,
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
+
+			if (!verification) continue;
 
 			// Testing the same operation on CPU and do the verification
       void* AACPU = (void *) (malloc (dataSize));
