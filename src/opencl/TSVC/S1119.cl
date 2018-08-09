@@ -43,6 +43,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 	const int gid = get_global_id(0);
 	const int size = get_global_size(0);
 
+	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lllX; i++) {
 		AA[i*size+gid] = AA[(i-1)*size+gid] + BB[i*size+gid];
 	}
