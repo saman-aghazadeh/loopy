@@ -13,7 +13,7 @@
 
 #ifdef FPGA_NDRANGE
 __attribute__((reqd_work_group_size(16, 16, 1)))
-__attribute__((num_simd_work_items(16)))
+__attribute__((num_simd_work_items(1)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
@@ -74,9 +74,9 @@ __kernel void S119 (__global DTYPE* restrict AA,
 			int i = 1;
       int j = 1;
 
-			while (i < sizeX && j < sizeY) {
-				temp1 = temp1 + temp2;
-        i++; j++;
+			#pragma unroll UNROLL_FACTOR
+			for (i = 1, j = 1; i < sizeX && j < sizeY; i++, j++) {
+				AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] * BB[i*sizeY+j]
 			}
 
 			A[gidX * sizeY + gidY] = temp1;
