@@ -76,10 +76,10 @@ __kernel void S119 (__global DTYPE* restrict AA,
 
 			#pragma unroll UNROLL_FACTOR
 			for (i = 1, j = 1; i < sizeX && j < sizeY; i++, j++) {
-				AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] * BB[i*sizeY+j]
+				AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] * BB[i*sizeY+j];
 			}
 
-			A[gidX * sizeY + gidY] = temp1;
+			AA[gidX * sizeY + gidY] = temp1;
 		}
 	}
 
