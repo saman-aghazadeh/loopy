@@ -74,9 +74,9 @@ __kernel void S119 (__global DTYPE* restrict AA,
 			int i = 1;
       int j = 1;
 
-			while (i < sizeX && j < sizeY) {
+			#pragma unroll UNROLL_FACTOR
+			for (i = 1, j = 1; i < sizeX && j < sizeY; i++, j++) {
 				temp1 = temp1 + temp2;
-        i++; j++;
 			}
 
 			AA[gidX * sizeY + gidY] = temp1;
