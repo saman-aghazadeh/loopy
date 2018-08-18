@@ -92,21 +92,21 @@ __kernel void S1119 (__global DTYPE* restrict AA,
     #pragma unroll UNROLL_FACTOR
   	for (int j = 0; j < lllY; j++) {
 #if INTENSITY1
-			Bfunction(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY2
-			Bfunction2(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction2(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY3
-			Bfunction3(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction3(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY4
-			Bfunction4(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction4(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY5
-			Bfunction5(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction5(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY6
-			Bfunction6(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction6(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY7
-			Bfunction7(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction7(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #elif INTENSITY8
-			Bfunction8(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+			Bfunction8(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
 #endif
 		}
   }
