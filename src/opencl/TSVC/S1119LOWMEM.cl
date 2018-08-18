@@ -64,7 +64,24 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lllX; i++) {
-		AA[i*size+gid] = AA[(i-1)*size+gid] + BB[i*size+gid];
+
+#if INTENSITY1
+		Bfunction(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY2
+		Bfunction2(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY3
+		Bfunction3(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY4
+		Bfunction4(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY5
+		Bfunction5(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY6
+		Bfunction6(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY7
+		Bfunction7(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#elif INTENSITY8
+		Bfunction8(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);
+#endif
 	}
 #endif
 
