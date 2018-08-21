@@ -39,6 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("verification", OPT_BOOL, "FALSE", "Enable or disable verification after execution!");
+  op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation!");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -63,6 +64,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   bool verification = op.getOptionBool("verification");
+  string intensity = op.getOptionString("intensity");
   verification = false;
 
 	int localX = 16;
@@ -82,6 +84,18 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] number of passes is " << passes << endl;
   // First building the program
+
+	if (intensity == "1") {
+    flags += "-DINTENSITY1 ";
+  } else if (intensity == "2") {
+    flags += "-DINTENSITY2 ";
+  } else if (intensity == "3") {
+    flags += "-DINTENSITY3 ";
+  } else if (intensity == "4") {
+    flags += "-DINTENSITY4 ";
+  } else if (intensity == "5") {
+    flags += "-DINTENSITY5 ";
+  }
 
 	if (device_type == "GPU") {
     flags += "-DGPU ";
