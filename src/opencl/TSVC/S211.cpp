@@ -38,6 +38,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
 	op.addOption ("kern2_name", OPT_STRING, "", "name of the kernel 2 function");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
+  op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -62,6 +63,7 @@ void RunBenchmark (cl_device_id dev,
 	string device_type = op.getOptionString("device_type");
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
+  string intensity = op.getOptionString("intensity");
 
 	int localX = 256;
   int globalX = 0;
@@ -82,6 +84,24 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] Number of passes is " << passes << endl;
   // First building the program
+
+	if (intensity == "1") {
+    flags += "-DINTENSITY1 ";
+  } else if (intensity == "2") {
+    flags += "-DINTENSITY2 ";
+  } else if (intensity == "3") {
+    flags += "-DINTENSITY3 ";
+  } else if (intensity == "4") {
+    flags += "-DINTENSITY4 ";
+  } else if (intensity == "5") {
+    flags += "-DINTENSITY5 ";
+  } else if (intensity == "6") {
+    flags += "-DINTENSITY6 ";
+  } else if (intensity == "7") {
+    flags += "-DINTENSITY7 ";
+  } else if (intensity == "8") {
+    flags += "-DINTENSITY8 ";
+  }
 
 	if (device_type == "GPU") {
     flags += "-DGPU ";
@@ -176,30 +196,30 @@ void RunBenchmark (cl_device_id dev,
 
     if (dataType == "INT") {
       for (int i = 0; i < size+2; i++) {
-      	((int *)A)[i] = 1;
-        ((int *)B)[i] = 1;
-        ((int *)BPrime)[i] = 1;
-        ((int *)C)[i] = 1;
-        ((int *)D)[i] = 1;
-        ((int *)E)[i] = 1;
+      	((int *)A)[i] = 10;
+        ((int *)B)[i] = 10;
+        ((int *)BPrime)[i] = 10;
+        ((int *)C)[i] = 10;
+        ((int *)D)[i] = 10;
+        ((int *)E)[i] = 10;
       }
     } else if (dataType == "SINGLE") {
       for (int i = 0; i < size+2; i++) {
-        ((float *)A)[i] = 1;
-        ((float *)B)[i] = 1;
-        ((float *)BPrime)[i] = 1;
-        ((float *)C)[i] = 1;
-        ((float *)D)[i] = 1;
-        ((float *)E)[i] = 1;
+        ((float *)A)[i] = 10;
+        ((float *)B)[i] = 10;
+        ((float *)BPrime)[i] = 10;
+        ((float *)C)[i] = 10;
+        ((float *)D)[i] = 10;
+        ((float *)E)[i] = 10;
       }
     } else if (dataType == "DOUBLE") {
       for (int i = 0; i < size+2; i++) {
-        ((double *)A)[i] = 1;
-        ((double *)B)[i] = 1;
-        ((double *)BPrime)[i] = 1;
-        ((double *)C)[i] = 1;
-        ((double *)D)[i] = 1;
-        ((double *)E)[i] = 1;
+        ((double *)A)[i] = 10;
+        ((double *)B)[i] = 10;
+        ((double *)BPrime)[i] = 10;
+        ((double *)C)[i] = 10;
+        ((double *)D)[i] = 10;
+        ((double *)E)[i] = 10;
       }
     }
 
@@ -338,30 +358,30 @@ void RunBenchmark (cl_device_id dev,
 
 			if (dataType == "INT") {
         for (int i = 0; i < size; i++) {
-          ((int *)A)[i] = 1;
-          ((int *)B)[i] = 1;
-          ((int *)BPrime)[i] = 1;
-          ((int *)C)[i] = 1;
-          ((int *)D)[i] = 1;
-          ((int *)E)[i] = 1;
+          ((int *)A)[i] = 10;
+          ((int *)B)[i] = 10;
+          ((int *)BPrime)[i] = 10;
+          ((int *)C)[i] = 10;
+          ((int *)D)[i] = 10;
+          ((int *)E)[i] = 10;
         }
       } else if (dataType == "SINGLE") {
         for (int i = 0; i < size; i++) {
-          ((float *)A)[i] = 1;
-          ((float *)B)[i] = 1;
-          ((float *)BPrime)[i] = 1;
-          ((float *)C)[i] = 1;
-          ((float *)D)[i] = 1;
-          ((float *)E)[i] = 1;
+          ((float *)A)[i] = 10;
+          ((float *)B)[i] = 10;
+          ((float *)BPrime)[i] = 10;
+          ((float *)C)[i] = 10;
+          ((float *)D)[i] = 10;
+          ((float *)E)[i] = 10;
         }
       } else if (dataType == "DOUBLE") {
         for (int i = 0; i < size; i++) {
-          ((double *)A)[i] = 1;
-          ((double *)B)[i] = 1;
-          ((double *)BPrime)[i] = 1;
-          ((double *)C)[i] = 1;
-          ((double *)D)[i] = 1;
-          ((double *)E)[i] = 1;
+          ((double *)A)[i] = 10;
+          ((double *)B)[i] = 10;
+          ((double *)BPrime)[i] = 10;
+          ((double *)C)[i] = 10;
+          ((double *)D)[i] = 10;
+          ((double *)E)[i] = 10;
         }
       }
 
