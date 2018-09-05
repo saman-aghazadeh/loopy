@@ -37,6 +37,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("kern_name", OPT_STRING, "", "name of the kernel function");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
+  op.addOption ("intensity", OPT_STRING, "", "intensity of the kernel");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -60,6 +61,7 @@ void RunBenchmark (cl_device_id dev,
 	string device_type = op.getOptionString("device_type");
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
+  string intensity = op.getOptionString("intensity");
 
 	int localX = 256;
   int globalX = 0;
@@ -77,6 +79,19 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] Number of passes is " << passes << endl;
   // First building the program
+
+	if (intensity == "1") {
+    flags += "-DINTENSITY1 ";
+  } else if (intensity == "2") {
+    flags += "-DINTENSITY2 ";
+  } else if (intensity == "3") {
+    flags += "-DINTENSITY3 ";
+  } else if (intensity == "4") {
+    flags += "-DINTENSITY4 ";
+  } else if (intensity == "5") {
+    flags += "-DINTENSITY5 ";
+  }
+
 
 	if (device_type == "GPU") {
     flags += "-DGPU ";
