@@ -61,7 +61,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 				for (int z2 = 0; z2 < BLOCK_SIZE; z2++) {
 					int z2_offset = x2+j;
 
-					AA[z1_offset*lllY+z2_offset] = AA[(z1_offset-1)*lllY+z2_offset] + BB[z1_offset*lllY+z2_offset]
+					AA[z1_offset*lllY+z2_offset] = AA[(z1_offset-1)*lllY+z2_offset] + BB[z1_offset*lllY+z2_offset];
 				}
 			}
 			
