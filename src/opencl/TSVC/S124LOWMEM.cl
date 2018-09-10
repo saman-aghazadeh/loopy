@@ -96,7 +96,6 @@ __kernel void S124 (__global DTYPE* restrict A,
 
 #endif
 
-/*
 #ifdef FPGA_NDRANGE
 	const int gid = get_global_id(0);
 
@@ -155,33 +154,59 @@ __kernel void S124 (__global DTYPE* restrict A,
 		Cfunction5(A[gid], C[gid], D[gid], E[gid]);
 #elif INTENSITY6
 		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
+#endif
 	}
 
 #endif
-*/
 
-/*
 #ifdef FPGA_SINGLE
 
 	int j = -1;
   #pragma unroll UNROLL_FACTOR
 	for (int i = 0; i < lll; i++) {
-
-		if (B[i] > 0) {
+		if (B[i] > 10) {
 #if INTENSITY1
-			Cfunction(A[i], B[i], D[i], E[i]);
+			Cfunction(A[i], B[i], D[i], (-E[i]));
 #elif INTENSITY2
-			Cfunction2(A[i], B[i], D[i], E[i]);
+			Cfunction2(A[i], B[i], D[i], (-E[i]));
 #elif INTENSITY3
-			Cfunction3(A[i], B[i], D[i], E[i]);
+			Cfunction3(A[i], B[i], D[i], (-E[i]));
 #elif INTENSITY4
-			Cfunction4(A[i], B[i], D[i], E[i]);
+			Cfunction4(A[i], B[i], D[i], (-E[i]));
 #elif INTENSITY5
-			Cfunction5(A[i], B[i], D[i], E[i]);
+			Cfunction5(A[i], B[i], D[i], (-E[i]));
 #elif INTENSITY6
-			Cfunction6(A[i], B[i], D[i], E[i]);
+			Cfunction6(A[i], B[i], D[i], (-E[i]));
 #endif
-		} else {
+		} else if (B[i] > 0){
+#if INTENSITY1
+			Cfunction(A[i], C[i], D[i], E[i]);
+#elif INTENSITY2
+			Cfunction2(A[i], C[i], D[i], E[i]);
+#elif INTENSITY3
+			Cfunction3(A[i], C[i], D[i], E[i]);
+#elif INTENSITY4
+			Cfunction4(A[i], C[i], D[i], E[i]);
+#elif INTENSITY5
+			Cfunction5(A[i], C[i], D[i], E[i]);
+#elif INTENSITY6
+			Cfunction6(A[i], C[i], D[i], E[i]);
+#endif
+		} else if (B[i] < 0) {
+#if INTENSITY1
+			Cfunction(A[i], C[i], D[i], (-E[i]));
+#elif INTENSITY2
+			Cfunction2(A[i], C[i], D[i], (-E[i]));
+#elif INTENSITY3
+			Cfunction3(A[i], C[i], D[i], (-E[i]));
+#elif INTENSITY4
+			Cfunction4(A[i], C[i], D[i], (-E[i]));
+#elif INTENSITY5
+			Cfunction5(A[i], C[i], D[i], (-E[i]));
+#elif INTENSITY6
+			Cfunction6(A[i], C[i], D[i], (-E[i]));
+#endif
+		} else if (B[i] < -10) {
 #if INTENSITY1
 			Cfunction(A[i], C[i], D[i], E[i]);
 #elif INTENSITY2
