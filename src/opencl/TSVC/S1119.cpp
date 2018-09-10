@@ -64,7 +64,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
   string intensity = op.getOptionString("intensity");
   string flags = "";
-	int block_size = op.getOptionString("block_size");
+	int block_size = op.getOptionInt("block_size");
 
   int localX = 256;
   int globalX = 0;
