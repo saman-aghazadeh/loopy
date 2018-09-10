@@ -49,15 +49,23 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef FPGA_NDRANGE
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 10) {
-		A[gid] = B[gid] + D[gid] - E[gid];
-	} else if (B[gid] > 0) {
-  	A[gid] = B[gid] + D[gid] + E[gid];
-	} else if (B[gid] < -10){
-		A[gid] = C[gid] + D[gid] - E[gid];
-	} else if (B[gid] < 0) {
-		A[gid] = C[gid] + D[gid] + E[gid];
+	DTYPE B_local = B[gid];
+  DTYPE C_local = C[gid];
+  DTYPE D_local = D[gid];
+  DTYPE E_local = E[gid];
+  DTYPE A_local = 0;
+
+	if ( B_local > 10) {
+		A_local = B_local + D_local - E_local;
+	} else if (B_local > 0) {
+  	A_local = B_local + D_local + E_local;
+	} else if (B_local < -10){
+		A_local = C_local + D_local - E_local;
+	} else if (B_local < 0) {
+		A_local = C_local + D_local + E_local;
 	}
+
+	A[gid] = A_local;
 
 #endif
 
@@ -67,15 +75,24 @@ __kernel void S124 (__global DTYPE* restrict A,
   
   #pragma unroll UNROLL_FACTOR
 	for (int i = 0; i < lll; i++) {
-		if (B[i] > 10) {
-			A[i] = B[i] + D[i] - E[i];
-		} else if (B[i] > 0) {
-  		A[i] = B[i] + D[i] + E[i];
-		} else if (B[i] < -10){
-			A[i] = C[i] + D[i] - E[i];
-		} else if (B[i] < 0) {
-			A[i] = C[i] + D[i] + E[i];
+
+		DTYPE B_local = B[gid];
+  	DTYPE C_local = C[gid];
+  	DTYPE D_local = D[gid];
+  	DTYPE E_local = E[gid];
+  	DTYPE A_local = 0;
+
+		if (B_local > 10) {
+			A_local = B_local + D_local - E_local;
+		} else if (B_local > 0) {
+  		A_local = B_local + D_local + E_local;
+		} else if (B_local < -10){
+			A_local = C_local + D_local - E_local;
+		} else if (B_local < 0) {
+			A_local = C_local + D_local + E_local;
 		}
+
+		A[i] = A_local;
 	}
 
 #endif
