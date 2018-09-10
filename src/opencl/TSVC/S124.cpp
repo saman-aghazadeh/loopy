@@ -187,10 +187,14 @@ void RunBenchmark (cl_device_id dev,
     } else if (dataType == "SINGLE") {
       for (int i = 0; i < size; i++) {
         ((float *)A)[i] = 1;
-        if (i % 2 == 0)
-        	((float *)B)[i] = 1;
-        else
+        if (i % 4 == 0)
+        	((float *)B)[i] = -11;
+        else if (i % 4 == 1)
           ((float *)B)[i] = -1;
+        else if (i % 4 == 2)
+          ((float *)B)[i] = +1;
+        else if (i % 4 == 3)
+          ((float *)B)[i] = +11;
         ((float *)C)[i] = 1;
         ((float *)D)[i] = 1;
         ((float *)E)[i] = 1;
@@ -198,10 +202,14 @@ void RunBenchmark (cl_device_id dev,
     } else if (dataType == "DOUBLE") {
       for (int i = 0; i < size; i++) {
         ((double *)A)[i] = 1;
-        if (i % 2 == 0)
-        	((double *)B)[i] = 1;
-        else
+        if (i % 4 == 0)
+        	((double *)B)[i] = -11;
+        else if (i % 4 == 1)
           ((double *)B)[i] = -1;
+        else if (i % 4 == 2)
+          ((double *)B)[i] = +1;
+        else if (i % 4 == 3)
+          ((double *)B)[i] = +11;
         ((double *)C)[i] = 1;
         ((double *)D)[i] = 1;
         ((double *)E)[i] = 1;
@@ -307,10 +315,14 @@ void RunBenchmark (cl_device_id dev,
 			if (dataType == "INT") {
         for (int i = 0; i < size; i++) {
           ((int *)A)[i] = 1;
-          if (i % 2 == 0)
-            ((int *)B)[i] = 1;
-          else
-            ((int *)B)[i] = -1;
+          if (i % 4 == 0)
+            ((float *)B)[i] = -11;
+          else if (i % 4 == 1)
+            ((float *)B)[i] = -1;
+          else if (i % 4 == 2)
+            ((float *)B)[i] = +1;
+          else if (i % 4 == 3)
+            ((float *)B)[i] = +11;
           ((int *)C)[i] = 1;
           ((int *)D)[i] = 1;
           ((int *)E)[i] = 1;
@@ -318,10 +330,14 @@ void RunBenchmark (cl_device_id dev,
       } else if (dataType == "SINGLE") {
         for (int i = 0; i < size; i++) {
           ((float *)A)[i] = 1;
-          if (i % 2 == 0)
-            ((float *)B)[i] = 1;
-          else
+          if (i % 4 == 0)
+            ((float *)B)[i] = -11;
+          else if (i % 4 == 1)
             ((float *)B)[i] = -1;
+          else if (i % 4 == 2)
+            ((float *)B)[i] = +1;
+          else if (i % 4 == 3)
+            ((float *)B)[i] = +11;
           ((float *)C)[i] = 1;
           ((float *)D)[i] = 1;
           ((float *)E)[i] = 1;
@@ -368,6 +384,8 @@ void RunBenchmark (cl_device_id dev,
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
+
+      continue;
 
 			void* ACPU = (void *) (malloc (dataSize));
       void* BCPU = (void *) (malloc (dataSize));
@@ -416,10 +434,14 @@ void RunBenchmark (cl_device_id dev,
       } else if (dataType == "SINGLE") {
         for (int i = 0; i < size; i++) {
           ((float *)ACPU)[i] = 1;
-          if (i % 2 == 0)
-          	((float *)BCPU)[i] = 1;
-          else
-            ((float *)BCPU)[i] = -1;
+          if (i % 4 == 0)
+            ((float *)B)[i] = -11;
+          else if (i % 4 == 1)
+            ((float *)B)[i] = -1;
+          else if (i % 4 == 2)
+            ((float *)B)[i] = +1;
+          else if (i % 4 == 3)
+            ((float *)B)[i] = +11;
           ((float *)CCPU)[i] = 1;
           ((float *)DCPU)[i] = 1;
           ((float *)ECPU)[i] = 1;

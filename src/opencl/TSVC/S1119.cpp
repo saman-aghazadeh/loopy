@@ -39,6 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Intensity of the operation");
+  op.addOption ("blocksize", OPT_INT, "0", "Block Size");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -63,6 +64,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
   string intensity = op.getOptionString("intensity");
   string flags = "";
+	int block_size = op.getOptionString("block_size");
 
   int localX = 256;
   int globalX = 0;
@@ -159,6 +161,10 @@ void RunBenchmark (cl_device_id dev,
       max = dataSize / sizeof (double);
     }
     for (int llly = 256; llly < max/4; llly *= 2) {
+      if (block_size != 0) {
+				if (llly < block_size)
+        	continue;
+      }
       int lllx = max / llly;
       cout << "[INFO] lllx is " << lllx << " and llly is " << llly << endl;
       cout << "[INFO] data size is " << dataSize << endl;
