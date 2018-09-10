@@ -51,49 +51,49 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 #ifdef FPGA_SINGLE
 
-	for (int i = 1; i < lllX; i+= BLOCK_SIZE) {
-		for (int j = 0; j < lllY; j+= BLOCK_SIZE) {
+	int exit = lllY / BLOCK_SIZE;
 
-			#pragma unroll BLOCK_SIZE
-			for (int z1 = 0; z1 < BLOCK_SIZE; z1++) {
-      	int z1_offset = z1+i;
-        #pragma unroll BLOCK_SIZE
-				for (int z2 = 0; z2 < BLOCK_SIZE; z2++) {
-					int z2_offset = z2+j;
+	for (int i = 0; i < exit; i++) {
 
-					AA[z1_offset*lllY+z2_offset] = AA[(z1_offset-1)*lllY+z2_offset] + BB[z1_offset*lllY+z2_offset];
-				}
-			}
-			
+		int i_real = i*BLOCK_SIZE;
+
+		float AA_SR[BLOCK_SIZE][2];
+
+		// initialize shift registers
+  	#pragma unroll
+  	for (int j = 0; j < BLOCK_SIZE; j++) {
+    	for (int k = 0; k < 2; k++) {
+				AA_SR[j][k] = 0.0f;
+      }
 		}
-	}
 
+		#pragma unroll
+		for (int j = 0; j < BLOCK_SIZE; j++) {
+			AA_SR[j][1] = AA[i_real+j];
+		}
 
-
-  for (int i = 1; i < lllX; i++) {
-
-		int exit = (lllY % UNROLL_FACTOR == 0) ? (lllY / UNROLL_FACTOR) : (lllY / UNROLL_FACTOR) + 1;
-
-		#pragma ivdep
-    for (int j = 0; j < exit; j++) {
-
-			float a[UNROLL_FACTOR];
+		// start processing
+    for (int j = 1; j < lllX; j++) {
 
 			#pragma unroll
-      for (int k = 0; k < UNROLL_FACTOR; k++) {
-				int j_real = j * UNROLL_FACTOR;
-        a[k] = AA[(i-1)*lllY + j_real];
+			for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA_SR[j][0] = AA_SR[j][0];
+			}
+		
+    	#pragma ivdep
+      #pragma unroll
+			for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA_SR[k][1] = AA_SR[k][0] * BB[j*lllY+k+i_real];
 			}
 
 			#pragma unroll
-      for (int k = 0; k < UNROLL_FACTOR; k++) {
-				int j_real = j * UNROLL_FACTOR + k;
-       	if (j_real < lllY) {
-					AA[i*lllY+j_real] = a[k] + BB[i*lllY+j_real];
-				}
+			for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA[j*lllY+k+i_real] = AA_SR[k][1];
 			}
 		}
+	
 	}
+
 #endif
 
 }
