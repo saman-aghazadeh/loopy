@@ -36,21 +36,21 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef GPU
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 0) {
+	if (B[gid] > 10) {
 #if INTENSITY1
-		Cfunction(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY2
-		Cfunction2(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction2(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY3
-		Cfunction3(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction3(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY4
-		Cfunction4(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction4(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY5
-		Cfunction5(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction5(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY6
-		Cfunction6(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction6(A[gid], B[gid], D[gid], (-E[gid]));
 #endif
-	} else {
+	} else if (B[gid] > 0){
 #if INTENSITY1
 		Cfunction(A[gid], C[gid], D[gid], E[gid]);
 #elif INTENSITY2
@@ -64,29 +64,57 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
 #endif
-	}
-	
+	} else if (B[gid] < 0) {
+#if INTENSITY1
+		Cfunction(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY2
+		Cfunction2(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY3
+		Cfunction3(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY4
+		Cfunction4(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY5
+		Cfunction5(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY6
+		Cfunction6(A[gid], C[gid], D[gid], (-E[gid]));
+#endif
+	} else if (B[gid] < -10) {
+#if INTENSITY1
+		Cfunction(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY2
+		Cfunction2(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY3
+		Cfunction3(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY4
+		Cfunction4(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY5
+		Cfunction5(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY6
+		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
+#endif
+	}	
+
 #endif
 
 /*
 #ifdef FPGA_NDRANGE
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 0) {
+	if (B[gid] > 10) {
 #if INTENSITY1
-		Cfunction(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY2
-		Cfunction2(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction2(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY3
-		Cfunction3(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction3(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY4
-		Cfunction4(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction4(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY5
-		Cfunction5(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction5(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY6
-		Cfunction6(A[gid], B[gid], D[gid], E[gid]);
+		Cfunction6(A[gid], B[gid], D[gid], (-E[gid]));
 #endif
-	} else {
+	} else if (B[gid] > 0){
 #if INTENSITY1
 		Cfunction(A[gid], C[gid], D[gid], E[gid]);
 #elif INTENSITY2
@@ -100,6 +128,33 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
 #endif
+	} else if (B[gid] < 0) {
+#if INTENSITY1
+		Cfunction(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY2
+		Cfunction2(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY3
+		Cfunction3(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY4
+		Cfunction4(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY5
+		Cfunction5(A[gid], C[gid], D[gid], (-E[gid]));
+#elif INTENSITY6
+		Cfunction6(A[gid], C[gid], D[gid], (-E[gid]));
+#endif
+	} else if (B[gid] < -10) {
+#if INTENSITY1
+		Cfunction(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY2
+		Cfunction2(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY3
+		Cfunction3(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY4
+		Cfunction4(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY5
+		Cfunction5(A[gid], C[gid], D[gid], E[gid]);
+#elif INTENSITY6
+		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
 	}
 
 #endif

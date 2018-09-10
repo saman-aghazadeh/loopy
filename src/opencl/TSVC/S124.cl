@@ -34,9 +34,13 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef GPU
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 0) {
-		A[gid] = B[gid] + D[gid] + E[gid];		
-	} else {
+	if (B[gid] > 10) {
+		A[gid] = B[gid] + D[gid] - E[gid];
+	} else if (B[gid] > 0) {
+  	A[gid] = B[gid] + D[gid] + E[gid];
+	} else if (B[gid] < -10){
+		A[gid] = C[gid] + D[gid] - E[gid];
+	} else if (B[gid] < 0) {
 		A[gid] = C[gid] + D[gid] + E[gid];
 	}
 	
@@ -45,21 +49,31 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef FPGA_NDRANGE
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 0) {
-		A[gid] = B[gid] + D[gid] + E[gid];
-	} else {
+	if (B[gid] > 10) {
+		A[gid] = B[gid] + D[gid] - E[gid];
+	} else if (B[gid] > 0) {
+  	A[gid] = B[gid] + D[gid] + E[gid];
+	} else if (B[gid] < -10){
+		A[gid] = C[gid] + D[gid] - E[gid];
+	} else if (B[gid] < 0) {
 		A[gid] = C[gid] + D[gid] + E[gid];
 	}
+
 #endif
 
 #ifdef FPGA_SINGLE
 
 	int j = -1;
+  
   #pragma unroll UNROLL_FACTOR
 	for (int i = 0; i < lll; i++) {
-		if (B[i] > 0) {
-			A[i] = B[i] + D[i] + E[i];
-		} else {
+		if (B[i] > 10) {
+			A[i] = B[i] + D[i] - E[i];
+		} else if (B[i] > 0) {
+  		A[i] = B[i] + D[i] + E[i];
+		} else if (B[i] < -10){
+			A[i] = C[i] + D[i] - E[i];
+		} else if (B[i] < 0) {
 			A[i] = C[i] + D[i] + E[i];
 		}
 	}
