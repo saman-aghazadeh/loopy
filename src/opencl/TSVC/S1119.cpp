@@ -39,7 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Intensity of the operation");
-  op.addOption ("blocksize", OPT_INT, "0", "Block Size");
+  op.addOption ("block_size", OPT_INT, "0", "Block Size");
 }
 
 void RunBenchmark (cl_device_id dev,
