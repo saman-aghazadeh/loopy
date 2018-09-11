@@ -99,61 +99,67 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef FPGA_NDRANGE
 	const int gid = get_global_id(0);
 
-	if (B[gid] > 10) {
+	DTYPE B_local = B[gid];
+  DTYPE C_local = C[gid];
+  DTYPE D_local = D[gid];
+  DTYPE E_local = E[gid];
+  DTYPE A_local = 0;
+
+	if (B_local > 10) {
 #if INTENSITY1
-		Cfunction(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY2
-		Cfunction2(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction2(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY3
-		Cfunction3(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction3(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY4
-		Cfunction4(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction4(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY5
-		Cfunction5(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction5(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY6
-		Cfunction6(A[gid], B[gid], D[gid], (-E[gid]));
+		Cfunction6(A_local, B_local, D_local, (-E_local));
 #endif
-	} else if (B[gid] > 0){
+	} else if (B_local > 0){
 #if INTENSITY1
-		Cfunction(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
-		Cfunction2(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction2(A[gid], C_local, D_local, E_local);
 #elif INTENSITY3
-		Cfunction3(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction3(A_local, C_local, D_local, E_local);
 #elif INTENSITY4
-		Cfunction4(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction4(A_local, C_local, D_local, E_local);
 #elif INTENSITY5
-		Cfunction5(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction5(A_local, C_local, D_local, E_local);
 #elif INTENSITY6
-		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction6(A_local, C_local, D_local, E_local);
 #endif
-	} else if (B[gid] < 0) {
+	} else if (B_local < 0) {
 #if INTENSITY1
-		Cfunction(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY2
-		Cfunction2(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction2(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY3
-		Cfunction3(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction3(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY4
-		Cfunction4(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction4(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY5
-		Cfunction5(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction5(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY6
-		Cfunction6(A[gid], C[gid], D[gid], (-E[gid]));
+		Cfunction6(A_local, C_local, D_local, (-E_local));
 #endif
-	} else if (B[gid] < -10) {
+	} else if (B_local < -10) {
 #if INTENSITY1
-		Cfunction(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
-		Cfunction2(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction2(A_local, C_local, D_local, E_local);
 #elif INTENSITY3
-		Cfunction3(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction3(A_local, C_local, D_local, E_local);
 #elif INTENSITY4
-		Cfunction4(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction4(A_local, C_local, D_local, E_local);
 #elif INTENSITY5
-		Cfunction5(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction5(A_local, C_local, D_local, E_local);
 #elif INTENSITY6
-		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
+		Cfunction6(A_local, C_local, D_local, E_local);
 #endif
 	}
 
@@ -164,64 +170,70 @@ __kernel void S124 (__global DTYPE* restrict A,
 	int j = -1;
   #pragma unroll UNROLL_FACTOR
 	for (int i = 0; i < lll; i++) {
-		if (B[i] > 10) {
+
+		DTYPE B_local = B[i];
+ 		DTYPE C_local = C[i];
+	  DTYPE D_local = D[i];
+	  DTYPE E_local = E[i];
+	  DTYPE A_local = 0;
+
+		if (B_local > 10) {
 #if INTENSITY1
-			Cfunction(A[i], B[i], D[i], (-E[i]));
+			Cfunction(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY2
-			Cfunction2(A[i], B[i], D[i], (-E[i]));
+			Cfunction2(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY3
-			Cfunction3(A[i], B[i], D[i], (-E[i]));
+			Cfunction3(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY4
-			Cfunction4(A[i], B[i], D[i], (-E[i]));
+			Cfunction4(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY5
-			Cfunction5(A[i], B[i], D[i], (-E[i]));
+			Cfunction5(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY6
-			Cfunction6(A[i], B[i], D[i], (-E[i]));
+			Cfunction6(A_local, B_local, D_local, (-E_local));
 #endif
-		} else if (B[i] > 0){
+		} else if (B_local > 0){
 #if INTENSITY1
-			Cfunction(A[i], C[i], D[i], E[i]);
+			Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
-			Cfunction2(A[i], C[i], D[i], E[i]);
+			Cfunction2(A_local, C_local, D_local, E_local);
 #elif INTENSITY3
-			Cfunction3(A[i], C[i], D[i], E[i]);
+			Cfunction3(A_local, C_local, D_local, E_local);
 #elif INTENSITY4
-			Cfunction4(A[i], C[i], D[i], E[i]);
+			Cfunction4(A_local, C_local, D_local, E_local);
 #elif INTENSITY5
-			Cfunction5(A[i], C[i], D[i], E[i]);
+			Cfunction5(A_local, C_local, D_local, E_local);
 #elif INTENSITY6
-			Cfunction6(A[i], C[i], D[i], E[i]);
+			Cfunction6(A_local, C_local, D_local, E_local);
 #endif
-		} else if (B[i] < 0) {
+		} else if (B_local < 0) {
 #if INTENSITY1
-			Cfunction(A[i], C[i], D[i], (-E[i]));
+			Cfunction(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY2
-			Cfunction2(A[i], C[i], D[i], (-E[i]));
+			Cfunction2(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY3
-			Cfunction3(A[i], C[i], D[i], (-E[i]));
+			Cfunction3(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY4
-			Cfunction4(A[i], C[i], D[i], (-E[i]));
+			Cfunction4(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY5
-			Cfunction5(A[i], C[i], D[i], (-E[i]));
+			Cfunction5(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY6
-			Cfunction6(A[i], C[i], D[i], (-E[i]));
+			Cfunction6(A_local, C_local, D_local, (-E_local));
 #endif
-		} else if (B[i] < -10) {
+		} else if (B_local < -10) {
 #if INTENSITY1
-			Cfunction(A[i], C[i], D[i], E[i]);
+			Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
-			Cfunction2(A[i], C[i], D[i], E[i]);
+			Cfunction2(A_local, C_local, D_local, E_local);
 #elif INTENSITY3
-			Cfunction3(A[i], C[i], D[i], E[i]);
+			Cfunction3(A_local, C_local, D_local, E_local);
 #elif INTENSITY4
-			Cfunction4(A[i], C[i], D[i], E[i]);
+			Cfunction4(A_local, C_local, D_local, E_local);
 #elif INTENSITY5
-			Cfunction5(A[i], C[i], D[i], E[i]);
+			Cfunction5(A_local, C_local, D_local, E_local);
 #elif INTENSITY6
-			Cfunction6(A[i], C[i], D[i], E[i]);
+			Cfunction6(A_local, C_local, D_local, E_local);
 #endif
 		}
 	}
 #endif
-*/
 }
