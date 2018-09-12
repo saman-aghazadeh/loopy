@@ -97,6 +97,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 		// initialize shift registers
 		#pragma unroll
+    #pragma loop_coalesce
    	for (int j = 0; j < BLOCK_SIZE; j++) {
 			for (int k = 0; k < 2; k++) {
 				AA_SR[j][k] = 0.0f;
