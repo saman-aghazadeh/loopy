@@ -100,8 +100,13 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
-		A[i] = B[i-1] + C[i] * D[i];
-   	B[i] = B[i+1] - E[i] * D[i];
+  	DTYPE C_local = C[i];
+    DTYPE D_local = D[i];
+		DTYPE B_local_i_1 = B[i-1];
+    DTYPE B_local_i_3 = B[i+1];
+
+		A[i] = B_local_i_1 + C_local * D_local;
+   	B[i] = B_local_i+3 - E_local * D_local;
 	}
 
 #endif
