@@ -17,6 +17,10 @@ __attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
+#ifdef FPGA_SINGLE
+channel float c0;
+#endif
+
 
 __kernel void S211K1 (__global DTYPE* restrict A,
 #ifdef FPGA_SINGLE
@@ -55,6 +59,10 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 #endif
 
 #ifdef FPGA_SINGLE
+
+for (int i = 1; i < lll; i++) {
+	
+}
 
 #endif
 
@@ -98,25 +106,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
-
-	DTYPE B_SR[2];
-
-	#pragma unroll
-	for (int i = 0 ; i < 2; i++)
-  	B_SR[i] = 0;
-
-	B_SR[1] = B[0];
+	#pragma ivdep
+	#pragma unroll UNROLL_FACTOR
+	for (int i = 1; i < lll; i++) {
+  	B[i] = B[i+1] - E[i] * D[i];
+	}
 
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
-
-		B_SR[0] = B_SR[1];
-
-		A[i] = B_SR[0] + C[i] * D[i];
-    B_SR[1] = B[i+1] - E[i] * D[i];
-
-		B[i] = B_SR[1];
-
+		A[i] = B[i-1] + C[i] * D[i];
 	}
 
 #endif
