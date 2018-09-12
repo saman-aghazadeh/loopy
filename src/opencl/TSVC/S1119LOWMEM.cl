@@ -97,29 +97,26 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 		// initialize shift registers
 		#pragma unroll
-    #pragma loop_coalesce
-   	for (int j = 0; j < BLOCK_SIZE; j++) {
-			for (int k = 0; k < 2; k++) {
-				AA_SR[j][k] = 0.0f;
-			}
+   		for (int j = 0; j < BLOCK_SIZE; j++) {
+			AA_SR[j][0] = 0.0f;
+			AA_SR[j][1] = 0.0f;
 		}
 
 		#pragma unroll
-   	for (int j = 0; j < BLOCK_SIZE; j++) {
+   		for (int j = 0; j < BLOCK_SIZE; j++) {
 			AA_SR[j][1] = AA[i_real+j];
 		}
 
 		// start processing
-    for (int j = 1; j < lllX; j++) {
+    	for (int j = 1; j < lllX; j++) {
 
 			#pragma unroll
-     	for (int k = 0; k < BLOCK_SIZE; k++) {
+     		for (int k = 0; k < BLOCK_SIZE; k++) {
 				AA_SR[j][0] = AA_SR[j][0];
 			}
 
 			#pragma ivdep
-     	#pragma unroll
-      for (int k = 0; k < BLOCK_SIZE; k++) {
+      		for (int k = 0; k < BLOCK_SIZE; k++) {
 #if INTENSITY1
 				Bfunction(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
 #elif INTENSITY2
@@ -140,7 +137,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 			}
 
 			#pragma unroll
-	    for (int k = 0; k < BLOCK_SIZE; k++) {
+	    	for (int k = 0; k < BLOCK_SIZE; k++) {
 				AA[j*lllY+k+i_real] = AA_SR[k][1];
 			}
 		}

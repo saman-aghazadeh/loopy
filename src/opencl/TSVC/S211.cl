@@ -19,7 +19,11 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 
 
 __kernel void S211K1 (__global DTYPE* restrict A,
-										__global const DTYPE* restrict B,
+#ifdef FPGA_SINGLE
+					__global DTYPE* restrict B,
+#else
+					__global const DTYPE* restrict B,
+#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,
@@ -57,7 +61,11 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 }
 
 __kernel void S211K2 (__global DTYPE* restrict A,
-										__global const DTYPE* restrict B,
+#ifdef FPGA_SINGLE
+					__global DTYPE* restrict B,
+#else
+					__global const DTYPE* restrict B,
+#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,

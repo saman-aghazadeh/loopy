@@ -163,6 +163,8 @@ __kernel void S124 (__global DTYPE* restrict A,
 #endif
 	}
 
+	A[gid] = A_local;
+
 #endif
 
 #ifdef FPGA_SINGLE
