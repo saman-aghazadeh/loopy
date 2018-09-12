@@ -106,7 +106,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
     DTYPE B_local_i_3 = B[i+1];
 
 		A[i] = B_local_i_1 + C_local * D_local;
-   	B[i] = B_local_i+3 - E_local * D_local;
+   	B[i] = B_local_i_3 - E_local * D_local;
 	}
 
 #endif
