@@ -90,6 +90,12 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
+	#pragma unroll UNROLL_FACTOR
+	for (int i = 1; i < lll; i++) {
+		A[i] = B[i-1] + C[i] * D[i];
+   	B[i] = B[i+1] - E[i] * D[i];
+	}
+
 #endif
 
 }
