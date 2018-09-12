@@ -98,16 +98,25 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
+
+	DTYPE B_SR[2];
+
+	#pragma unroll
+	for (int i = 0 ; i < 2; i++)
+  	B_SR[i] = 0;
+
+	B_SR[1] = B[0];
+
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
-  	DTYPE C_local = C[i];
-    DTYPE D_local = D[i];
-    DTYPE E_local = E[i];
-		DTYPE B_local_i_1 = B[i-1];
-    DTYPE B_local_i_3 = B[i+1];
 
-		A[i] = B_local_i_1 + C_local * D_local;
-   	B[i] = B_local_i_3 - E_local * D_local;
+		B_SR[0] = B_SR[1];
+
+		A[i] = B_SR[0] + C[i] * D[i];
+    B_SR[1] = B[i+1] - E[i] * D[i];
+
+		B[i] = B_SR[1];
+
 	}
 
 #endif
