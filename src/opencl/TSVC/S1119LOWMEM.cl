@@ -87,29 +87,63 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 #ifdef FPGA_SINGLE
 
-  for (int i = 1; i < lllX; i++) {
-  	#pragma ivdep
-    #pragma unroll UNROLL_FACTOR
-  	for (int j = 0; j < lllY; j++) {
-#if INTENSITY1
-			Bfunction(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY2
-			Bfunction2(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY3
-			Bfunction3(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY4
-			Bfunction4(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY5
-			Bfunction5(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY6
-			Bfunction6(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY7
-			Bfunction7(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#elif INTENSITY8
-			Bfunction8(AA[i*lllY+j], AA[(i-1)*lllY+j], BB[i*lllY+j]);
-#endif
+	int exit = lllY / BLOCK_SIZE;
+
+	for (int i = 0; i < exit; i++) {
+
+		int i_real = i * BLOCK_SIZE;
+
+		float AA_SR[BLOCK_SIZE][2];
+
+		// initialize shift registers
+		#pragma unroll
+   	for (int j = 0; j < BLOCK_SIZE; j++) {
+			for (int k = 0; k < 2; k++) {
+				AA_SR[j][k] = 0.0f;
+			}
 		}
-  }
+
+		#pragma unroll
+   	for (int j = 0; j < BLOCK_SIZE; j++) {
+			AA_SR[j][1] = AA[i_real+j];
+		}
+
+		// start processing
+    for (int j = 1; j < lllX; j++) {
+
+			#pragma unroll
+     	for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA_SR[j][0] = AA_SR[j][0];
+			}
+
+			#pragma ivdep
+     	#pragma unroll
+      for (int k = 0; k < BLOCK_SIZE; k++) {
+#if INTENSITY1
+				Bfunction(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY2
+				Bfunction2(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY3
+				Bfunction3(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY4
+				Bfunction4(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY5
+				Bfunction5(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY6
+				Bfunction6(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY7
+				Bfunction7(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#elif INTENSITY8
+				Bfunction8(AA_SR[k][1], AA_SR[k][0], BB[j*lllY+k+i_real]);
+#endif
+			}
+
+			#pragma unroll
+	    for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA[j*lllY+k+i_real] = AA_SR[k][1];
+			}
+		}
+	}
 
 #endif
 
