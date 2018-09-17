@@ -39,6 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
+  op.addOption ("use_channel", OPT_BOOL, "False", "WHETHER the code is utilizing the channels or not");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -64,6 +65,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   string intensity = op.getOptionString("intensity");
+	bool use_channel = op.getOptionBoolean("use_channel");
 
 	int localX = 256;
   int globalX = 0;
@@ -338,8 +340,13 @@ void RunBenchmark (cl_device_id dev,
 		Event evKernel2 ("KernelEvent2");
 
     if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
-      err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-      err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+      if (use_channel == false) {
+      	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      	err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+      } else if (use_channel == true) {
+      	err = clEnqueueTask (queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      }
     } else {
       err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
@@ -400,8 +407,13 @@ void RunBenchmark (cl_device_id dev,
 
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-        err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+        if (use_channel == false) {
+          err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+          err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+        } else if (use_channel == true) {
+          err = clEnqueueTask (queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+          err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+        }
       } else {
        	err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
@@ -430,6 +442,8 @@ void RunBenchmark (cl_device_id dev,
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
+
+			continue;
 
 			void* ACPU = (void *) (malloc (dataSize+extra));
       void* BPrimeCPU = (void *) (malloc (dataSize+extra));
