@@ -62,7 +62,7 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 
 #pragma ivdep
 #pragma unroll UNROLL_FACTOR 
-for (int i = 1; i < lll; i++) {
+for (int i = 1; i < lll-1; i++) {
 	DTYPE temp = B[i+1] - E[i] * D[i];
 	write_channel_altera (c0, temp);
 }
@@ -110,11 +110,11 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 
 	DTYPE temp;
-  temp = read_channel_altera(c0);
+  temp = B[0];
   A[1] = temp + C[1] * D[1];
 
 	#pragma unroll UNROLL_FACTOR
-  #pragma ivdep
+  	#pragma ivdep
 	for (int i = 2; i < lll; i++) {
   	DTYPE temp;
     temp = read_channel_altera(c0);
