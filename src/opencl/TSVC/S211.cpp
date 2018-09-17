@@ -65,7 +65,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   string intensity = op.getOptionString("intensity");
-	bool use_channel = op.getOptionBoolean("use_channel");
+	bool use_channel = op.getOptionBool("use_channel");
 
 	int localX = 256;
   int globalX = 0;
