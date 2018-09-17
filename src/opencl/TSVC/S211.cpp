@@ -339,7 +339,7 @@ void RunBenchmark (cl_device_id dev,
 		Event evKernel1 ("KernelEvent1");
 		Event evKernel2 ("KernelEvent2");
 
-    if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
+    if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
       if (use_channel == false) {
       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       	err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
