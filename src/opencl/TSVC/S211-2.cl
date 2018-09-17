@@ -18,7 +18,19 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 #ifdef FPGA_SINGLE
+
+#if UNROLL_FACTOR==1
 channel float c0 __attribute__((depth(4)));
+#elif UNROLL_FACTOR==2
+channel float c0 __attribute__((depth(4)));
+channel float c1 __attribute__((depth(4)));
+#elif UNROLL_FACTOR==4
+channel float c0 __attribute__((depth(4)));
+channel float c1 __attribute__((depth(4)));
+channel float c2 __attribute__((depth(4)));
+channel float c3 __attribute__((depth(4)));
+#endif
+
 #endif
 
 
@@ -60,12 +72,22 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
+#ifdef UNROLL_FACTOR==1
 #pragma ivdep
-#pragma unroll UNROLL_FACTOR 
-for (int i = 1; i < lll-1; i++) {
+for (int i = 1; i < (lll-1); i++) {
 	DTYPE temp = B[i+1] - E[i] * D[i];
 	write_channel_altera (c0, temp);
 }
+elif UNROLL_FACTOR==2
+#pragma ivdep
+for (int i = 1; i < (lll-1); i+=2) {
+	DTYPE temp0 = B[i+1] - E[i] * D[i];
+  DTYPE temp1 = B[i+2] - E[i] * D[i];
+
+	write_channel_altera (c0, temp0);
+  write_channel_altera (c1, temp1);
+}
+#endif
 
 #endif
 
@@ -113,13 +135,27 @@ __kernel void S211K2 (__global DTYPE* restrict A,
   temp = B[0];
   A[1] = temp + C[1] * D[1];
 
-	#pragma unroll UNROLL_FACTOR
-  	#pragma ivdep
+#if UNROLL_FACTOR==1
+	#pragma ivdep
 	for (int i = 2; i < lll; i++) {
   	DTYPE temp;
     temp = read_channel_altera(c0);
 		A[i] = temp + C[i] * D[i];
 	}
+#elif UNROLL_FACTOR==2
+	#pragma ivdep
+	for (int i = 2; i < lll; i+=2) {
+		DTYPE temp0;
+    DTYPE temp1;
+   	temp0 = read_channel_altera(c0);
+		temp1 = read_channel_altera(c1);
+
+		A[i] = temp0 + C[i] * D[i];
+    A[i+1] = temp1 + C[i+1] * D[i*1];
+	}
+#endif
+
+#endif
 
 #endif
 
