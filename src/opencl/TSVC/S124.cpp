@@ -297,7 +297,7 @@ void RunBenchmark (cl_device_id dev,
     const size_t local_work_size[] = {(size_t)localX};
 		cout << "[INFO] local work size is " << local_work_size[0] << endl;
 
-    if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
+    if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
       err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
     } else {
       err = clEnqueueNDRangeKernel (queue, kernel, 1,
