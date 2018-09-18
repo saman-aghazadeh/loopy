@@ -48,6 +48,11 @@ void RunBenchmark (cl_device_id dev,
                    ResultDatabase &resultDB,
                    OptionParser &op) {
 
+  cl_int status;
+	cl_command_queue second_queue;
+  second_queue = clCreateCommandQueue (ctx, dev, CL_QUEUE_PROFILING_ENABLE, &status);
+	CL_CHECK_ERROR (status);
+
 	string int_precision = "-DINT_PRECISION ";
   string single_precision = "-DSINGLE_PRECISION ";
   string double_precision = "-DDOUBLE_PRECISION ";
@@ -261,6 +266,25 @@ void RunBenchmark (cl_device_id dev,
     err = clEnqueueWriteBuffer (queue, clE, CL_TRUE, 0, dataSize+extra, E, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
+    err = clEnqueueWriteBuffer (second_queue, clA, CL_TRUE, 0, dataSize+extra, A, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clB, CL_TRUE, 0, dataSize+extra, B, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clBPrime, CL_TRUE, 0, dataSize+extra, BPrime, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clC, CL_TRUE, 0, dataSize+extra, C, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clD, CL_TRUE, 0, dataSize+extra, D, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clE, CL_TRUE, 0, dataSize+extra, E, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+
     err = clSetKernelArg (kernel1, 0, sizeof (cl_mem), (void *) &clA);
     CL_CHECK_ERROR (err);
 
@@ -344,7 +368,7 @@ void RunBenchmark (cl_device_id dev,
       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       	err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
       } else if (use_channel == true) {
-      	err = clEnqueueTask (queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+      	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
        	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       }
     } else {
@@ -411,7 +435,7 @@ void RunBenchmark (cl_device_id dev,
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
           err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
         } else if (use_channel == true) {
-          err = clEnqueueTask (queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+          err = clEnqueueTask (scond_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         }
       } else {
