@@ -18,28 +18,36 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 #ifdef FPGA_SINGLE
-
+ 
 #if UNROLL_FACTOR == 1
-channel float c0 __attribute__((depth(4)));
+typedef struct Msg {
+	DTYPE temp0;
+} msg;
 #elif UNROLL_FACTOR == 2
-channel float c0 __attribute__((depth(4)));
-channel float c1 __attribute__((depth(4)));
+typedef struct Msg {
+	DTYPE temp0;
+  DTYPE temp1;
+} msg;
 #elif UNROLL_FACTOR == 4
-channel float c0 __attribute__((depth(4)));
-channel float c1 __attribute__((depth(4)));
-channel float c2 __attribute__((depth(4)));
-channel float c3 __attribute__((depth(4)));
+typedef struct Msg {
+	DTYPE temp0;
+  DTYPE temp1;
+  DTYPE temp2;
+  DTYPE temp3;
+} msg;
 #elif UNROLL_FACTOR == 8
-channel float c0 __attribute__((depth(4)));
-channel float c1 __attribute__((depth(4)));
-channel float c2 __attribute__((depth(4)));
-channel float c3 __attribute__((depth(4)));
-channel float c4 __attribute__((depth(4)));
-channel float c5 __attribute__((depth(4)));
-channel float c6 __attribute__((depth(4)));
-channel float c7 __attribute__((depth(4)));
+typedef struct Msg {
+	DTYPE temp0;
+  DTYPE temp1;
+  DTYPE temp2;
+  DTYPE temp3;
+  DTYPE temp4;
+  DTYPE temp5;
+  DTYPE temp6;
+  DTYPE temp7;
+} msg;
 #endif
-
+channel Msg c0 __attribute__((depth(4)));
 #endif
 
 
@@ -85,7 +93,9 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 #pragma ivdep
 for (int i = 1; i < (lll-1); i++) {
 	DTYPE temp = B[i+1] - E[i] * D[i];
-	write_channel_altera (c0, temp);
+	Msg msg;
+  msg.temp0 = temp;
+	write_channel_altera (c0, msg);
 }
 #elif UNROLL_FACTOR == 2
 #pragma ivdep
@@ -93,8 +103,11 @@ for (int i = 1; i < (lll-1); i+=2) {
 	DTYPE temp0 = B[i+1] - E[i] * D[i];
   	DTYPE temp1 = B[i+2] - E[i+1] * D[i+1];
 
-	write_channel_altera (c0, temp0);
-  	write_channel_altera (c1, temp1);
+	Msg msg;
+  msg.temp0 = temp0;
+  msg.temp1 = temp1;
+
+	write_channel_altera (c0, msg);
 }
 #elif UNROLL_FACTOR == 4
 #pragma ivdep
@@ -104,10 +117,13 @@ for (int i = 1; i < (lll-1); i+=4) {
 	DTYPE temp2 = B[i+3] - E[i+2] * D[i+2];
  	DTYPE temp3 = B[i+4] - E[i+3] * D[i+3];
 
-	write_channel_altera (c0, temp0);
-  	write_channel_altera (c1, temp1);
-  	write_channel_altera (c2, temp2);
-  	write_channel_altera (c3, temp3);
+	Msg msg;
+  msg.temp0 = temp0;
+  msg.temp1 = temp1;
+  msg.temp2 = temp2;
+  msg.temp3 = temp3;
+
+	write_channel_altera (c0, msg);
 }
 
 #elif UNROLL_FACTOR == 8
@@ -122,14 +138,17 @@ for (int i = 1; i < (lll-1); i+=8) {
   	DTYPE temp6 = B[i+7] - E[i+6] * D[i+6];
 	DTYPE temp7 = B[i+8] - E[i+7] * D[i+7];
 
-	write_channel_intel (c0, temp0);
-  	write_channel_intel (c1, temp1);
-  	write_channel_intel (c2, temp2);
-  	write_channel_intel (c3, temp3);
-	write_channel_intel (c4, temp0);
-  	write_channel_intel (c5, temp1);
-  	write_channel_intel (c6, temp2);
-  	write_channel_intel (c7, temp3);
+	Msg msg;
+  msg.temp0 = temp0;
+  msg.temp1 = temp1;
+  msg.temp2 = temp2;
+  msg.temp3 = temp3;
+  msg.temp4 = temp4;
+  msg.temp5 = temp5;
+  msg.temp6 = temp6;
+  msg.temp7 = temp7;
+
+	write_channel_altera (c0, msg);
 
 }
 
@@ -184,68 +203,40 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #if UNROLL_FACTOR == 1
 	#pragma ivdep
 	for (int i = 2; i < lll; i++) {
-  		DTYPE temp;
-    	temp = read_channel_altera(c0);
-		A[i] = temp + C[i] * D[i];
+    	MSG msg = read_channel_altera(c0);
+
+		A[i] = msg.temp0 + C[i] * D[i];
 	}
 #elif UNROLL_FACTOR == 2
 	#pragma ivdep
 	for (int i = 2; i < lll; i+=2) {
-		DTYPE temp0;
-    	DTYPE temp1;
-   		temp0 = read_channel_altera(c0);
-		temp1 = read_channel_altera(c1);
+   		Msg msg = read_channel_altera(c0);
 
-		A[i] = temp0 + C[i] * D[i];
-    	A[i+1] = temp1 + C[i+1] * D[i+1];
+		A[i] = msg.temp0 + C[i] * D[i];
+    	A[i+1] = msg.temp1 + C[i+1] * D[i+1];
 	}
 #elif UNROLL_FACTOR == 4
 	#pragma ivdep
 	for (int i = 2; i < lll; i+=4) {
-		DTYPE temp0;
- 	    DTYPE temp1;
-    	DTYPE temp2;
-    	DTYPE temp3;
+   		Msg msg = read_channel_altera(c0);
 
-   		temp0 = read_channel_altera(c0);
-		temp1 = read_channel_altera(c1);
-		temp2 = read_channel_altera(c2);
-		temp3 = read_channel_altera(c3);
-
-		A[i] = temp0 + C[i] * D[i];
-    	A[i+1] = temp1 + C[i+1] * D[i+1];
-    	A[i+2] = temp2 + C[i+2] * D[i+2];
-    	A[i+3] = temp3 + C[i+3] * D[i+3];
+		A[i] = msg.temp0 + C[i] * D[i];
+    	A[i+1] = msg.temp1 + C[i+1] * D[i+1];
+    	A[i+2] = msg.temp2 + C[i+2] * D[i+2];
+    	A[i+3] = msg.temp3 + C[i+3] * D[i+3];
 	}
 #elif UNROLL_FACTOR == 8
 	#pragma ivdep
 	for (int i = 2; i < lll; i+=8) {
-		DTYPE temp0;
-    	DTYPE temp1;
-    	DTYPE temp2;
-    	DTYPE temp3;
-    	DTYPE temp4;
-    	DTYPE temp5;
-    	DTYPE temp6;
-    	DTYPE temp7;
+   		Msg msg = read_channel_altera(c0);
 
-   		temp0 = read_channel_intel(c0);
-		temp1 = read_channel_intel(c1);
-		temp2 = read_channel_intel(c2);
-		temp3 = read_channel_intel(c3);
-    	temp4 = read_channel_intel(c4);
-    	temp5 = read_channel_intel(c5);
-    	temp6 = read_channel_intel(c6);
-    	temp7 = read_channel_intel(c7);
-
-		A[i] = temp0 + C[i] * D[i];
-    	A[i+1] = temp1 + C[i+1] * D[i+1];
-    	A[i+2] = temp2 + C[i+2] * D[i+2];
-    	A[i+3] = temp3 + C[i+3] * D[i+3];
-    	A[i+4] = temp4 + C[i+4] * D[i+4];
-    	A[i+5] = temp5 + C[i+5] * D[i+5];
-    	A[i+6] = temp6 + C[i+6] * D[i+6];
-    	A[i+7] = temp7 + C[i+7] * D[i+7];
+		A[i] = msg.temp0 + C[i] * D[i];
+    	A[i+1] = msg.temp1 + C[i+1] * D[i+1];
+    	A[i+2] = msg.temp2 + C[i+2] * D[i+2];
+    	A[i+3] = msg.temp3 + C[i+3] * D[i+3];
+    	A[i+4] = msg.temp4 + C[i+4] * D[i+4];
+    	A[i+5] = msg.temp5 + C[i+5] * D[i+5];
+    	A[i+6] = msg.temp6 + C[i+6] * D[i+6];
 	}
 #endif
 
