@@ -237,7 +237,6 @@ __kernel void S211K2 (__global DTYPE* restrict A,
     	A[i+4] = msg.temp4 + C[i+4] * D[i+4];
     	A[i+5] = msg.temp5 + C[i+5] * D[i+5];
     	A[i+6] = msg.temp6 + C[i+6] * D[i+6];
-    	A[i+7] = msg.temp7 + C[i+7] * D[i+7];
 	}
 #endif
 

@@ -77,7 +77,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 			#pragma unroll
 			for (int k = 0; k < BLOCK_SIZE; k++) {
-				AA_SR[j][0] = AA_SR[j][0];
+				AA_SR[j][0] = AA_SR[j][1];
 			}
 		
     	#pragma ivdep
