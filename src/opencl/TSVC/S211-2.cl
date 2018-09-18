@@ -122,14 +122,14 @@ for (int i = 1; i < (lll-1); i+=8) {
   	DTYPE temp6 = B[i+7] - E[i+6] * D[i+6];
 	DTYPE temp7 = B[i+8] - E[i+7] * D[i+7];
 
-	write_channel_altera (c0, temp0);
-  	write_channel_altera (c1, temp1);
-  	write_channel_altera (c2, temp2);
-  	write_channel_altera (c3, temp3);
-	write_channel_altera (c4, temp0);
-  	write_channel_altera (c5, temp1);
-  	write_channel_altera (c6, temp2);
-  	write_channel_altera (c7, temp3);
+	write_channel_intel (c0, temp0);
+  	write_channel_intel (c1, temp1);
+  	write_channel_intel (c2, temp2);
+  	write_channel_intel (c3, temp3);
+	write_channel_intel (c4, temp0);
+  	write_channel_intel (c5, temp1);
+  	write_channel_intel (c6, temp2);
+  	write_channel_intel (c7, temp3);
 
 }
 
@@ -229,14 +229,14 @@ __kernel void S211K2 (__global DTYPE* restrict A,
     	DTYPE temp6;
     	DTYPE temp7;
 
-   		temp0 = read_channel_altera(c0);
-		temp1 = read_channel_altera(c1);
-		temp2 = read_channel_altera(c2);
-		temp3 = read_channel_altera(c3);
-    	temp4 = read_channel_altera(c4);
-    	temp5 = read_channel_altera(c5);
-    	temp6 = read_channel_altera(c6);
-    	temp7 = read_channel_altera(c7);
+   		temp0 = read_channel_intel(c0);
+		temp1 = read_channel_intel(c1);
+		temp2 = read_channel_intel(c2);
+		temp3 = read_channel_intel(c3);
+    	temp4 = read_channel_intel(c4);
+    	temp5 = read_channel_intel(c5);
+    	temp6 = read_channel_intel(c6);
+    	temp7 = read_channel_intel(c7);
 
 		A[i] = temp0 + C[i] * D[i];
     	A[i+1] = temp1 + C[i+1] * D[i+1];
