@@ -39,6 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
+  op.addOption ("use_channel", OPT_BOOL, "False", "WHETHER the code is utilizing the channels or not");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -46,6 +47,11 @@ void RunBenchmark (cl_device_id dev,
                    cl_command_queue queue,
                    ResultDatabase &resultDB,
                    OptionParser &op) {
+
+  cl_int status;
+	cl_command_queue second_queue;
+  second_queue = clCreateCommandQueue (ctx, dev, CL_QUEUE_PROFILING_ENABLE, &status);
+	CL_CHECK_ERROR (status);
 
 	string int_precision = "-DINT_PRECISION ";
   string single_precision = "-DSINGLE_PRECISION ";
@@ -64,6 +70,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   string intensity = op.getOptionString("intensity");
+	bool use_channel = op.getOptionBool("use_channel");
 
 	int localX = 256;
   int globalX = 0;
@@ -259,6 +266,25 @@ void RunBenchmark (cl_device_id dev,
     err = clEnqueueWriteBuffer (queue, clE, CL_TRUE, 0, dataSize+extra, E, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
+    err = clEnqueueWriteBuffer (second_queue, clA, CL_TRUE, 0, dataSize+extra, A, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clB, CL_TRUE, 0, dataSize+extra, B, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clBPrime, CL_TRUE, 0, dataSize+extra, BPrime, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clC, CL_TRUE, 0, dataSize+extra, C, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clD, CL_TRUE, 0, dataSize+extra, D, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+    err = clEnqueueWriteBuffer (second_queue, clE, CL_TRUE, 0, dataSize+extra, E, 0, NULL, NULL);
+    CL_CHECK_ERROR (err);
+
+
     err = clSetKernelArg (kernel1, 0, sizeof (cl_mem), (void *) &clA);
     CL_CHECK_ERROR (err);
 
@@ -337,9 +363,14 @@ void RunBenchmark (cl_device_id dev,
 		Event evKernel1 ("KernelEvent1");
 		Event evKernel2 ("KernelEvent2");
 
-    if (dataType == "FPGA" && fpga_op_type == "SINGLE") {
-      err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-      err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+    if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
+      if (use_channel == false) {
+      	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      	err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+      } else if (use_channel == true) {
+      	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      }
     } else {
       err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
@@ -400,8 +431,13 @@ void RunBenchmark (cl_device_id dev,
 
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-        err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+        if (use_channel == false) {
+          err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+          err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
+        } else if (use_channel == true) {
+          err = clEnqueueTask (scond_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+          err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+        }
       } else {
        	err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
@@ -430,6 +466,8 @@ void RunBenchmark (cl_device_id dev,
 
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
+
+			continue;
 
 			void* ACPU = (void *) (malloc (dataSize+extra));
       void* BPrimeCPU = (void *) (malloc (dataSize+extra));

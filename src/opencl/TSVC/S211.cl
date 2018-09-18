@@ -60,10 +60,6 @@ __kernel void S211K1 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
-for (int i = 1; i < lll; i++) {
-	
-}
-
 #endif
 
 }
