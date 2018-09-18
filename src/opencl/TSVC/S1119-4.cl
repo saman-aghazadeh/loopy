@@ -51,48 +51,146 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 #ifdef FPGA_SINGLE
 
+	/*
 	int exit = lllY / BLOCK_SIZE;
 
 	for (int i = 0; i < exit; i++) {
 
 		int i_real = i*BLOCK_SIZE;
 
-		float AA_SR[BLOCK_SIZE][2];
-
+		//DTYPE AA_SR[BLOCK_SIZE][2];
+		DTYPE AA_SR[BLOCK_SIZE];
 		// initialize shift registers
-  	#pragma unroll
-  	for (int j = 0; j < BLOCK_SIZE; j++) {
-    	for (int k = 0; k < 2; k++) {
-				AA_SR[j][k] = 0.0f;
-      }
+  		#pragma unroll
+  		for (int j = 0; j < BLOCK_SIZE; j++) {
+//    		for (int k = 0; k < 2; k++) {
+//				AA_SR[j][k] = 0.0f;
+//      	}
+			AA_SR[j] = 0.0f;
 		}
 
-		#pragma unroll
 		for (int j = 0; j < BLOCK_SIZE; j++) {
-			AA_SR[j][1] = AA[i_real+j];
+			//AA_SR[j][1] = AA[i_real+j];
+			AA_SR[j] = AA[i_real+j];
 		}
 
 		// start processing
-    for (int j = 1; j < lllX; j++) {
+    	for (int j = 1; j < lllX; j++) {
 
+		
+			DTYPE BB_SR[BLOCK_SIZE];
+			DTYPE AA_SR_INTER[BLOCK_SIZE];
+
+//			#pragma unroll
+//			for (int k = 0; k < BLOCK_SIZE; k++) {
+//				AA_SR[k][0] = AA_SR[k][1];	
+//			}
+	
+			#pragma ivdep
 			#pragma unroll
 			for (int k = 0; k < BLOCK_SIZE; k++) {
-				AA_SR[j][0] = AA_SR[j][1];
+				BB_SR[k] = BB[j*lllY+k+i_real];
 			}
 		
-    	#pragma ivdep
-      #pragma unroll
+    		#pragma ivdep
+      		#pragma unroll
 			for (int k = 0; k < BLOCK_SIZE; k++) {
-				AA_SR[k][1] = AA_SR[k][0] * BB[j*lllY+k+i_real];
+				//AA_SR[k][1] = AA_SR[k][0] * BB_SR[k];
+				//AA_SR_INTER[k] = AA_SR[k][0] * BB_SR[k];
+				AA_SR_INTER[k] = AA_SR[k] * BB_SR[k];
 			}
 
 			#pragma unroll
 			for (int k = 0; k < BLOCK_SIZE; k++) {
-				AA[j*lllY+k+i_real] = AA_SR[k][1];
+				//AA_SR[k][1] = AA_SR_INTER[k];
+				AA_SR[k] = AA_SR_INTER[k];
+			}
+
+			#pragma unroll
+			for (int k = 0; k < BLOCK_SIZE; k++) {
+				AA[j*lllY+k+i_real] = AA_SR_INTER[k];
 			}
 		}
 	
 	}
+	*/
+
+	int exit = lllY / BLOCK_SIZE;
+
+	for (int i = 0; i < exit; i+=4) {
+
+		int i_real[4];
+
+		i_real[0] = i*BLOCK_SIZE;
+		i_real[1] = (i+1)*BLOCK_SIZE;
+		i_real[2] = (i+2)*BLOCK_SIZE;
+		i_real[3] = (i+3)*BLOCK_SIZE;
+
+//		DTYPE AA_SR[BLOCK_SIZE][4];
+		// initialize shift registers
+//  		#pragma unroll
+//  		for (int j = 0; j < BLOCK_SIZE; j++) {
+//    		for (int ii = 0; ii < 4; ii++) {
+//				AA_SR[j][ii] = 0.0f;
+//      		}
+//		}
+
+		//#pragma unroll
+//		for (int j = 0; j < BLOCK_SIZE; j++) {
+//			for (int ii = 0; ii < 4; ii++) {
+//				AA_SR[j][ii] = AA[i_real[ii]+j];
+//			}
+//		}
+
+		// start processing
+    	for (int j = 1; j < lllX; j++) {
+
+			DTYPE BB_SR[BLOCK_SIZE][4];
+			DTYPE AA_SR[BLOCK_SIZE][4];
+
+			if (j == 1) {
+				#pragma unroll
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					for (int ii = 0; ii < 4; ii++)
+						AA_SR[k][ii] = AA[i_real[ii]+k];
+				}
+
+			}
+
+
+			//#pragma unroll
+			#pragma ivdep
+			for (int ii = 0; ii < 4; ii++){
+	
+				#pragma ivdep
+				#pragma unroll
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					BB_SR[k][ii] = BB[j*lllY+k+i_real[ii]];
+				}
+		
+    			#pragma ivdep
+      			#pragma unroll UNROLL_FACTOR
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					//AA_SR[k][1] = AA_SR[k][0] * BB_SR[k];
+					//AA_SR_INTER[k] = AA_SR[k][0] * BB_SR[k];
+					AA_SR[k][ii] = AA_SR[k][ii] * BB_SR[k][ii];
+				}
+
+	//			#pragma unroll
+	//			for (int k = 0; k < BLOCK_SIZE; k++) {
+	//				//AA_SR[k][1] = AA_SR_INTER[k][ii];
+	//				AA_SR[k][ii] = AA_SR_INTER[k][ii];
+	//			}
+
+				#pragma unroll
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					AA[j*lllY+k+i_real[ii]] = AA_SR[k][ii];
+				}
+			}
+		}
+	
+	}
+
 
 #endif
 
