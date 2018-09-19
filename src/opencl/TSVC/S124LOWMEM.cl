@@ -35,8 +35,9 @@ __kernel void S124 (__global DTYPE* restrict A,
 
 #ifdef GPU
 	const int gid = get_global_id(0);
+	const int gidM = gid%4;
 
-	if (B[gid] > 10) {
+	if (gidM == 0) {
 #if INTENSITY1
 		Cfunction(A[gid], B[gid], D[gid], (-E[gid]));
 #elif INTENSITY2
@@ -50,7 +51,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 		Cfunction6(A[gid], B[gid], D[gid], (-E[gid]));
 #endif
-	} else if (B[gid] > 0){
+	} else if (gidM == 1){
 #if INTENSITY1
 		Cfunction(A[gid], C[gid], D[gid], E[gid]);
 #elif INTENSITY2
@@ -64,7 +65,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 		Cfunction6(A[gid], C[gid], D[gid], E[gid]);
 #endif
-	} else if (B[gid] < 0) {
+	} else if (gidM == 2) {
 #if INTENSITY1
 		Cfunction(A[gid], C[gid], D[gid], (-E[gid]));
 #elif INTENSITY2
@@ -78,7 +79,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 		Cfunction6(A[gid], C[gid], D[gid], (-E[gid]));
 #endif
-	} else if (B[gid] < -10) {
+	} else if (gidM == 3) {
 #if INTENSITY1
 		Cfunction(A[gid], C[gid], D[gid], E[gid]);
 #elif INTENSITY2

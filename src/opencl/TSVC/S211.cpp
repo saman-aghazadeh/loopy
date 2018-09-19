@@ -435,7 +435,7 @@ void RunBenchmark (cl_device_id dev,
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
           err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
         } else if (use_channel == true) {
-          err = clEnqueueTask (scond_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+          err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         }
       } else {

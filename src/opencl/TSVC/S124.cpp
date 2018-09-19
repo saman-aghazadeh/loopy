@@ -15,6 +15,8 @@
 
 using namespace std;
 
+#define GENERATE_PTX true
+
 #define CL_BAIL_ON_ERROR(err) \
 {															\
  		CL_CHECK_ERROR(err);			\
@@ -147,6 +149,23 @@ void RunBenchmark (cl_device_id dev,
     exit (0);
   }
 
+	if (GENERATE_PTX) {
+		size_t bin_sz;
+		err = clGetProgramInfo (program, CL_PROGRAM_BINARY_SIZES,
+                            sizeof (size_t), &bin_sz, NULL);
+
+		unsigned char* bin = (unsigned char*) malloc (bin_sz);
+    err = clGetProgramInfo (program, CL_PROGRAM_BINARIES,
+                            sizeof(unsigned char *), &bin, NULL);
+
+    FILE* fp = fopen ("binary.ptx", "wb");
+    fwrite (bin, sizeof(char), bin_sz, fp);
+    fclose(fp);
+    free (bin);
+
+  }
+
+
   CL_CHECK_ERROR (err);
 
   for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
@@ -188,13 +207,17 @@ void RunBenchmark (cl_device_id dev,
       for (int i = 0; i < size; i++) {
         ((float *)A)[i] = 1;
         if (i % 4 == 0)
-        	((float *)B)[i] = -11;
+          ((float *)B)[i] = 1;
+        //((float *)B)[i] = -11;
         else if (i % 4 == 1)
-          ((float *)B)[i] = -1;
+          ((float *)B)[i] = 1;
+        	//((float *)B)[i] = -1;
         else if (i % 4 == 2)
           ((float *)B)[i] = +1;
+        	//((float *)B)[i] = +1;
         else if (i % 4 == 3)
-          ((float *)B)[i] = +11;
+          ((float *)B)[i] = +1;
+        	//((float *)B)[i] = +11;
         ((float *)C)[i] = 1;
         ((float *)D)[i] = 1;
         ((float *)E)[i] = 1;
@@ -331,13 +354,17 @@ void RunBenchmark (cl_device_id dev,
         for (int i = 0; i < size; i++) {
           ((float *)A)[i] = 1;
           if (i % 4 == 0)
-            ((float *)B)[i] = -11;
+            //((float *)B)[i] = -11;
+          	((float *)B)[i] = 1;
           else if (i % 4 == 1)
-            ((float *)B)[i] = -1;
+            //((float *)B)[i] = -1;
+          	((float *)B)[i] = 1;
           else if (i % 4 == 2)
-            ((float *)B)[i] = +1;
+            //((float *)B)[i] = +1;
+          	((float *)B)[i] = 1;
           else if (i % 4 == 3)
-            ((float *)B)[i] = +11;
+            //((float *)B)[i] = +11;
+          	((float *)B)[i] = 1;
           ((float *)C)[i] = 1;
           ((float *)D)[i] = 1;
           ((float *)E)[i] = 1;
