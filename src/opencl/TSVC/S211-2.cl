@@ -46,8 +46,27 @@ typedef struct Msg {
   DTYPE temp6;
   DTYPE temp7;
 } msg;
+#elif UNROLL_FACTOR == 16
+typedef struct Msg {
+	DTYPE temp0;
+  DTYPE temp1;
+  DTYPE temp2;
+  DTYPE temp3;
+  DTYPE temp4;
+  DTYPE temp5;
+  DTYPE temp6;
+  DTYPE temp7;
+	DTYPE temp8;
+  DTYPE temp9;
+  DTYPE temp10;
+  DTYPE temp11;
+  DTYPE temp12;
+  DTYPE temp13;
+  DTYPE temp14;
+  DTYPE temp15;
+} msg;
 #endif
-channel Msg c0 __attribute__((depth(4)));
+channel struct Msg c0 __attribute__((depth(4)));
 #endif
 
 
@@ -138,7 +157,7 @@ for (int i = 1; i < (lll-1); i+=8) {
   	DTYPE temp6 = B[i+7] - E[i+6] * D[i+6];
 	DTYPE temp7 = B[i+8] - E[i+7] * D[i+7];
 
-	Msg msg;
+	struct Msg msg;
   msg.temp0 = temp0;
   msg.temp1 = temp1;
   msg.temp2 = temp2;
@@ -147,6 +166,48 @@ for (int i = 1; i < (lll-1); i+=8) {
   msg.temp5 = temp5;
   msg.temp6 = temp6;
   msg.temp7 = temp7;
+
+	write_channel_altera (c0, msg);
+
+}
+
+#elif UNROLL_FACTOR == 16
+#pragma ivdep
+for (int i = 1; i < (lll-1); i+=16) {
+	DTYPE temp0 = B[i+1] - E[i] * D[i];
+  	DTYPE temp1 = B[i+2] - E[i+1] * D[i+1];
+	DTYPE temp2 = B[i+3] - E[i+2] * D[i+2];
+ 	DTYPE temp3 = B[i+4] - E[i+3] * D[i+3];
+	DTYPE temp4 = B[i+5] - E[i+4] * D[i+4];
+	DTYPE temp5 = B[i+6] - E[i+5] * D[i+5];
+  	DTYPE temp6 = B[i+7] - E[i+6] * D[i+6];
+	DTYPE temp7 = B[i+8] - E[i+7] * D[i+7];
+	DTYPE temp8 = B[i+1] - E[i] * D[i];
+  	DTYPE temp9 = B[i+2] - E[i+1] * D[i+1];
+	DTYPE temp10 = B[i+3] - E[i+2] * D[i+2];
+ 	DTYPE temp11 = B[i+4] - E[i+3] * D[i+3];
+	DTYPE temp12 = B[i+5] - E[i+4] * D[i+4];
+	DTYPE temp13 = B[i+6] - E[i+5] * D[i+5];
+  	DTYPE temp14 = B[i+7] - E[i+6] * D[i+6];
+	DTYPE temp15 = B[i+8] - E[i+7] * D[i+7];
+
+	struct Msg msg;
+  msg.temp0 = temp0;
+  msg.temp1 = temp1;
+  msg.temp2 = temp2;
+  msg.temp3 = temp3;
+  msg.temp4 = temp4;
+  msg.temp5 = temp5;
+  msg.temp6 = temp6;
+  msg.temp7 = temp7;
+  msg.temp8 = temp8;
+  msg.temp9 = temp9;
+  msg.temp10 = temp10;
+  msg.temp11 = temp11;
+  msg.temp12 = temp12;
+  msg.temp13 = temp13;
+  msg.temp14 = temp14;
+  msg.temp15 = temp15;
 
 	write_channel_altera (c0, msg);
 
@@ -228,7 +289,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #elif UNROLL_FACTOR == 8
 	#pragma ivdep
 	for (int i = 2; i < lll; i+=8) {
-   		Msg msg = read_channel_altera(c0);
+   		struct Msg msg = read_channel_altera(c0);
 
 		A[i] = msg.temp0 + C[i] * D[i];
     	A[i+1] = msg.temp1 + C[i+1] * D[i+1];
@@ -238,6 +299,29 @@ __kernel void S211K2 (__global DTYPE* restrict A,
     	A[i+5] = msg.temp5 + C[i+5] * D[i+5];
     	A[i+6] = msg.temp6 + C[i+6] * D[i+6];
 	}
+#elif UNROLL_FACTOR == 16
+	#pragma ivdep
+	for (int i = 2; i < lll; i+=16) {
+   		struct Msg msg = read_channel_altera(c0);
+
+		A[i] = msg.temp0 + C[i] * D[i];
+    	A[i+1] = msg.temp1 + C[i+1] * D[i+1];
+    	A[i+2] = msg.temp2 + C[i+2] * D[i+2];
+    	A[i+3] = msg.temp3 + C[i+3] * D[i+3];
+    	A[i+4] = msg.temp4 + C[i+4] * D[i+4];
+    	A[i+5] = msg.temp5 + C[i+5] * D[i+5];
+    	A[i+6] = msg.temp6 + C[i+6] * D[i+6];
+		A[i+7] = msg.temp0 + C[i+7] * D[i+7];
+    	A[i+8] = msg.temp1 + C[i+8] * D[i+8];
+    	A[i+9] = msg.temp2 + C[i+9] * D[i+9];
+    	A[i+10] = msg.temp3 + C[i+10] * D[i+10];
+    	A[i+11] = msg.temp4 + C[i+11] * D[i+11];
+    	A[i+12] = msg.temp5 + C[i+12] * D[i+12];
+    	A[i+13] = msg.temp6 + C[i+13] * D[i+13];
+
+	}
+
+
 #endif
 
 #endif

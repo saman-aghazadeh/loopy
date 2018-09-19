@@ -117,27 +117,27 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 	int exit = lllY / BLOCK_SIZE;
 
-	for (int i = 0; i < exit; i+=4) {
+	for (int i = 0; i < exit; i+=2) {
 
-		int i_real[4];
+		int i_real[2];
 
 		i_real[0] = i*BLOCK_SIZE;
 		i_real[1] = (i+1)*BLOCK_SIZE;
-		i_real[2] = (i+2)*BLOCK_SIZE;
-		i_real[3] = (i+3)*BLOCK_SIZE;
+		//i_real[2] = (i+2)*BLOCK_SIZE;
+		//i_real[3] = (i+3)*BLOCK_SIZE;
 
-//		DTYPE AA_SR[BLOCK_SIZE][4];
+//		DTYPE AA_SR[BLOCK_SIZE][2];
 		// initialize shift registers
 //  		#pragma unroll
 //  		for (int j = 0; j < BLOCK_SIZE; j++) {
-//    		for (int ii = 0; ii < 4; ii++) {
+//    		for (int ii = 0; ii < 2; ii++) {
 //				AA_SR[j][ii] = 0.0f;
 //      		}
 //		}
 
 		//#pragma unroll
 //		for (int j = 0; j < BLOCK_SIZE; j++) {
-//			for (int ii = 0; ii < 4; ii++) {
+//			for (int ii = 0; ii < 2; ii++) {
 //				AA_SR[j][ii] = AA[i_real[ii]+j];
 //			}
 //		}
@@ -145,14 +145,16 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 		// start processing
     	for (int j = 1; j < lllX; j++) {
 
-			DTYPE BB_SR[BLOCK_SIZE][4];
-			DTYPE AA_SR[BLOCK_SIZE][4];
+			DTYPE BB_SR[2][BLOCK_SIZE];
+			DTYPE AA_SR[2][BLOCK_SIZE];
 
 			if (j == 1) {
 				#pragma unroll
-				for (int k = 0; k < BLOCK_SIZE; k++) {
-					for (int ii = 0; ii < 4; ii++)
-						AA_SR[k][ii] = AA[i_real[ii]+k];
+				#pragma loop_coalesce
+				for (int ii = 0; ii < 2; ii++) {
+					#pragma unroll
+					for (int k = 0; k < BLOCK_SIZE; k++)
+						AA_SR[ii][k] = AA[i_real[ii]+k];
 				}
 
 			}
@@ -160,12 +162,12 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 			//#pragma unroll
 			#pragma ivdep
-			for (int ii = 0; ii < 4; ii++){
+			for (int ii = 0; ii < 2; ii++){
 	
 				#pragma ivdep
 				#pragma unroll
 				for (int k = 0; k < BLOCK_SIZE; k++) {
-					BB_SR[k][ii] = BB[j*lllY+k+i_real[ii]];
+					BB_SR[ii][k] = BB[j*lllY+k+i_real[ii]];
 				}
 		
     			#pragma ivdep
@@ -173,7 +175,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 				for (int k = 0; k < BLOCK_SIZE; k++) {
 					//AA_SR[k][1] = AA_SR[k][0] * BB_SR[k];
 					//AA_SR_INTER[k] = AA_SR[k][0] * BB_SR[k];
-					AA_SR[k][ii] = AA_SR[k][ii] * BB_SR[k][ii];
+					AA_SR[ii][k] = AA_SR[ii][k] * BB_SR[ii][k];
 				}
 
 	//			#pragma unroll
@@ -184,7 +186,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 				#pragma unroll
 				for (int k = 0; k < BLOCK_SIZE; k++) {
-					AA[j*lllY+k+i_real[ii]] = AA_SR[k][ii];
+					AA[j*lllY+k+i_real[ii]] = AA_SR[ii][k];
 				}
 			}
 		}
