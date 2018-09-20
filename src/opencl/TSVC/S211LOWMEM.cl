@@ -112,19 +112,19 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #if INTENSITY1
 	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY2
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction2(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY3
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction3(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY4
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction4(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY5
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction5(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY6
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction6(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY7
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction7(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY8
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction8(A[index], BPrime[index-11], E[index], D[index]);
 #endif
 
 #endif
@@ -137,24 +137,64 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #if INTENSITY1
 	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY2
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction2(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY3
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction3(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY4
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction4(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY5
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction5(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY6
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction6(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY7
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction7(A[index], BPrime[index-11], E[index], D[index]);
 #elif INTENSITY8
-	Cfunction(A[index], BPrime[index-11], E[index], D[index]);
+	Cfunction8(A[index], BPrime[index-11], E[index], D[index]);
 #endif
 
 #endif
 
 #ifdef FPGA_SINGLE
+
+#pragma ivdep
+	#pragma unroll UNROLL_FACTOR
+	for (int i = 1; i < lll; i++) {
+  	DTYPE Bi = B[i];
+    DTYPE Bip1 = B[i+1];
+    DTYPE Ei = E[i];
+    DTYPE Di = D[i];
+#if INTENSITY1
+	Cfunction(Bi, Bip1, Ei, Di);
+#elif INTENSITY2
+	Cfunction2(Bi, Bip1, Ei, Di);
+#elif INTENSITY3
+	Cfunction3(Bi, Bip1, Ei, Di);
+#elif INTENSITY4
+	Cfunction4(Bi, Bip1, Ei, Di);
+#elif INTENSITY5
+	Cfunction5(Bi, Bip1, Ei, Di);
+#endif
+	}
+
+	#pragma unroll UNROLL_FACTOR
+	for (int i = 1; i < lll; i++) {
+  	DTYPE Bim1 = B[i-1];
+    DTYPE Ci = C[i];
+    DTYPE Di = D[i];
+    DTYPE Ai;
+#if INTENSITY1
+		Cfunction(Ai, Bim1, Ci, Di);
+#elif INTENSITY2
+		Cfunction2(Ai, Bim1, Ci, Di);
+#elif INTENSITY3
+		Cfunction3(Ai, Bim1, Ci, Di);
+#elif INTENSITY4
+		Cfunction4(Ai, Bim1, Ci, Di);
+#elif INTENSITY5
+		Cfunction5(Ai, Bim1, Ci, Di);
+#endif
+		A[i] = Ai;
+	}
 
 #endif
 
