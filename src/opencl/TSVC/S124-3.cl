@@ -34,37 +34,9 @@ __kernel void S124 (__global DTYPE* restrict A,
 #ifdef GPU
 	const int gid = get_global_id(0);
 
-	const int gidM = gid%4;
 
-	if (gidM == 0) {
-		A[gid] = B[gid] + D[gid] - E[gid];
-	} else if (gidM == 1) {
-  	A[gid] = B[gid] + D[gid] + E[gid];
-	} else if (gidM == 2){
-		A[gid] = C[gid] + D[gid] - E[gid];
-	} else if (gidM == 3) {
-		A[gid] = C[gid] + D[gid] + E[gid];
-	}
+	A[gid] = B[gid] + D[gid] - E[gid];
 
-	/*
-	DTYPE B_local = B[gid];
-  DTYPE C_local = C[gid];
-  DTYPE D_local = D[gid];
-  DTYPE E_local = E[gid];
-  DTYPE A_local = 0;
-
-	if ( B_local > 10) {
-		A_local = B_local + D_local - E_local;
-	} else if (B_local > 0) {
-  	A_local = B_local + D_local + E_local;
-	} else if (B_local < -10){
-		A_local = C_local + D_local - E_local;
-	} else if (B_local < 0) {
-		A_local = C_local + D_local + E_local;
-	}
-
-	A[gid] = A_local;
-	*/
 
 #endif
 
