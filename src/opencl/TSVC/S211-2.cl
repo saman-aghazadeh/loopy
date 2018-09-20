@@ -219,6 +219,7 @@ for (int i = 1; i < (lll-1); i+=16) {
 
 }
 
+
 __kernel void S211K2 (__global DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 					__global DTYPE* restrict B,

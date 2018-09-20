@@ -104,17 +104,7 @@ __kernel void S124 (__global DTYPE* restrict A,
   	DTYPE E_local = E[i];
   	DTYPE A_local = 0;
 
-		int iM = i%4;
-		if (gidM == 0) {
-			A_local = B_local + D_local - E_local;
-		} else if (gidM == 1) {
-  			A_local = B_local + D_local + E_local;
-		} else if (gidM == 2){
-			A_local = C_local + D_local - E_local;
-		} else if (gidM == 3) {
-			A_local = C_local + D_local + E_local;
-		}
-
+		A_local = B_local + D_local - E_local;
 
 		A[i] = A_local;
 	}
