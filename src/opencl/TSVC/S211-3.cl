@@ -102,16 +102,36 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
-	#pragma ivdep
-	#pragma unroll UNROLL_FACTOR
-	for (int i = 1; i < lll; i++) {
-  	B[i] = B[i+1] - E[i] * D[i];
-	}
+	DTYPE BArray[3];
+	
+
+	#pragma unroll
+	for (int i = 0; i < 3; i++)
+		BArray[i] = B[i];
 
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
-		A[i] = B[i-1] + C[i] * D[i];
+		DTYPE Bi = BArray[1];
+		DTYPE Bip1 = BArray[2];
+		DTYPE Ei = E[i];
+		DTYPE Di = D[i];
+		DTYPE Bim1 = BArray[0];
+		DTYPE Ci = C[i];
+		DTYPE Ai;
+
+		Bi = Bip1 - Ei * Di;
+		Ai = Bim1 + Ci * Di;
+
+		BArray[i] = Bi;
+		BArray[0] = BArray[1];
+		BArray[1] = BArray[2];
+		BArray[2] = B[i+2];
+
+		B[i] = Bi;
+		A[i] = Ai;
+
 	}
+
 
 #endif
 
