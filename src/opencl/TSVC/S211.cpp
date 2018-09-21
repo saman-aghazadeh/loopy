@@ -39,7 +39,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
-  op.addOption ("use_channel", OPT_BOOL, "False", "WHETHER the code is utilizing the channels or not");
+  op.addOption ("use_channel", OPT_INT, "0", "WHETHER the code is utilizing the channels or not");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -70,7 +70,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   string intensity = op.getOptionString("intensity");
-	bool use_channel = op.getOptionBool("use_channel");
+	int use_channel = op.getOptionInt("use_channel");
 
 	int localX = 256;
   int globalX = 0;
