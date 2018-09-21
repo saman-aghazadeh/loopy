@@ -156,7 +156,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
-#pragma ivdep
+	#pragma ivdep
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
   	DTYPE Bi = B[i];
@@ -176,6 +176,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #endif
 	}
 
+	#pragma ivdep
 	#pragma unroll UNROLL_FACTOR
 	for (int i = 1; i < lll; i++) {
   	DTYPE Bim1 = B[i-1];

@@ -180,7 +180,9 @@ __kernel void S124 (__global DTYPE* restrict A,
 	  DTYPE E_local = E[i];
 	  DTYPE A_local = 0;
 
-		if (B_local > 10) {
+		int iM = i % 4;
+
+		if (iM  == 0) {
 #if INTENSITY1
 			Cfunction(A_local, B_local, D_local, (-E_local));
 #elif INTENSITY2
@@ -194,7 +196,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 			Cfunction6(A_local, B_local, D_local, (-E_local));
 #endif
-		} else if (B_local > 0){
+		} else if (iM == 1){
 #if INTENSITY1
 			Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
@@ -208,7 +210,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 			Cfunction6(A_local, C_local, D_local, E_local);
 #endif
-		} else if (B_local < 0) {
+		} else if (iM == 2) {
 #if INTENSITY1
 			Cfunction(A_local, C_local, D_local, (-E_local));
 #elif INTENSITY2
@@ -222,7 +224,7 @@ __kernel void S124 (__global DTYPE* restrict A,
 #elif INTENSITY6
 			Cfunction6(A_local, C_local, D_local, (-E_local));
 #endif
-		} else if (B_local < -10) {
+		} else if (iM == 3) {
 #if INTENSITY1
 			Cfunction(A_local, C_local, D_local, E_local);
 #elif INTENSITY2
@@ -237,6 +239,8 @@ __kernel void S124 (__global DTYPE* restrict A,
 			Cfunction6(A_local, C_local, D_local, E_local);
 #endif
 		}
+
+		A[i] = A_local;
 	}
 #endif
 }

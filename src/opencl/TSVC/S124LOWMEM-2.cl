@@ -183,6 +183,8 @@ __kernel void S124 (__global DTYPE* restrict A,
 			Cfunction6(A_local, C_local, D_local, (-E_local));
 #endif
 		}
+
+		A[i] = A_local;
 	}
 #endif
 }

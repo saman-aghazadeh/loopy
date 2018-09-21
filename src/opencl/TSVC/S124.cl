@@ -18,11 +18,11 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 
-__kernel void S124 (__global DTYPE* restrict A,
-										__global const DTYPE* restrict B,
-                    __global const DTYPE* restrict C,
-                    __global const DTYPE* restrict D,
-                    __global const DTYPE* restrict E
+__kernel void S124 (__global volatile DTYPE* restrict A,
+					__global volatile const DTYPE* restrict B,
+                    __global volatile const DTYPE* restrict C,
+                    __global volatile const DTYPE* restrict D,
+                    __global volatile const DTYPE* restrict E
 #if FPGA_SINGLE
 										,const int lll)
 #else
@@ -105,13 +105,13 @@ __kernel void S124 (__global DTYPE* restrict A,
   	DTYPE A_local = 0;
 
 		int iM = i%4;
-		if (gidM == 0) {
+		if (iM == 0) {
 			A_local = B_local + D_local - E_local;
-		} else if (gidM == 1) {
+		} else if (iM == 1) {
   			A_local = B_local + D_local + E_local;
-		} else if (gidM == 2){
+		} else if (iM == 2){
 			A_local = C_local + D_local - E_local;
-		} else if (gidM == 3) {
+		} else if (iM == 3) {
 			A_local = C_local + D_local + E_local;
 		}
 
