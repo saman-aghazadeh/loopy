@@ -255,7 +255,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 
   DTYPE multiplier = 2.5;		
-	Msg output;
+	struct Msg output;
 
 
 #if UNROLL_FACTOR == 1
@@ -371,7 +371,7 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 
   DTYPE multiplier = 2.5;		
-	Msg output;
+	struct Msg output;
 
 
 #if UNROLL_FACTOR == 1

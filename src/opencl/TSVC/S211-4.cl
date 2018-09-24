@@ -70,9 +70,9 @@ channel struct Msg c0 __attribute__((depth(4)));
 #endif
 
 
-__kernel void S211K1 (__global DTYPE* restrict A,
+__kernel void S211K1 (__global volatile DTYPE* restrict A,
 #ifdef FPGA_SINGLE
-					__global DTYPE* restrict B,
+					__global volatile DTYPE* restrict B,
 #else
 					__global const DTYPE* restrict B,
 #endif
@@ -212,9 +212,9 @@ for (int i = 1; i < (lll-1); i+=16) {
 }
 
 
-__kernel void S211K2 (__global DTYPE* restrict A,
+__kernel void S211K2 (__global volatile DTYPE* restrict A,
 #ifdef FPGA_SINGLE
-					__global DTYPE* restrict B,
+					__global volatile DTYPE* restrict B,
 #else
 					__global const DTYPE* restrict B,
 #endif

@@ -92,7 +92,7 @@ __kernel void S124 (__global volatile DTYPE* restrict A,
 		} else if (iM == 1) {
   		A_local = (B_local - additive) * multiplier;
 		} else if (iM == 2){
-			A_local = (C_local + additive) * multipkier;
+			A_local = (C_local + additive) * multiplier;
 		} else if (iM == 3) {
 			A_local = (C_local + additive) * multiplier;
 		}
