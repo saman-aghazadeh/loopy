@@ -37,3 +37,11 @@
 #define Cfunction7(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 #define Cfunction8(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 
+#define CCfunction(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; CFinal(A)
+#define CCfunction2(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction3(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction4(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction5(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction6(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction7(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+#define CCfunction8(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
