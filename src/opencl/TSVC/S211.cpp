@@ -452,6 +452,9 @@ void RunBenchmark (cl_device_id dev,
 
 			cl_ulong totalTime = 0;
 
+			evKernel1.FillTimingInfo();
+      evKernel2.FillTimingInfo();
+
 			if (device_type == "FPGA" && fpga_op_type == "SINGLE" && use_channel == 1) {
         cl_ulong start1 = evKernel1.SubmitTime();
         cl_ulong start2 = evKernel2.SubmitTime();
