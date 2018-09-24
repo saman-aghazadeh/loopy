@@ -364,10 +364,10 @@ void RunBenchmark (cl_device_id dev,
 		Event evKernel2 ("KernelEvent2");
 
     if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-      if (use_channel == false) {
+      if (use_channel == 0) {
       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       	err = clEnqueueTask (queue, kernel2, 1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
-      } else if (use_channel == true) {
+      } else if (use_channel == 1) {
       	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
        	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       }
@@ -450,14 +450,29 @@ void RunBenchmark (cl_device_id dev,
       clFinish(queue);
       CL_BAIL_ON_ERROR (err);
 
-      evKernel1.FillTimingInfo();
-      evKernel2.FillTimingInfo();
+			cl_ulong totalTime = 0;
+
+			if (device_type == "FPGA" && fpga_op_type == "SINGLE" && use_channel == 1) {
+        cl_ulong start1 = evKernel1.SubmitTime();
+        cl_ulong start2 = evKernel2.SubmitTime();
+
+        cl_ulong end1 = evKernel1.EndTime();
+        cl_ulong end2 = evKernel2.EndTime();
+
+        cl_ulong start = (start1 > start2) ? start2 : start1;
+        cl_ulong end = (end1 > end2) ? end1 : end2;
+
+				totalTime = end - start;
+
+      } else {
+        totalTime = evKernel1.SubmitEndRuntime() + evKernel2.SubmitEndRuntime();
+      }
       if (dataType == "INT")
       	resultDB.AddResult ("KernelINT" /*+ toString(dataSize) + "KiB"*/,
-                          	toString(dataSize), "Bytes", evKernel1.SubmitEndRuntime() + evKernel2.SubmitEndRuntime());
+                          	toString(dataSize), "Bytes", totalTime);
       else if (dataType == "SINGLE")
         resultDB.AddResult ("KernelSINGLE",
-                            toString(dataSize), "Bytes", evKernel1.SubmitEndRuntime() + evKernel2.SubmitEndRuntime());
+                            toString(dataSize), "Bytes", totalTime);
       else if (dataType == "DOUBLE")
         resultDB.AddResult ("KernelDOUBLE",
                             toString(dataSize), "Bytes", evKernel1.SubmitEndRuntime() + evKernel2.SubmitEndRuntime());
