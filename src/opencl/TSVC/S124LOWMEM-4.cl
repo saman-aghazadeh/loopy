@@ -187,5 +187,6 @@ __kernel void S124 (__global DTYPE* restrict A,
 
 	A[i] = A_local;
 
+	}
 #endif
 }
