@@ -32,7 +32,7 @@
 #define Bfunction7(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
 #define Bfunction8(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
 
-#define BBfunction(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; BBFinal (A)
+#define BBfunction(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; BBfinal (A)
 #define BBfunction2(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; BBfinal(A)
 #define BBfunction3(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; BBfinal(A)
 #define BBfunction4(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; BBfinal(A)
