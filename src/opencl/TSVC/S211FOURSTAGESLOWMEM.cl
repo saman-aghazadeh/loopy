@@ -80,9 +80,9 @@ typedef struct Msg {
   DTYPE temp15;
 } msg;
 #endif
-channel struct VTYPE c0 __attribute__((depth(4)));
-channel struct VTYPE c1 __attribute__((depth(4)));
-channel struct VTYPE c2 __attribute__((depth(4)));
+channel VTYPE c0 __attribute__((depth(4)));
+channel VTYPE c1 __attribute__((depth(4)));
+channel VTYPE c2 __attribute__((depth(4)));
 #endif
 
 
