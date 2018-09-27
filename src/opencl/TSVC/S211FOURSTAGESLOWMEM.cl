@@ -187,7 +187,7 @@ for (int i = 1; i < lll; i+=4) {
 #elif UNROLL_FACTOR == 8
 #pragma ivdep
 for (int i = 1; i < lll; i+=8) {
-	DTYPE temp;
+	VTYPE temp;
 
 #if INTENSITY1
 BBfunction (temp, (VTYPE)(B[i+1],B[i+2],B[i+3],B[i+4],B[i+5],B[i+6],B[i+7],B[i+8]), multiplier);
@@ -208,7 +208,7 @@ BBfunction5 (temp, (VTYPE)(B[i+1],B[i+2],B[i+3],B[i+4],B[i+5],B[i+6],B[i+7],B[i+
 #elif UNROLL_FACTOR == 16
 #pragma ivdep
 for (int i = 1; i < lll; i+=16) {
-	DTYPE temp;
+	VTYPE temp;
 
 #if INTENSITY1
 	BBfunction (temp, (VTYPE)(B[i+1],B[i+2],B[i+3],B[i+4],B[i+5],B[i+6],B[i+7],B[i+8],B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);

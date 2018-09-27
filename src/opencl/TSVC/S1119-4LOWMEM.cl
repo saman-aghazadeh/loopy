@@ -18,6 +18,8 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 
+#include "funcs.h"
+
 __kernel void S1119 (__global DTYPE* restrict AA,
 										__global const DTYPE* restrict BB,
                     const int lllX
@@ -96,15 +98,15 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 					//AA_SR[k][1] = AA_SR[k][0] * BB_SR[k];
 					//AA_SR_INTER[k] = AA_SR[k][0] * BB_SR[k];
 #if INTENSITY1
-					Bfunction(AA_SR[ii][k], AA_SR[ii][k] * BB_SR[ii][k]);
+					Bfunction(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
 #elif INTENSITY2
-					Bfunction2(AA_SR[ii][k], AA_SR[ii][k] * BB_SR[ii][k]);
+					Bfunction2(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
 #elif INTENSITY3
-					Bfunction3(AA_SR[ii][k], AA_SR[ii][k] * BB_SR[ii][k]);
+					Bfunction3(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
 #elif INTENSITY4
-					Bfunction4(AA_SR[ii][k], AA_SR[ii][k] * BB_SR[ii][k]);
+					Bfunction4(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
 #elif INTENSITY5
-					Bfunction5(AA_SR[ii][k], AA_SR[ii][k] * BB_SR[ii][k]);
+					Bfunction5(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
 #endif
 				}
 

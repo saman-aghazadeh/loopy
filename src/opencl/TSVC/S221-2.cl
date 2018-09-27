@@ -26,28 +26,24 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 #endif
 {
 
-#ifdef FPGA_SINGLE
-
 	DTYPE multiplier = 1.5;
 
 	for (int i = 1; i < lll; i++) {
-  	DTYPE tempA;
+  	DTYPE temp;
 #if INTENSITY1
-		Bfunction (tempA, CC[i], multiplier);
+		Bfunction (temp, CC[i], multiplier);
 #elif INTENSITY2
-		Bfunction2 (tempA, CC[i], multiplier);
+		Bfunction2 (temp, CC[i], multiplier);
 #elif INTENSITY3
-		Bfunction3 (tempA, CC[i], multiplier);
+		Bfunction3 (temp, CC[i], multiplier);
 #elif INTENSITY4
-		Bfunction4 (tempA, CC[i], multiplier);
+		Bfunction4 (temp, CC[i], multiplier);
 #elif INTENSITY5
-		Bfunction5 (tempA, CC[i], multiplier);
+		Bfunction5 (temp, CC[i], multiplier);
 #endif
 
-		write_channel_altera (c0, tempA);
+		write_channel_altera (c0, temp);
 	}
-
-#endif
 }
 
 __kernel void S221K2 (__global DTYPE* restrict AA,
@@ -60,23 +56,21 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 #endif
 {
 
+	DTYPE multiplier = 1.5;
 
 	for (int i = 1; i < lll; i++) {
-  	DTYPE tempA = read_channel_altera(c0);
+  		DTYPE temp = read_channel_altera(c0);
 #if INTENSITY1
-		Cfunction (BB[i], BB[i-1], multiplier, tempA);
+		Cfunction (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY2
-		Cfunction2 (BB[i], BB[i-1], multiplier, tempA);
+		Cfunction2 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY3
-		Cfunction3 (BB[i], BB[i-1], multiplier, tempA);
+		Cfunction3 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY4
-		Cfunction4 (BB[i], BB[i-1], multiplier, tempA);
+		Cfunction4 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY5
-		Cfunction5 (BB[i], BB[i-1], multiplier, tempA);
+		Cfunction5 (BB[i], BB[i-1], multiplier, temp);
 #endif
 	}
-
-#endif
-
 
 }
