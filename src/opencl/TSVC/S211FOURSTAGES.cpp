@@ -252,7 +252,7 @@ void RunBenchmark (cl_device_id dev,
     clA = clCreateBuffer (ctx, CL_MEM_WRITE_ONLY, dataSize+extra, NULL, &err);
     CL_CHECK_ERROR (err);
 
-    clB = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize+extra, NULL, &err);
+    clB = clCreateBuffer (ctx, CL_MEM_READ_WRITE, dataSize+extra, NULL, &err);
     CL_CHECK_ERROR (err);
 
     clBPrime = clCreateBuffer (ctx, CL_MEM_READ_WRITE, dataSize+extra, NULL, &err);
@@ -552,7 +552,7 @@ void RunBenchmark (cl_device_id dev,
 
         cl_ulong end1 = evKernel1.EndTime();
         cl_ulong end2 = evKernel2.EndTime();
-        cl_ulong end3 = evKernel3.EndTimr();
+        cl_ulong end3 = evKernel3.EndTime();
         cl_ulong end4 = evKernel4.EndTime();
 
         cl_ulong start = (start1 > start2) ? start2 : start1;

@@ -73,11 +73,7 @@ channel struct Msg c2 __attribute__((depth(4)));
 
 
 __kernel void S211K1 (__global DTYPE* restrict A,
-#ifdef FPGA_SINGLE
 					__global DTYPE* restrict B,
-#else
-					__global const DTYPE* restrict B,
-#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,
@@ -221,11 +217,7 @@ for (int i = 1; i < lll; i+=16) {
 
 
 __kernel void S211K2 (__global DTYPE* restrict A,
-#ifdef FPGA_SINGLE
 					__global DTYPE* restrict B,
-#else
-					__global const DTYPE* restrict B,
-#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,
@@ -244,7 +236,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 	const int gid = get_global_id(0);
   const int index = gid+1;
 
-	B[i+2] = BPrime[i+3] * multiplier;
+	B[index+2] = BPrime[index+3] * multiplier;
 
 #endif
 
@@ -338,11 +330,7 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 }
 
 __kernel void S211K3 (__global DTYPE* restrict A,
-#ifdef FPGA_SINGLE
 					__global DTYPE* restrict B,
-#else
-					__global const DTYPE* restrict B,
-#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,
@@ -360,7 +348,7 @@ __kernel void S211K3 (__global DTYPE* restrict A,
   const int gid = get_global_id(0);
   const int index = gid+1;
 
-	BPrime[i] = B[i+1] * multiplier;
+	BPrime[index] = B[index+1] * multiplier;
 
 #endif
 
@@ -454,11 +442,7 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 }
 
 __kernel void S211K4 (__global DTYPE* restrict A,
-#ifdef FPGA_SINGLE
 					__global DTYPE* restrict B,
-#else
-					__global const DTYPE* restrict B,
-#endif
                     __global DTYPE* restrict BPrime,
                     __global const DTYPE* restrict C,
                     __global const DTYPE* restrict D,
@@ -475,9 +459,9 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 
 	DTYPE multiplier = 4.5;
   const int gid = get_global_id(0);
-  cont int index = gid+1;
+  const int index = gid+1;
 
-	A[i] = BPrime[gid-1] * multiplier;
+	A[index] = BPrime[index-1] * multiplier;
 
 #endif
 
