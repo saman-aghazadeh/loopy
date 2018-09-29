@@ -116,7 +116,8 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("max_data_size", OPT_INT, "0", "maximum data size (in Kilobytes)");
   op.addOption ("data_type", OPT_STRING, "", "data type (INT or SINGLE or DOUBLE)");
   op.addOption ("kern_loc", OPT_STRING, "", "path to the kernel");
-  op.addOption ("kern_name", OPT_STRING, "", "name of the kernel function");
+  op.addOption ("kern1_name", OPT_STRING, "", "name of the first kernel function");
+  op.addOption ("kern2_name", OPT__STRING, "", "name of the second kernel function");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
@@ -127,6 +128,12 @@ void RunBenchmark (cl_device_id dev,
                    cl_command_queue queue,
                    ResultDatabase &resultDB,
                    OptionParser &op) {
+
+	cl_int status;
+  cl_command_queue second_queue;
+
+  second_queue = clCreateCommandQueue (ctx, dev, CL_QUEUE_PROFILING_ENABLE, &status);
+  CL_CHECK_ERROR (status);
 
 	string int_precision = "-DINT_PRECISION ";
   string single_precision = "-DSINGLE_PRECISION ";
@@ -139,7 +146,8 @@ void RunBenchmark (cl_device_id dev,
 
 	string dataType = op.getOptionString("data_type");
 	string kernel_location = op.getOptionString("kern_loc");
-  string kernel_name = op.getOptionString("kern_name");
+  string kernel1_name = op.getOptionString("kern1_name");
+  string kernel2_name = op.getOptionString("kern2_name");
 	string device_type = op.getOptionString("device_type");
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
@@ -151,13 +159,15 @@ void RunBenchmark (cl_device_id dev,
 	cl_int err;
   cl_program program;
 
-  Event evKernel ("EventKernel");
+  Event evKernel1 ("EventKernel1");
+  Event evKernel2 ("EventKernel2");
   Event evRead ("EventRead");
 
 	cout << "[INFO] Device Type is " << device_type << endl;
   cout << "[INFO] Data Type is " << dataType << endl;
   cout << "[INFO] Kernel Location is " << kernel_location << endl;
-  cout << "[INFO] kernel is " << kernel_name << endl;
+  cout << "[INFO] kernel one is " << kernel1_name << endl;
+	cout << "[INFO] kernel two is " << kernel2_name << endl;
   cout << "[INFO] Minimum Data Size is " << minDataSize << endl;
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] Number of passes is " << passes << endl;
@@ -244,9 +254,11 @@ void RunBenchmark (cl_device_id dev,
     void *A, *B, *C;
     cl_mem clA, clB, clC;
 
-    cl_kernel kernel = clCreateKernel (program, kernel_name.c_str(), &err);
+    cl_kernel kernel1 = clCreateKernel (program, kernel1_name.c_str(), &err);
     CL_CHECK_ERROR (err);
 
+    cl_kernel kernel2 = clCreateKernel (program, kernel2_name.c_str(), &err);
+    CL_CHECK_ERROR (err);
     A = (void *) malloc (dataSize);
     B = (void *) malloc (dataSize);
     C = (void *) malloc (dataSize);
@@ -297,15 +309,33 @@ void RunBenchmark (cl_device_id dev,
     err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, dataSize, C, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
-
-    err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *) &clA);
+    err = clEnqueueWriteBuffer (second_queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *) &clB);
+    err = clEnqueueWriteBuffer (second_queue, clB, CL_TRUE, 0, dataSize, B, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel, 2, sizeof (cl_mem), (void *) &clC);
+    err = clEnqueueWriteBuffer (second_queue, clC, CL_TRUE, 0, dataSize, C, 0, NULL, NULL);
     CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 0, sizeof (cl_mem), (void *) &clA);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 1, sizeof (cl_mem), (void *) &clB);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *) &clC);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clA);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clB);
+    CL_CHECK_ERROR (err);
+
+    err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *) &clC);
+    CL_CHECK_ERROR (err);
+
 
     if (device_type == "FPGA") {
       if (fpga_op_type == "SINGLE") {
@@ -320,8 +350,12 @@ void RunBenchmark (cl_device_id dev,
 
         numIterations = numIterations;
 
-        err = clSetKernelArg (kernel, 3, sizeof (int), &numIterations);
+        err = clSetKernelArg (kernel1, 3, sizeof (int), &numIterations);
         CL_CHECK_ERROR (err);
+
+        err = clSetKernelArg (kernel2, 3, sizeof (int), &numIterations);
+        CL_CHECK_ERROR (err);
+
       }
     }
 
@@ -344,10 +378,12 @@ void RunBenchmark (cl_device_id dev,
     const size_t local_work_size[] = {(size_t)localX};
 		cout << "[INFO] local work size is " << local_work_size[0] << endl;
 
-		Event evKernel ("KernelEvent");
+		Event evKernel1 ("KernelEvent1");
+    Event evKernel2 ("KernelEvent2");
     long count;
     if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-      err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+      err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
     } else {
 
       auto start = std::chrono::high_resolution_clock::now();
@@ -407,7 +443,8 @@ void RunBenchmark (cl_device_id dev,
 
       long count = 0;
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
+        err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+        err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
       } else {
         auto start = std::chrono::high_resolution_clock::now();
        	err = clEnqueueNDRangeKernel (queue, kernel, 1,
@@ -444,7 +481,16 @@ void RunBenchmark (cl_device_id dev,
 			evKernel.FillTimingInfo();
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        totalTime = evKernel.SubmitEndRuntime();
+        cl_ulong start1 = evKernel1.SubmitEndRuntime();
+        cl_ulong start2 = evKernel2.SubmitEndRuntime();
+
+        cl_ulong end1 = evKernel1.EndTime();
+        cl_ulong end2 = evKernel2.EndTime();
+
+        cl_ulong start = (start1 > start2) ? start2 : start1;
+        cl_ulong end = (end1 > end2) ? end2 : end1;
+
+        totalTime = end - start;
       } else {
 				totalTime = count;
       }
@@ -570,7 +616,8 @@ void RunBenchmark (cl_device_id dev,
     clReleaseMemObject (clA);
     clReleaseMemObject (clB);
     clReleaseMemObject (clC);
-    clReleaseKernel (kernel);
+    clReleaseKernel (kernel1);
+    clReleaseKernel (kernel2);
     free (A);
     free (B);
     free (C);
