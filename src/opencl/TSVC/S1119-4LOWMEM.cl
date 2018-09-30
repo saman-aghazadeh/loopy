@@ -35,17 +35,24 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 	const int gid = get_global_id(0);
 	const int size = get_global_size(0);
 
+	int temp;
+	temp = AA[gid];
 	for (int i = 1; i < lllX; i++) {
 #if INTENSITY1
-		Bfunction(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);	
+		Bfunction(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
 #elif INTENSITY2
-		Bfunction2(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);	
+		Bfunction2(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
 #elif INTENSITY3
-		Bfunction3(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);	
+		Bfunction3(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
 #elif INTENSITY4
-		Bfunction4(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);	
+		Bfunction4(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
 #elif INTENSITY5
-		Bfunction5(AA[i*size+gid], AA[(i-1)*size+gid], BB[i*size+gid]);	
+		Bfunction5(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
 #endif
 	}
 	
