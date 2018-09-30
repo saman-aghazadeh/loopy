@@ -58,30 +58,19 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 
 	DTYPE multiplier = 1.5;
 
-	for (int j = 0; j < lll/BS; j++) {
-
-    DTYPE tempArray[BS];
-    tempArray[0] = BB[i*BS];
-    #pragma unroll
-		for (int i = 1; i < BS; i++) {
+	for (int i = 1; i < lll; i++) {
   		DTYPE temp = read_channel_altera(c0);
 #if INTENSITY1
-			Cfunction (tempArray[i], tempArray[i-1], multiplier, temp);
+		Cfunction (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY2
-			Cfunction2 (tempArray[i], tempArray[i-1], multiplier, temp);
+		Cfunction2 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY3
-			Cfunction3 (tempArray[i], tempArray[i-1], multiplier, temp);
+		Cfunction3 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY4
-			Cfunction4 (tempArray[i], tempArray[i-1], multiplier, temp);
+		Cfunction4 (BB[i], BB[i-1], multiplier, temp);
 #elif INTENSITY5
-			Cfunction5 (tempArray[i], tempArray[i-1], multiplier, temp);
+		Cfunction5 (BB[i], BB[i-1], multiplier, temp);
 #endif
-		}
-
-		#pragma unroll
-		for (int i = 0; i < BS; i++) {
-			BB[i + j*BS] = tempArray[i]; 
-		}
 	}
 
 }
