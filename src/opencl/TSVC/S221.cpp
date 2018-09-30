@@ -121,6 +121,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
+  op.addOption ("use_channel", OPT_INT, "0", "Whether using channel or not");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -152,6 +153,7 @@ void RunBenchmark (cl_device_id dev,
   string fpga_op_type = op.getOptionString("fpga_op_type");
 	string flags = "";
   string intensity = op.getOptionString("intensity");
+  int use_channel = op.getOptionInt("use_channel");
 
 	int localX = 256;
   int globalX = 0;
@@ -171,6 +173,8 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Minimum Data Size is " << minDataSize << endl;
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
 	cout << "[INFO] Number of passes is " << passes << endl;
+	cout << "[INFO] use channel is " << use_channel << endl;
+
   // First building the program
 
 	if (intensity == "1") {
@@ -257,8 +261,11 @@ void RunBenchmark (cl_device_id dev,
     cl_kernel kernel1 = clCreateKernel (program, kernel1_name.c_str(), &err);
     CL_CHECK_ERROR (err);
 
-    cl_kernel kernel2 = clCreateKernel (program, kernel2_name.c_str(), &err);
-    CL_CHECK_ERROR (err);
+		cl_kernel kernel2;
+    if (use_channel == 1) {
+    	kernel2 = clCreateKernel (program, kernel2_name.c_str(), &err);
+    	CL_CHECK_ERROR (err);
+  	}
     A = (void *) malloc (dataSize);
     B = (void *) malloc (dataSize);
     C = (void *) malloc (dataSize);
@@ -327,14 +334,16 @@ void RunBenchmark (cl_device_id dev,
     err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *) &clC);
     CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clA);
-    CL_CHECK_ERROR (err);
+    if (use_channel == 1) {
+    	err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clA);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clB);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clB);
+    	CL_CHECK_ERROR (err);
 
-    err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *) &clC);
-    CL_CHECK_ERROR (err);
+    	err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *) &clC);
+    	CL_CHECK_ERROR (err);
+    }
 
 
     if (device_type == "FPGA") {
@@ -353,13 +362,18 @@ void RunBenchmark (cl_device_id dev,
         err = clSetKernelArg (kernel1, 3, sizeof (int), &numIterations);
         CL_CHECK_ERROR (err);
 
-        err = clSetKernelArg (kernel2, 3, sizeof (int), &numIterations);
-        CL_CHECK_ERROR (err);
+        if (use_channel == 1) {
+        	err = clSetKernelArg (kernel2, 3, sizeof (int), &numIterations);
+        	CL_CHECK_ERROR (err);
+        }
 
       }
     }
 
 		clFinish (queue);
+    if (use_channel == 1) {
+      clFinish (queue);
+    }
     CL_BAIL_ON_ERROR (err);
 
 
@@ -382,8 +396,12 @@ void RunBenchmark (cl_device_id dev,
     Event evKernel2 ("KernelEvent2");
     long count;
     if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-      err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-      err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+      if (use_channel == 1) {
+      	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+      } else if {
+        err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+      }
     } else {
 
       auto start = std::chrono::high_resolution_clock::now();
@@ -443,8 +461,12 @@ void RunBenchmark (cl_device_id dev,
 
       long count = 0;
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
-        err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+        if (use_channel == 1) {
+        	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+        	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+        } else {
+          err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
+        }
       } else {
         auto start = std::chrono::high_resolution_clock::now();
        	err = clEnqueueNDRangeKernel (queue, kernel, 1,
@@ -478,19 +500,26 @@ void RunBenchmark (cl_device_id dev,
 
 			cl_ulong totalTime = 0;
 
-			evKernel.FillTimingInfo();
+			evKernel1.FillTimingInfo();
+      if (use_channel == 1) {
+        evKernel2.FillTimingInfo();
+      }
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
-        cl_ulong start1 = evKernel1.SubmitEndRuntime();
-        cl_ulong start2 = evKernel2.SubmitEndRuntime();
+        if (use_channel == 1) {
+        	cl_ulong start1 = evKernel1.SubmitEndRuntime();
+       		cl_ulong start2 = evKernel2.SubmitEndRuntime();
 
-        cl_ulong end1 = evKernel1.EndTime();
-        cl_ulong end2 = evKernel2.EndTime();
+        	cl_ulong end1 = evKernel1.EndTime();
+        	cl_ulong end2 = evKernel2.EndTime();
 
-        cl_ulong start = (start1 > start2) ? start2 : start1;
-        cl_ulong end = (end1 > end2) ? end2 : end1;
+        	cl_ulong start = (start1 > start2) ? start2 : start1;
+        	cl_ulong end = (end1 > end2) ? end2 : end1;
 
-        totalTime = end - start;
+        	totalTime = end - start;
+        } else {
+          totalTime = kernel1.SubmitEndRuntime();
+        }
       } else {
 				totalTime = count;
       }
