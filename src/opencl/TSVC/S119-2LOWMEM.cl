@@ -38,17 +38,17 @@ __kernel void S119 (__global DTYPE* restrict AA,
 
 	while (i < exit) {
 
-		DTYPE buffer[BLOCK_SIZE];
+		DTYPE buffer[BLOCK_SIZE+1];
 
 		#pragma unroll
-		for (int j = 0; j < BLOCK_SIZE; j++) {
+		for (int j = 0; j <= BLOCK_SIZE; j++) {
 			buffer[j] = AA[i*BLOCK_SIZE+j];
 		}
 
 		for (int k = 1; k < lllY; k++) {
 	
 			#pragma unroll
-			for (int j = BLOCK_SIZE-1; j >= 1; j--) {
+			for (int j = BLOCK_SIZE; j >= 1; j--) {
 				buffer[j] = buffer[j-1];
 			}
 
@@ -56,12 +56,12 @@ __kernel void S119 (__global DTYPE* restrict AA,
 
 			#pragma ivdep
    		#pragma unroll UNROLL_FACTOR
-			for (int j = 1; j < BLOCK_SIZE; j++) {
+			for (int j = 1; j <= BLOCK_SIZE; j++) {
 				buffer[j] = buffer[j] + BB[k*lllX + i*BLOCK_SIZE + j];
 			}	
 
 			#pragma unroll
-			for (int j = 0; j < BLOCK_SIZE; j++) {
+			for (int j = 1; j < BLOCK_SIZE; j++) {
 				AA[k*lllX + i*BLOCK_SIZE + j] = buffer[j];
 			}
 
