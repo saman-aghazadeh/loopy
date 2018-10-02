@@ -26,7 +26,9 @@ serialopencl_PROGRAMS = S000 \
 												S122 \
 												S124 \
 												S176 \
-												S211
+												S211 \
+												S211FOURSTAGES \
+												S221
 
 S000_SOURCES					= S000.cpp main.cpp
 S000_LDADD						= $(OCL_LIBS) $(LIBS)
@@ -63,3 +65,15 @@ S176_LDADD						= $(OCL_LIBS) $(LIBS)
 
 S211_SOURCES					= S211.cpp main.cpp
 S211_LDADD						= $(OCL_LIBS) $(LIBS)
+
+S211FOURSTAGES_SOURCES	=	S211FOURSTAGES.cpp main.cpp
+S211FOURSTAGES_LDADD		=	$(OCL_LIBS) $(LIBS)
+
+S211TWOSTAGES_SOURCES		= S211TWOSTAGES.cpp main.cpp
+S211TWOSTAGES_LDADD			= $(OCL_LIBS) $(LIBS)
+
+S211SIXSTAGES_SOURCES		= S211SIXSTAGES.cpp main.cpp
+S211SIXSTAGES_LDADD			= $(OCL_LIBS) $(LIBS)
+
+S221_SOURCES					= S221.cpp main.cpp
+S221_LDADD						= $(OCL_LIBS) $(LIBS)
