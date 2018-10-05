@@ -611,8 +611,6 @@ void RunBenchmark (cl_device_id dev,
     clReleaseMemObject (clE);
     clReleaseKernel (kernel1);
     clReleaseKernel (kernel2);
-    clReleaseKernel (kernel3);
-    clReleaseKernel (kernel4);
     free (A);
     free (B);
     free (BPrime);

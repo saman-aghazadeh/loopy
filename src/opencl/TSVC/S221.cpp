@@ -117,7 +117,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("data_type", OPT_STRING, "", "data type (INT or SINGLE or DOUBLE)");
   op.addOption ("kern_loc", OPT_STRING, "", "path to the kernel");
   op.addOption ("kern1_name", OPT_STRING, "", "name of the first kernel function");
-  op.addOption ("kern2_name", OPT__STRING, "", "name of the second kernel function");
+  op.addOption ("kern2_name", OPT_STRING, "", "name of the second kernel function");
   op.addOption ("device_type", OPT_STRING, "", "device type (GPU or FPGA)");
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Setting intensity of the computation");
@@ -399,17 +399,17 @@ void RunBenchmark (cl_device_id dev,
       if (use_channel == 1) {
       	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
-      } else if {
+      } else {
         err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       }
     } else {
 
       auto start = std::chrono::high_resolution_clock::now();
-       	err = clEnqueueNDRangeKernel (queue, kernel, 1,
+       	err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
-                                      0, NULL, &evKernel.CLEvent());
+                                      0, NULL, &evKernel1.CLEvent());
         err = clEnqueueReadBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 1,
-                                   &evKernel.CLEvent(), &evRead.CLEvent());
+                                   &evKernel1.CLEvent(), &evRead.CLEvent());
         err = clWaitForEvents (1, &evRead.CLEvent());
 
         float multiplier = 1.5;
@@ -469,11 +469,11 @@ void RunBenchmark (cl_device_id dev,
         }
       } else {
         auto start = std::chrono::high_resolution_clock::now();
-       	err = clEnqueueNDRangeKernel (queue, kernel, 1,
+       	err = clEnqueueNDRangeKernel (queue, kernel1, 1,
                                       NULL, global_work_size, local_work_size,
-                                      0, NULL, &evKernel.CLEvent());
+                                      0, NULL, &evKernel1.CLEvent());
         err = clEnqueueReadBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 1,
-                                   &evKernel.CLEvent(), &evRead.CLEvent());
+                                   &evKernel1.CLEvent(), &evRead.CLEvent());
         err = clWaitForEvents (1, &evRead.CLEvent());
 
         float multiplier = 1.5;
@@ -518,7 +518,7 @@ void RunBenchmark (cl_device_id dev,
 
         	totalTime = end - start;
         } else {
-          totalTime = kernel1.SubmitEndRuntime();
+          totalTime = evKernel1.SubmitEndRuntime();
         }
       } else {
 				totalTime = count;

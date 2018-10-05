@@ -57,7 +57,17 @@ __kernel void S119 (__global DTYPE* restrict AA,
 			#pragma ivdep
    		#pragma unroll UNROLL_FACTOR
 			for (int j = 1; j <= BLOCK_SIZE; j++) {
-				buffer[j] = buffer[j] + BB[k*lllX + i*BLOCK_SIZE + j];
+#if INTENSITY1
+				Bfunction (buffer[j], buffer[j], BB[k*llX + i*BLOCK_SIZE + j]);
+#elif INTENSITY2
+				Bfunction2 (buffer[j], buffer[j], BB[k*llX + i*BLOCK_SIZE + j]);
+#elif INTENSITY3
+				Bfunction3 (buffer[j], buffer[j], BB[k*llX + i*BLOCK_SIZE + j]);
+#elif INTENSITY4
+				Bfunction4 (buffer[j], buffer[j], BB[k*llX + i*BLOCK_SIZE + j]);
+#elif INTENSITY5
+				Bfunction5 (buffer[j], buffer[j], BB[k*llX + i*BLOCK_SIZE + j]);
+#endif
 			}	
 
 			#pragma unroll

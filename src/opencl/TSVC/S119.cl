@@ -17,6 +17,8 @@ __attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
+#include "funcs.h"
+
 
 __kernel void S119 (__global DTYPE* restrict AA,
 										__global DTYPE* restrict BB
@@ -38,11 +40,24 @@ __kernel void S119 (__global DTYPE* restrict AA,
 	if (gidX == 1 || gidY == 1) {
     int i = gidX;
     int j = gidY;
-		//for (i = gidX, j = gidY; i < sizeX && j < sizeY; i++, j++) {
-		//	AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] + BB[i*sizeY+j];
-		//}
+    DTYPE holder = AA[(i-1)*sizeY+(j-1)];
     while (i < sizeX && j < sizeY) {
- 			AA[i*sizeY+j] = AA[(i-1)*sizeY+(j-1)] + BB[i*sizeY+j];
+#if INTENSITY1
+			Bfunction (holder, holder, BB[i*sizeY+j]);
+      AA[i*sizeY+j] = holder;
+#elif INTENSITY2
+			Bfunction2 (holder, holder, BB[i*sizeY+j]);
+      AA[i*sizeY+j] = holder;
+#elif INTENSITY3
+			Bfunction3 (holder, holder, BB[i*sizeY+j]);
+      AA[i*sizeY+j] = holder;
+#elif INTENSITY4
+			Bfunction4 (holder, holder, BB[i*sizeY+j]);
+      AA[i*sizeY+j] = holder;
+#elif INTENSITY5
+			Bfunction5 (holder, holder, BB[i*sizeY+j]);
+      AA[i*sizeY+j] = holder;
+#endif
       i++;
       j++;
 		}
