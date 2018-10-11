@@ -13,6 +13,9 @@
 #define BBInit(A,B,C) VTYPE tempA = 0; VTYPE tempB = B; VTYPE tempC = C
 #define BBfinal(A) A = tempA
 
+#define DInit(A,B,C,D,E) DTYPE tempA = 0; DTYPE tempB = B; DTYPE tempC = C; DTYPE tempD = D; DTYPE tempE = E;
+#define DFinal(A) A = tempA
+
 
 #define Afunction(A,B,C) AInit (A, B, C); tempA = pow(tempB,tempC); AFinal (A)
 #define Afunction2(A,B,C) AInit (A, B, C); tempA = pow(tempB,tempC); tempA = pow(tempB, tempA); AFinal(A)
@@ -59,3 +62,9 @@
 #define CCfunction6(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 #define CCfunction7(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 #define CCfunction8(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
+
+#define Dfunction(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; DFinal(A)
+#define Dfunction2(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction3(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction4(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction5(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
