@@ -58,10 +58,10 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 
 	DTYPE multiplier = 1.5;
 
-	int sum = 0.0;
+	int depValue = BB[0];
 
 	for (int i = 1; i < lll; i++) {
-  	DTYPE BBtemp = BB[i-1];
+  	DTYPE BBtemp = depValue;
 		DTYPE temp = read_channel_altera(c0);
     DTYPE temp2 = 0;
 #if INTENSITY1
@@ -76,7 +76,8 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 		Cfunction (temp2, BBtemp, multiplier, temp);
 #endif
 
-		BB[i] = temp2;		
+		depValue = temp2;
+    BB[i] = depValue;
 	}
 
 }
