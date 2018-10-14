@@ -28,15 +28,15 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 	const int gid = get_global_id();
 
 #if INTENSITY1
-	Bfunction (AA[i], CC[i], multiplier);
+	Bfunction (AA[gid], CC[gid], multiplier);
 #elif INTENSITY2
-	Bfunction2 (AA[i], CC[i], multiplier);
+	Bfunction2 (AA[gid], CC[gid], multiplier);
 #elif INTENSITY3
-	Bfunction3 (AA[i], CC[i], multiplier);
+	Bfunction3 (AA[gid], CC[gid], multiplier);
 #elif INTENSITY4
-	Bfunction4 (AA[i], CC[i], multiplier);
+	Bfunction4 (AA[gid], CC[gid], multiplier);
 #elif INTENSITY5
-	Bfunction5 (AA[i], CC[i], multiplier);
+	Bfunction5 (AA[gid], CC[gid], multiplier);
 #endif
 
 }
