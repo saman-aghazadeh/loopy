@@ -64,7 +64,7 @@
 #define CCfunction8(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 
 #define Dfunction(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; DFinal(A)
-#define Dfunction2(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; DFinal(A)
-#define Dfunction3(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
-#define Dfunction4(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
-#define Dfunction5(A,B,C,D,E) DInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction2(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction3(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction4(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
+#define Dfunction5(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; tempA = cos(tempA) * tempE; DFinal(A)
