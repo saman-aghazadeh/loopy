@@ -25,7 +25,7 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 
 	DTYPE multiplier = 1.5;
 
-	const int gid = get_global_id();
+	const int gid = get_global_id(0);
 
 #if INTENSITY1
 	Bfunction (AA[gid], CC[gid], multiplier);
