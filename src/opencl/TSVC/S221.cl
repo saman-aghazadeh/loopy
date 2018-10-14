@@ -41,7 +41,7 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 		Bfunction5 (temp, CC[i], multiplier);
 #endif
 
-		write_channel_altera (c0, temp;)
+		write_channel_altera (c0, temp);
 	}
 
 }

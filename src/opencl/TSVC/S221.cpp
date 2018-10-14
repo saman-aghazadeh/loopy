@@ -398,8 +398,8 @@ void RunBenchmark (cl_device_id dev,
 
     if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
       if (use_channel == 1) {
-      	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+      	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       } else {
         err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
       }
@@ -463,8 +463,8 @@ void RunBenchmark (cl_device_id dev,
       long count = 0;
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
         if (use_channel == 1) {
-        	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         	err = clEnqueueTask (second_queue, kernel2, 0, NULL, &evKernel2.CLEvent());
+        	err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         } else {
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         }

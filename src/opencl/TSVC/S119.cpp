@@ -155,6 +155,18 @@ void RunBenchmark (cl_device_id dev,
 
   for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
 
+		int max = 0;
+    if (dataType == "INT")
+			max = dataSize / sizeof (int);
+    else if (dataType == "SINGLE")
+      max = dataSize / sizeof (float);
+    else
+      max = dataSize / sizeof(double);
+
+		for (int lllX = 32; max / lllX >= 32; lllX *= 2) {
+
+    int lllY = max / lllX;
+
 		cout << "[INFO] data size is " << dataSize << endl;
 
     void *AA, *BB;
@@ -169,6 +181,7 @@ void RunBenchmark (cl_device_id dev,
     // Initialization of AA and BB arrays
     int sizeX = 0;
     int sizeY = 0;
+		/*
     if (dataType == "INT") {
       sizeX = (int)(pow(2, ceil(log2l(dataSize / sizeof (int))/2)));
       sizeY = (int)(pow(2, floor(log2l(dataSize / sizeof (int))/2)));
@@ -179,6 +192,18 @@ void RunBenchmark (cl_device_id dev,
       sizeX = (int)(pow(2, ceil(log2l(dataSize / sizeof (double))/2)));
       sizeY = (int)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
     }
+		*/
+    if (dataType == "INT") {
+      sizeX = lllX;
+      sizeY = lllY;
+    } else if (dataType == "SINGLE") {
+      sizeX = lllX;
+      sizeY = lllY;
+    } else if (dataType == "DOUBLE") {
+      sizeX = lllX;
+      sizeY = lllY;
+    }
+
 
     if (dataType == "INT") {
     	for (int i = 0; i < sizeX; i++) {
@@ -226,6 +251,7 @@ void RunBenchmark (cl_device_id dev,
       if (fpga_op_type == "SINGLE") {
         int numIterationsX = 0;
         int numIterationsY = 0;
+				/*
         if (dataType == "INT") {
           numIterationsX = (int)(pow(2, ceil(log2l(dataSize / sizeof (int))/2)));
           numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (int))/2)));
@@ -236,6 +262,18 @@ void RunBenchmark (cl_device_id dev,
           numIterationsX = (int)(pow(2, ceil(log2l(dataSize / sizeof (double))/2)));
           numIterationsY = (int)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
         }
+				*/
+        if (dataType == "INT") {
+          numIterationsX = lllX;
+          numIterationsY = lllY;
+        } else if (dataType == "SINGLE") {
+          numIterationsX = lllX;
+          numIterationsY = lllY;
+        } else if (dataType == "DOUBLE") {
+          numIterationsX = lllX;
+          numIterationsY = lllY;
+        }
+
 
 	cout << "[INFO] dimensions are " << numIterationsX << " " << numIterationsY << endl; 
 
@@ -250,6 +288,7 @@ void RunBenchmark (cl_device_id dev,
     CL_BAIL_ON_ERROR (err);
 
 		size_t global_work_size[2];
+    /*
     if (dataType == "INT") {
     	global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof (int))/2)));
     	global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (int))/2)));
@@ -260,6 +299,20 @@ void RunBenchmark (cl_device_id dev,
     	global_work_size[0] = (size_t)(pow(2, ceil(log2l(dataSize / sizeof (double))/2)));
     	global_work_size[1] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
     }
+    */
+    if (dataType == "INT") {
+    	global_work_size[0] = lllX;
+    	global_work_size[1] = lllY;
+    } else if (dataType == "SINGLE") {
+    	global_work_size[0] = lllX;
+    	global_work_size[1] = lllY;
+    } else if (dataType == "DOUBLE") {
+    	global_work_size[0] = lllX;
+    	global_work_size[1] = lllY;
+    }
+
+
+
     if (!(device_type == "FPGA" && fpga_op_type == "SINGLE"))
 			cout << "[INFO] global work size is " << global_work_size[0] << " " << global_work_size[1] << endl;
 
@@ -323,7 +376,7 @@ void RunBenchmark (cl_device_id dev,
                           	toString(dataSize), "Bytes", evKernel.SubmitEndRuntime());
       else if (dataType == "SINGLE")
         resultDB.AddResult ("KernelSINGLE",
-                            toString(dataSize), "Bytes", evKernel.SubmitEndRuntime());
+                            toString(dataSize) + "-" + toString(lllX) + "-" + toString(lllY), "Bytes", evKernel.SubmitEndRuntime());
       else if (dataType == "DOUBLE")
         resultDB.AddResult ("KernelDOUBLE",
                             toString(dataSize), "Bytes", evKernel.SubmitEndRuntime());
@@ -445,6 +498,7 @@ void RunBenchmark (cl_device_id dev,
     clReleaseKernel (kernel);
     free (AA);
     free (BB);
+    }
   }
 }
 

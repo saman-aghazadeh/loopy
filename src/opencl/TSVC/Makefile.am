@@ -27,7 +27,10 @@ serialopencl_PROGRAMS = S000 \
 												S124 \
 												S176 \
 												S211 \
+												S211TWOSTAGES \
 												S211FOURSTAGES \
+												S211SIXSTAGES \
+												S119WAVEFRONT \
 												S221
 
 S000_SOURCES					= S000.cpp main.cpp
@@ -77,3 +80,6 @@ S211SIXSTAGES_LDADD			= $(OCL_LIBS) $(LIBS)
 
 S221_SOURCES					= S221.cpp main.cpp
 S221_LDADD						= $(OCL_LIBS) $(LIBS)
+
+S119WAVEFRONT_SOURCES	= S119-wavefront.cpp main.cpp
+S119WAVEFRONT_LDADD		= $(OCL_LIBS) $(LIBS)
