@@ -16,6 +16,8 @@
 
 using namespace std;
 
+#define GENERATE_PTX true
+
 #define CL_BAIL_ON_ERROR(err)                   \
   {                                             \
     CL_CHECK_ERROR(err);                        \
@@ -83,6 +85,10 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] number of passes is " << passes << endl;
   // First building the program
 
+	setenv("CUDA_CACHE_DISABLE", "1", 1);
+
+	flags += "-cl-opt-disable ";
+
   if (intensity == "1") {
     flags += "-DINTENSITY1 ";
   } else if (intensity == "2") {
@@ -115,12 +121,20 @@ void RunBenchmark (cl_device_id dev,
 
   if (device_type == "GPU") {
     ifstream kernelFile (kernel_location, ios::in);
+    ifstream headerFile ("funcs.h", ios::in);
     if (!kernelFile.is_open()) {
       cerr << "[ERROR] Failed to open file" << kernel_location << "for reading!" << endl;
       exit (0);
     }
 
+    if (!headerFile.is_open()) {
+      cerr << "[ERROR] Failed to open file funcs.h for reading!" << endl;
+      exit (0);
+    }
+
     ostringstream oss;
+		//oss << headerFile.rdbuf();
+    //oss << "\n\n\n";
     oss << kernelFile.rdbuf();
 
     string srcStdStr = oss.str();
@@ -147,6 +161,22 @@ void RunBenchmark (cl_device_id dev,
     cout << "[ERROR] Ret Size: " << retSize << endl;
     cout << "[ERROR] Log: " << log << endl;
     exit (0);
+  }
+
+  if (GENERATE_PTX) {
+		size_t bin_sz;
+		err = clGetProgramInfo (program, CL_PROGRAM_BINARY_SIZES,
+                            sizeof (size_t), &bin_sz, NULL);
+
+		unsigned char* bin = (unsigned char*) malloc (bin_sz);
+    err = clGetProgramInfo (program, CL_PROGRAM_BINARIES,
+                            sizeof(unsigned char *), &bin, NULL);
+
+    FILE* fp = fopen ("binary.ptx", "wb");
+    fwrite (bin, sizeof(char), bin_sz, fp);
+    fclose(fp);
+    free (bin);
+
   }
 
   CL_CHECK_ERROR (err);
