@@ -80,6 +80,7 @@ __kernel void S119 (__global DTYPE* restrict AA,
 			buffer[j] = AA[i*BLOCK_SIZE+j];
 		}
 
+		#pragma ivdep array(AA)
 		for (int k = 1; k < lllY; k++) {
 	
 			#pragma unroll
