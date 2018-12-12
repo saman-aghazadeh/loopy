@@ -93,15 +93,15 @@ __kernel void S119 (__global DTYPE* restrict AA,
    		#pragma unroll UNROLL_FACTOR
 			for (int j = 1; j <= BLOCK_SIZE; j++) {
 #if INTENSITY1
-				megaBfunction (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
+				Bfunction (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
 #elif INTENSITY2
-				megaBfunction2 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
+				Bfunction2 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
 #elif INTENSITY3
-				megaBfunction3 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
+				Bfunction3 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
 #elif INTENSITY4
-				megaBfunction4 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
+				Bfunction4 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
 #elif INTENSITY5
-				megaBfunction5 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
+				Bfunction5 (buffer[j], buffer[j], BB[k*lllX + i*BLOCK_SIZE + j]);
 #endif
 			}	
 
