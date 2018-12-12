@@ -17,7 +17,6 @@ __attribute__((num_simd_work_items(16)))
 __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
-#define megaIter 100
 
 #include "funcs.h"
 

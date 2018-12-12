@@ -4,7 +4,6 @@
 
 // Mainly for S1119 test case and other thing like that
 
-#define megaIter 1
 #define a 1.385
 #define b 1.8
 
