@@ -16,6 +16,14 @@
 
 using namespace std;
 
+#define OP(input1,input2,input3) input1 = input1 * input2 + input3
+#define OP2(input1,input2,input3) OP(input1,input2,input3); OP(input1,input2,input3)
+#define OP3(input1,input2,input3) OP2(input1,input2,input3); OP(input1,input2,input3)
+#define OP4(input1,input2,input3) OP3(input1,input2,input3); OP(input1,input2,input3)
+#define OP5(input1,input2,input3) OP4(input1,input2,input3); OP(input1,input2,input3)
+#define OP6(input1,input2,input3) OP5(input1,input2,input3); OP(input1,input2,input3)
+#define OP7(input1,input2,input3) OP6(input1,input2,input3); OP(input1,input2,input3)
+#define OP8(input1,input2,input3) OP7(input1,input2,input3); OP(input1,input2,input3)
 
 void Afunction (float* A, float* B, float* C, float* D) {
 
@@ -91,6 +99,81 @@ void Afunction5 (float* A, float* B, float* C, float* D) {
   tempA = cos(tempA) * tempC;
 	tempA = cos(tempA) * tempC;
 	tempA = cos(tempA) * tempC;
+
+  *A = tempA;
+
+}
+
+void megaAfunction (float* A, float* B, float* C, float* D) {
+
+	float tempA = rand();
+  float tempB = *B;
+  float tempC = *C;
+  float tempD = *D;
+
+  OP8(tempA, tempB, tempC+tempD);
+
+  *A = tempA;
+
+}
+
+void megaAfunction2 (float* A, float* B, float* C, float* D) {
+
+	float tempA = rand();
+  float tempB = *B;
+  float tempC = *C;
+  float tempD = *D;
+
+  OP8(tempA, tempB, tempC+tempD);
+  OP8(tempA, tempB, tempC);
+
+  *A = tempA;
+
+}
+
+void megaAfunction3 (float* A, float* B, float* C, float* D) {
+
+	float tempA = rand();
+  float tempB = *B;
+  float tempC = *C;
+  float tempD = *D;
+
+  OP8(tempA, tempB, tempC+tempD);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
+
+  *A = tempA;
+
+}
+
+void megaAfunction4 (float* A, float* B, float* C, float* D) {
+
+	float tempA = rand();
+  float tempB = *B;
+  float tempC = *C;
+  float tempD = *D;
+
+  OP8(tempA, tempB, tempC+tempD);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
+
+  *A = tempA;
+
+}
+
+void megaAfunction5 (float* A, float* B, float* C, float* D) {
+
+	float tempA = rand();
+  float tempB = *B;
+  float tempC = *C;
+  float tempD = *D;
+
+  OP8(tempA, tempB, tempC+tempD);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
+  OP8(tempA, tempB, tempC);
 
   *A = tempA;
 
@@ -416,15 +499,15 @@ void RunBenchmark (cl_device_id dev,
         float multiplier = 1.5;
 				for (int i = 1; i < global_work_size[0]; i++) {
           if (intensity == "1") {
-            Afunction (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+            megaAfunction (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "2") {
-          	Afunction2 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+          	megaAfunction2 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "3") {
-        		Afunction3 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+        		megaAfunction3 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "4") {
-      			Afunction4 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+      			megaAfunction4 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "5") {
-    				Afunction5 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+    				megaAfunction5 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           }
         }
 
@@ -480,15 +563,15 @@ void RunBenchmark (cl_device_id dev,
         float multiplier = 1.5;
 				for (int i = 1; i < global_work_size[0]; i++) {
           if (intensity == "1") {
-            Afunction (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+            megaAfunction (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "2") {
-          	Afunction2 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+          	megaAfunction2 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "3") {
-        		Afunction3 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+        		megaAfunction3 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "4") {
-      			Afunction4 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+      			megaAfunction4 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           } else if (intensity == "5") {
-    				Afunction5 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
+    				megaAfunction5 (&(((float *)B)[i]), &(((float *)B)[i-1]), &multiplier, &(((float *)A)[i]));
           }
         }
 

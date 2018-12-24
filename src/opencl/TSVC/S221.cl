@@ -30,15 +30,15 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 	for (int i = 1; i < lll; i++) {
 		DTYPE temp;
 #if INTENSITY1
-		Bfunction (temp, CC[i], multiplier);
+		megaBfunction (temp, CC[i], multiplier);
 #elif INTENSITY2
-		Bfunction2 (temp, CC[i], multiplier);
+		megaBfunction2 (temp, CC[i], multiplier);
 #elif INTENSITY3
-		Bfunction3 (temp, CC[i], multiplier);
+		megaBfunction3 (temp, CC[i], multiplier);
 #elif INTENSITY4
-		Bfunction4 (temp, CC[i], multiplier);
+		megaBfunction4 (temp, CC[i], multiplier);
 #elif INTENSITY5
-		Bfunction5 (temp, CC[i], multiplier);
+		megaBfunction5 (temp, CC[i], multiplier);
 #endif
 
 		write_channel_altera (c0, temp);
@@ -64,15 +64,15 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 		DTYPE temp = read_channel_altera(c0);
     DTYPE temp2 = 0;
 #if INTENSITY1
-		Cfunction (temp2, BB[i-1], multiplier, temp);
+		megaCfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY2
-		Cfunction (temp2, BB[i-1], multiplier, temp);
+		megaCfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY3
-		Cfunction (temp2, BB[i-1], multiplier, temp);
+		megaCfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY4
-		Cfunction (temp2, BB[i-1], multiplier, temp);
+		megaCfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY5
-		Cfunction (temp2, BB[i-1], multiplier, temp);
+		megaCfunction (temp2, BB[i-1], multiplier, temp);
 #endif
 
 		sum += temp2;
