@@ -107,15 +107,15 @@ __kernel void S211K1 (__global DTYPE* restrict A,
   const int index = gid+1;
 
 #if INTENSITY1
-	Bfunction (BPrime[index], B[index+1], multiplier);	
+	megaBfunction (BPrime[index], B[index+1], multiplier);	
 #elif INTENSITY2
-	Bfunction2 (BPrime[index], B[index+1], multiplier);	
+	megaBfunction2 (BPrime[index], B[index+1], multiplier);	
 #elif INTENSITY3
-	Bfunction3 (BPrime[index], B[index+1], multiplier);	
+	megaBfunction3 (BPrime[index], B[index+1], multiplier);	
 #elif INTENSITY4
-	Bfunction4 (BPrime[index], B[index+1], multiplier);	
+	megaBfunction4 (BPrime[index], B[index+1], multiplier);	
 #elif INTENSITY5
-	Bfunction5 (BPrime[index], B[index+1], multiplier);	
+	megaBfunction5 (BPrime[index], B[index+1], multiplier);	
 #endif
 
 #endif
@@ -252,15 +252,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
   const int gid = get_global_id(0);
   const int index = gid+1;
 #if INTENSITY1
-	Bfunction (A[index], BPrime[index-1], multiplier);	
+	megaBfunction (A[index], BPrime[index-1], multiplier);	
 #elif INTENSITY2
-	Bfunction2 (A[index], BPrime[index-1], multiplier);	
+	megaBfunction2 (A[index], BPrime[index-1], multiplier);	
 #elif INTENSITY3
-	Bfunction3 (A[index], BPrime[index-1], multiplier);	
+	megaBfunction3 (A[index], BPrime[index-1], multiplier);	
 #elif INTENSITY4
-	Bfunction4 (A[index], BPrime[index-1], multiplier);	
+	megaBfunction4 (A[index], BPrime[index-1], multiplier);	
 #elif INTENSITY5
-	Bfunction5 (A[index], BPrime[index-1], multiplier);	
+	megaBfunction5 (A[index], BPrime[index-1], multiplier);	
 #endif
 
 #endif
