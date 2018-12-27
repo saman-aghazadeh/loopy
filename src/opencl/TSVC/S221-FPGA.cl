@@ -41,7 +41,7 @@ __kernel void S221K1 (__global DTYPE* restrict AA,
 		Bfunction5 (temp, CC[i], multiplier);
 #endif
 
-		write_channel_altera (c0, temp;)
+		write_channel_altera (c0, temp);
 	}
 
 }
@@ -58,26 +58,26 @@ __kernel void S221K2 (__global DTYPE* restrict AA,
 
 	DTYPE multiplier = 1.5;
 
-	int depValue = BB[0];
+	int sum = 0.0;
 
 	for (int i = 1; i < lll; i++) {
-  	DTYPE BBtemp = depValue;
 		DTYPE temp = read_channel_altera(c0);
     DTYPE temp2 = 0;
 #if INTENSITY1
-		Cfunction (temp2, BBtemp, multiplier, temp);
+		Cfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY2
-		Cfunction (temp2, BBtemp, multiplier, temp);
+		Cfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY3
-		Cfunction (temp2, BBtemp, multiplier, temp);
+		Cfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY4
-		Cfunction (temp2, BBtemp, multiplier, temp);
+		Cfunction (temp2, BB[i-1], multiplier, temp);
 #elif INTENSITY5
-		Cfunction (temp2, BBtemp, multiplier, temp);
+		Cfunction (temp2, BB[i-1], multiplier, temp);
 #endif
 
-		depValue = temp2;
-    BB[i] = depValue;
+		sum += temp2;
 	}
+
+	B[0] = sum;
 
 }

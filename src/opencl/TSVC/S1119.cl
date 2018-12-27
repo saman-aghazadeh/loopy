@@ -18,6 +18,8 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 #endif
 
 
+#include "funcs.h"
+
 __kernel void S1119 (__global DTYPE* restrict AA,
 										__global const DTYPE* restrict BB,
                     const int lllX
@@ -33,31 +35,98 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 	const int gid = get_global_id(0);
 	const int size = get_global_size(0);
 
+	int temp;
+	temp = AA[gid];
 	for (int i = 1; i < lllX; i++) {
-  	AA[i*size+gid] = AA[(i-1)*size+gid] + BB[i*size+gid];
+#if INTENSITY1
+		Bfunction(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
+#elif INTENSITY2
+		Bfunction2(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
+#elif INTENSITY3
+		Bfunction3(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
+#elif INTENSITY4
+		Bfunction4(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
+#elif INTENSITY5
+		Bfunction5(temp, temp, BB[i*size+gid]);
+    AA[i*size+gid] = temp;
+#endif
 	}
 	
 #endif
 
-#ifdef FPGA_NDRANGE
-	const int gid = get_global_id(0);
-	const int size = get_global_size(0);
-
-	#pragma unroll UNROLL_FACTOR
-	for (int i = 1; i < lllX; i++) {
-		AA[i*size+gid] = AA[(i-1)*size+gid] + BB[i*size+gid];
-	}
-#endif
-
 #ifdef FPGA_SINGLE
 
-  for (int i = 1; i < lllX; i++) {
-  	#pragma ivdep
-    #pragma unroll UNROLL_FACTOR
-  	for (int j = 0; j < lllY; j++) {
-			AA[i*lllY+j] = AA[(i-1)*lllY+j] + BB[i*lllY+j];
+	int exit = lllY / BLOCK_SIZE;
+	int i = 0;
+
+	while (i < exit) {
+
+		int i_real[2];
+
+		i_real[0] = i*BLOCK_SIZE;
+		i_real[1] = (i+1)*BLOCK_SIZE;
+
+
+		// start processing
+    	for (int j = 1; j < lllX; j++) {
+
+			DTYPE BB_SR[2][BLOCK_SIZE];
+			DTYPE AA_SR[2][BLOCK_SIZE];
+
+			if (j == 1) {
+				#pragma unroll
+				#pragma loop_coalesce
+				for (int ii = 0; ii < 2; ii++) {
+					#pragma unroll
+					for (int k = 0; k < BLOCK_SIZE; k++)
+						AA_SR[ii][k] = AA[i_real[ii]+k];
+				}
+
+			}
+
+
+			#pragma unroll
+			#pragma ivdep
+			for (int ii = 0; ii < 2; ii++){
+	
+				#pragma ivdep
+				#pragma unroll
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					BB_SR[ii][k] = BB[j*lllY+k+i_real[ii]];
+				}
+		
+    			#pragma ivdep
+      			#pragma unroll UNROLL_FACTOR
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					//AA_SR[k][1] = AA_SR[k][0] * BB_SR[k];
+					//AA_SR_INTER[k] = AA_SR[k][0] * BB_SR[k];
+#if INTENSITY1
+					Bfunction(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
+#elif INTENSITY2
+					Bfunction2(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
+#elif INTENSITY3
+					Bfunction3(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
+#elif INTENSITY4
+					Bfunction4(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
+#elif INTENSITY5
+					Bfunction5(AA_SR[ii][k], AA_SR[ii][k], BB_SR[ii][k]);
+#endif
+				}
+
+				#pragma unroll
+				for (int k = 0; k < BLOCK_SIZE; k++) {
+					AA[j*lllY+k+i_real[ii]] = AA_SR[ii][k];
+				}
+			}
 		}
-  }
+		i+=2;
+	
+	}
+
 
 #endif
 

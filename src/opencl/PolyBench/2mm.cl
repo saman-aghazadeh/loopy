@@ -22,9 +22,11 @@ __kernel void mm_k1 (__global const DTYPE* restrict A,
                    const DTYPE alpha,
                    const DTYPE beta
 #ifdef FPGA_SINGLE
-                   ,const int lll)
+                   ,const int lllX
+                   ,const int lllY)
 #else
-                   ,const int lll
+                   ,const int lllX
+                   ,const int lllY
                    ,__global DTYPE* restrict temp)
 #endif
 {
@@ -44,7 +46,7 @@ __kernel void mm_k1 (__global const DTYPE* restrict A,
       float acc = 0.0f;
 
       // Loop over all tiles
-      const int numTiles = lll/32;
+      const int numTiles = lllY/32;
       for (int t = 0; t < numTiles; t++) {
 
           // Load one tile of A and B into local memory
@@ -72,39 +74,38 @@ __kernel void mm_k1 (__global const DTYPE* restrict A,
 
 #ifdef FPGA_SINGLE
 
-       for (int i = 0; i < lll; i++) {
-           for (int j = 0; j < lll; j++) {
-			   DTYPE temp = 0.0;
-			   for (int z = 0; z < lll/BLOCK_SIZE; z++) {
-			   		DTYPE A_local[BLOCK_SIZE];
-			   		DTYPE B_local[BLOCK_SIZE];
-					DTYPE local_temp = 0.0;
+       for (int i = 0; i < lllX; i++) {
+           for (int j = 0; j < lllX; j++) {
+			         DTYPE temp = 0.0;
+			         for (int z = 0; z < lllY/BLOCK_SIZE; z++) {
+			   		       DTYPE A_local[BLOCK_SIZE];
+			   		       DTYPE B_local[BLOCK_SIZE];
+					         DTYPE local_temp = 0.0;
 					
-					// Coalescing memory read from the memory section "A"
-					#pragma unroll
-					for (int k = 0; k < BLOCK_SIZE; k++) {
-						A_local[k] = A[i*lll+z*BLOCK_SIZE+k];
-					}
+                   // Coalescing memory read from the memory section "A"
+					         #pragma unroll
+					         for (int k = 0; k < BLOCK_SIZE; k++) {
+						           A_local[k] = A[i*lllY+z*BLOCK_SIZE+k];
+					         }
 
-					// Coalescing memory read from the memory section "B"
-					#pragma unroll
-					for (int k = 0; k < BLOCK_SIZE; k++) {
-						B_local[k] = B[i*lll+z*BLOCK_SIZE+k];
-					}
+					         // Coalescing memory read from the memory section "B"
+					         #pragma unroll
+					         for (int k = 0; k < BLOCK_SIZE; k++) {
+						           B_local[k] = B[j*lllY+z*BLOCK_SIZE+k];
+					         }
 
-					// Accumulating the result of multiplications
-					#pragma unroll
-               		for (int k = 0; k < BLOCK_SIZE; k++) {
-                   		local_temp += A[k] * B[k] * alpha;
-               		}
+					         // Accumulating the result of multiplications
+					         #pragma unroll
+                   for (int k = 0; k < BLOCK_SIZE; k++) {
+                       local_temp += A_local[k] * B_local[k] * alpha;
+                   }
 		
-					// final accumulation
-					temp += local_temp;
-			   }
+                   // final accumulation
+					         temp += local_temp;
+			         }
                write_channel_altera (c0, temp);
            }
        }
-
 #endif
 
 }
@@ -116,9 +117,11 @@ __kernel void mm_k2 (__global const DTYPE* restrict A,
                       const DTYPE alpha,
                       const DTYPE beta
 #ifdef FPGA_SINGLE
-                      ,const int lll)
+                      ,const int lllX
+                      ,const int lllY)
 #else
-                      ,const int lll
+                      ,const int lllX
+                      ,const int lllY
                       ,__global DTYPE* restrict temp)
 #endif
 {
@@ -138,7 +141,7 @@ __kernel void mm_k2 (__global const DTYPE* restrict A,
        float acc = 0.0f;
 
        // Loop over all tiles
-       const int numTiles = lll/32;
+       const int numTiles = lllX/32;
        for (int t = 0; t < numTiles; t++) {
 
            // Load one tile of A and B into local memory
@@ -164,19 +167,19 @@ __kernel void mm_k2 (__global const DTYPE* restrict A,
 #endif
 
 #ifdef FPGA_SINGLE
-       for (int i = 0; i < lll; i++) {
-           for (int j = 0; j < lll; j++) {
+       for (int i = 0; i < lllX; i++) {
+           for (int j = 0; j < lllX; j++) {
                DTYPE temp = read_channel_altera(c0);
 
 			         #pragma ivdep	
-			         for (int z = 0; z < lll/BLOCK_SIZE; z++) {
+			         for (int z = 0; z < lllX/BLOCK_SIZE; z++) {
 					         DTYPE C_local[BLOCK_SIZE];
 					         DTYPE D_local[BLOCK_SIZE];
 				
                    // Coalescing memory read from the memory section "A"
 					         #pragma unroll
 					         for (int k = 0; k < BLOCK_SIZE; k++) {
-						           C_local[k] = C[j*lll+z*BLOCK_SIZE+k];
+						           C_local[k] = C[j*lllX+z*BLOCK_SIZE+k];
 					         }
 					
                    // Initializing the memory section "D"
@@ -194,11 +197,9 @@ __kernel void mm_k2 (__global const DTYPE* restrict A,
 					         // final accumulation
 					         #pragma unroll
 					         for (int k = 0; k < BLOCK_SIZE; k++) {
-						           D[j*lll+z*BLOCK_SIZE+k] += D_local[k];
+						           D[i*lllX+z*BLOCK_SIZE+k] += D_local[k];
 					         }
-
 			         }
-				
            }
        }
 #endif

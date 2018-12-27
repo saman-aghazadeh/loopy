@@ -153,15 +153,15 @@ for (int i = 1; i < lll; i+=2) {
 	VTYPE temp;
 
 #if INTENSITY1
-	BBfunction (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
+	megaBBfunction (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
 #elif INTENSITY2
-	BBfunction2 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
+	megaBBfunction2 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
 #elif INTENSITY3
-	BBfunction3 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
+	megaBBfunction3 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
 #elif INTENSITY4
-	BBfunction4 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
+	megaBBfunction4 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
 #elif INTENSITY5
-	BBfunction5 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
+	megaBBfunction5 (temp, (VTYPE)(B[i+9],B[i+10]), multiplier);
 #endif
 
 	write_channel_altera (c0, temp);
@@ -172,15 +172,15 @@ for (int i = 1; i < lll; i+=4) {
 	VTYPE temp;
 
 #if INTENSITY1
-	BBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
+	megaBBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
 #elif INTENSITY2
-	BBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
+	megaBBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
 #elif INTENSITY3
-	BBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
+	megaBBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
 #elif INTENSITY4
-	BBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
+	megaBBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
 #elif INTENSITY5
-	BBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
+	megaBBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12]), multiplier);
 #endif
 
 	write_channel_altera (c0, temp);
@@ -192,15 +192,15 @@ for (int i = 1; i < lll; i+=8) {
 	VTYPE temp;
 
 #if INTENSITY1
-BBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
+megaBBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
 #elif INTENSITY2
-BBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
+megaBBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
 #elif INTENSITY3
-BBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
+megaBBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
 #elif INTENSITY4
-BBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
+megaBBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
 #elif INTENSITY5
-BBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
+megaBBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16]), multiplier);
 #endif
 
 	write_channel_altera (c0, temp);
@@ -213,15 +213,15 @@ for (int i = 1; i < lll; i+=16) {
 	VTYPE temp;
 
 #if INTENSITY1
-	BBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
+	megaBBfunction (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
 #elif INTENSITY2
-	BBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
+	megaBBfunction2 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
 #elif INTENSITY3
-	BBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
+	megaBBfunction3 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
 #elif INTENSITY4
-	BBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
+	megaBBfunction4 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
 #elif INTENSITY5
-	BBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
+	megaBBfunction5 (temp, (VTYPE)(B[i+9],B[i+10],B[i+11],B[i+12],B[i+13],B[i+14],B[i+15],B[i+16],B[i+17],B[i+18],B[i+19],B[i+20],B[i+21],B[i+22],B[i+23],B[i+24]), multiplier);
 #endif
 
 	write_channel_altera (c0, temp);
@@ -284,15 +284,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
     	VTYPE msg = read_channel_altera(c0);
 
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -303,15 +303,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=2) {
    		VTYPE msg = read_channel_altera(c0);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c1, output);
@@ -321,15 +321,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=4) {
    		VTYPE msg = read_channel_altera(c0);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -340,15 +340,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=8) {
    		 VTYPE msg = read_channel_altera(c0);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c1, output);
@@ -359,15 +359,15 @@ __kernel void S211K2 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=16) {
    		VTYPE msg = read_channel_altera(c0);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c1, output);
@@ -426,15 +426,15 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i++) {
     	VTYPE msg = read_channel_altera(c1);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c2, output);
@@ -444,15 +444,15 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=2) {
    		VTYPE msg = read_channel_altera(c1);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c2, output);
@@ -462,15 +462,15 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=4) {
    		VTYPE msg = read_channel_altera(c1);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -482,15 +482,15 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=8) {
    		VTYPE msg = read_channel_altera(c1);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c2, output);
@@ -501,15 +501,15 @@ __kernel void S211K3 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=16) {
    		VTYPE msg = read_channel_altera(c1);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c2, output);
@@ -568,15 +568,15 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i++) {
     	VTYPE msg = read_channel_altera(c2);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c3, output);
@@ -586,15 +586,15 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=2) {
    		VTYPE msg = read_channel_altera(c2);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c3, output);
@@ -604,15 +604,15 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=4) {
    		VTYPE msg = read_channel_altera(c2);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -624,15 +624,15 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=8) {
    		VTYPE msg = read_channel_altera(c2);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c3, output);
@@ -643,15 +643,15 @@ __kernel void S211K4 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=16) {
    		VTYPE msg = read_channel_altera(c2);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c3, output);
@@ -710,15 +710,15 @@ __kernel void S211K5 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i++) {
     	VTYPE msg = read_channel_altera(c3);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c4, output);
@@ -728,15 +728,15 @@ __kernel void S211K5 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=2) {
    		VTYPE msg = read_channel_altera(c3);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
     write_channel_altera(c4, output);
@@ -746,15 +746,15 @@ __kernel void S211K5 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=4) {
    		VTYPE msg = read_channel_altera(c3);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -766,15 +766,15 @@ __kernel void S211K5 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=8) {
    		VTYPE msg = read_channel_altera(c3);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c4, output);
@@ -785,15 +785,15 @@ __kernel void S211K5 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=16) {
    		VTYPE msg = read_channel_altera(c3);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		write_channel_altera(c4, output);
@@ -853,15 +853,15 @@ __kernel void S211K6 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i++) {
     	VTYPE msg = read_channel_altera(c4);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		A[i] = output.s0;
@@ -871,15 +871,15 @@ __kernel void S211K6 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=2) {
    		VTYPE msg = read_channel_altera(c4);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		A[i] = output.s0;
@@ -890,15 +890,15 @@ __kernel void S211K6 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=4) {
    		VTYPE msg = read_channel_altera(c4);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		A[i] = output.s0;
@@ -911,15 +911,15 @@ __kernel void S211K6 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=8) {
    		VTYPE msg = read_channel_altera(c4);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 
@@ -937,15 +937,15 @@ __kernel void S211K6 (__global DTYPE* restrict A,
 	for (int i = 1; i < lll; i+=16) {
    		VTYPE msg = read_channel_altera(c4);
 #if INTENSITY1
-	BBfunction (output, msg, multiplier);
+	megaBBfunction (output, msg, multiplier);
 #elif INTENSITY2
-	BBfunction2 (output, msg, multiplier);
+	megaBBfunction2 (output, msg, multiplier);
 #elif INTENSITY3
-	BBfunction3 (output, msg, multiplier);
+	megaBBfunction3 (output, msg, multiplier);
 #elif INTENSITY4
-	BBfunction4 (output, msg, multiplier);
+	megaBBfunction4 (output, msg, multiplier);
 #elif INTENSITY5
-	BBfunction5 (output, msg, multiplier);
+	megaBBfunction5 (output, msg, multiplier);
 #endif
 
 		A[i] = output.s0;
