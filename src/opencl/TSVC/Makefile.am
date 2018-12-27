@@ -16,10 +16,8 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 serialopencldir = $(bindir)/Serial/OpenCL
 
 serialopencl_PROGRAMS = S1119 \
-												S122 \
+												S119 \
 												S124 \
-												S176 \
-												S211 \
 												S211TWOSTAGES \
 												S211FOURSTAGES \
 												S211SIXSTAGES \
@@ -32,17 +30,8 @@ S119_LDADD						= $(OCL_LIBS) $(LIBS)
 S1119_SOURCES					= S1119.cpp main.cpp
 S1119_LDADD						= $(OCL_LIBS) $(LIBS)
 
-S122_SOURCES					= S122.cpp main.cpp
-S122_LDADD						= $(OCL_LIBS) $(LIBS)
-
 S124_SOURCES					= S124.cpp main.cpp
 S124_LDADD						= $(OCL_LIBS) $(LIBS)
-
-S176_SOURCES					= S176.cpp main.cpp
-S176_LDADD						= $(OCL_LIBS) $(LIBS)
-
-S211_SOURCES					= S211.cpp main.cpp
-S211_LDADD						= $(OCL_LIBS) $(LIBS)
 
 S211FOURSTAGES_SOURCES	=	S211FOURSTAGES.cpp main.cpp
 S211FOURSTAGES_LDADD		=	$(OCL_LIBS) $(LIBS)

@@ -16,6 +16,32 @@
 #define OP7(input1,input2,input3) OP6(input1,input2,input3); OP(input1,input2,input3)
 #define OP8(input1,input2,input3) OP7(input1,input2,input3); OP(input1,input2,input3)
 
+#if NUMFMAS==1
+#define OPX(input1,input2,input3) OP(input1,input2,input3)
+#elif NUMFMAS==2
+#define OPX(input1,input2,input3) OP2(input1,input2,input3)
+#elif NUMFMAS==3
+#define OPX(input1,input2,input3) OP3(input1,input2,input3)
+#elif NUMFMAS==4
+#define OPX(input1,input2,input3) OP4(input1,input2,input3)
+#elif NUMFMAS==5
+#define OPX(input1,input2,input3) OP5(input1,input2,input3)
+#elif NUMFMAS==6
+#define OPX(input1,input2,input3) OP6(input1,input2,input3)
+#elif NUMFMAS==7
+#define OPX(input1,input2,input3) OP7(input1,input2,input3)
+#elif NUMFMAS==8
+#define OPX(input1,input2,input3) OP8(input1,input2,input3)
+#endif
+
+#define OPNAME OP
+
+#define PPCAT_NX(A,B) A ## B
+#define PPCAT(A,B) PPCAT_NX(A,B)
+#define STRINGIZE_NX(A) #A
+#define STRINGIZE(A) STRINGIZE_NX(A)
+//#define OPX(input1,input2,input3) STRINGIZE(PPCAT(OP, NUMFMAS)) ## (input1,input2,input3)
+
 /*
 inline DTYPE megafunc(DTYPE input1, DTYPE input2) {
 	DTYPE a = 1.385;
@@ -61,14 +87,14 @@ inline DTYPE megafunc(DTYPE input1, DTYPE input2) {
 #define Bfunction7(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
 #define Bfunction8(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
 
-#define megaBfunction(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); AFinal (A)
-#define megaBfunction2(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal (A)
-#define megaBfunction3(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal (A)
-#define megaBfunction4(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal(A)
-#define megaBfunction5(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal(A)
-#define megaBfunction6(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal(A)
-#define megaBfunction7(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal(A)
-#define megaBfunction8(A,B,C) AInit(A,B,C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); AFinal(A)
+#define megaBfunction(A,B,C) AInit(A,B,C); OPX (tempA,tempB,tempC); AFinal (A)
+#define megaBfunction2(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal (A)
+#define megaBfunction3(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal (A)
+#define megaBfunction4(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal(A)
+#define megaBfunction5(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal(A)
+#define megaBfunction6(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal(A)
+#define megaBfunction7(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal(A)
+#define megaBfunction8(A,B,C) AInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); AFinal(A)
 
 #define BBfunction(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; BBfinal (A)
 #define BBfunction2(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; BBfinal(A)

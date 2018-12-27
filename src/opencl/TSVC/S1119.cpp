@@ -42,6 +42,7 @@ void addBenchmarkSpecOptions (OptionParser &op) {
   op.addOption ("fpga_op_type", OPT_STRING, "", "FPGA TYPE (NDRANGE or SINGLE)");
   op.addOption ("intensity", OPT_STRING, "", "Intensity of the operation");
   op.addOption ("block_size", OPT_INT, "0", "Block Size");
+  op.addOption ("num_fmas", OPT_STRING, "", "Number of FMA operations");
 }
 
 void RunBenchmark (cl_device_id dev,
@@ -67,6 +68,7 @@ void RunBenchmark (cl_device_id dev,
   string intensity = op.getOptionString("intensity");
   string flags = "";
 	int block_size = op.getOptionInt("block_size");
+  string numfmas = op.getOptionString("num_fmas");
 
   int localX = 256;
   int globalX = 0;
@@ -83,11 +85,13 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Minimum Data Size is " << minDataSize << endl;
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
   cout << "[INFO] number of passes is " << passes << endl;
+  cout << "[INFO] number of fmas are " << numfmas << endl;
   // First building the program
 
 	setenv("CUDA_CACHE_DISABLE", "1", 1);
 
 	flags += "-cl-opt-disable ";
+  flags += ("-DNUMFMAS=" + numfmas + " ");
 
   if (intensity == "1") {
     flags += "-DINTENSITY1 ";
@@ -405,6 +409,8 @@ void RunBenchmark (cl_device_id dev,
 
         clFinish (queue);
         CL_BAIL_ON_ERROR (err);
+
+				continue;
 
         // Testing the same operation on CPU and do the verification
         void* AACPU = (void *) (malloc (dataSize));
