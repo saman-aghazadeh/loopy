@@ -83,7 +83,7 @@ inline DTYPE megafunc(DTYPE input1, DTYPE input2) {
 #define megaBBfunction2(A,B,C) BBInit(A, B, C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); BBfinal(A)
 #define megaBBfunction3(A,B,C) BBInit(A, B, C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); BBfinal(A)
 #define megaBBfunction4(A,B,C) BBInit(A, B, C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); BBfinal(A)
-#define megaBBfunction5(A,B,C) BBInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; BBfinal(A)
+#define megaBBfunction5(A,B,C) BBInit(A, B, C); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); OP8(tempA,tempB,tempC); BBfinal(A)
 
 
 #define Cfunction(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC * tempD; CFinal(A)
