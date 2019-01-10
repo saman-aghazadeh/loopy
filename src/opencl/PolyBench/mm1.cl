@@ -13,8 +13,6 @@
 
 #include "../TSVC/funcs.h"
 
-channel DTYPE c0;
-
 __kernel void mm (__global const DTYPE* restrict A,
                   __global const DTYPE* restrict B,
                   __global DTYPE* restrict C,
