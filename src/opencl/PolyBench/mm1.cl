@@ -77,10 +77,13 @@ __kernel void mm (__global const DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 
 	for (int i = 0; i < lllX; i++) {
+    int iIndex = i*lllY;
 		for (int j = 0; j < lllX; j++) {
+      int jIndex = j*lllY;
       DTYPE temp = 0.0f;
       #pragma ivdep
       for (int z = 0; z < lllY/BLOCK_SIZE; z++) {
+        int zIndex = z * BLOCK_SIZE;
         DTYPE A_local[BLOCK_SIZE];
         DTYPE B_local[BLOCK_SIZE];
         DTYPE local_temp = 0.0f;
@@ -89,12 +92,12 @@ __kernel void mm (__global const DTYPE* restrict A,
 
         #pragma unroll
         for (int k = 0; k < BLOCK_SIZE; k++) {
-          A_local[k] = A[i*lllY+z*BLOCK_SIZE+k];
+          A_local[k] = A[iIndex + zIndex + k];
         }
 
         #pragma unroll
         for (int k = 0; k < BLOCK_SIZE; k++) {
-          B_local[k] = B[j*lllY+z*BLOCK_SIZE+k];
+          B_local[k] = B[jIndex + zIndex + k];
         }
 
         #pragma unroll

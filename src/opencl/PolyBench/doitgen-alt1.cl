@@ -29,62 +29,32 @@ __kernel void doitgen1 (__global const DTYPE* restrict A,
 #ifdef FPGA_SINGLE
 
 	for (int i = 0; i < lllX; i++) {
-    for (int j = 0; j < lllY; j++) {
-
-      DTYPE temp_copies[4];
-			DTYPE temp = 0.0;
+		for (int j = 0; j < lllY/BLOCK_SIZE; j++) {
+      DTYPE A_temp[BLOCK_SIZE];
 
       #pragma unroll
-      for (int k = 0; k < 4; k++)
-				temp_copies[k] = 0.1;
+      for (int k = 0; k < BLOCK_SIZE; k++) {
+        A_temp[k] = A[i*lllY + j*BLOCK_SIZE + k];
+      }
 
-      for (int k = 0; k < lllY/BLOCK_SIZE; k++) {
-        DTYPE A_temp[BLOCK_SIZE];
-				DTYPE C4_temp[BLOCK_SIZE];
-        DTYPE temp_temp = 0.1;
+      for (int k = 0; k < lllY; k++) {
+        DTYPE C4_temp[BLOCK_SIZE];
 
         #pragma unroll
         for (int z = 0; z < BLOCK_SIZE; z++) {
-          A_temp[z] = A[i*lllY + k*BLOCK_SIZE + z];
+        	C4_temp[z] = C4[k*lllY + j*BLOCK_SIZE + z];
         }
 
         #pragma unroll
-       	for (int z = 0; z < BLOCK_SIZE; z++) {
-          C4_temp[z] = C4[j*lllY + k*BLOCK_SIZE + z];
+        for (int z = 0; z < BLOCK_SIZE; z++) {
+          sum[i*lllY + k] += C4_temp[z] * A_temp[k];
         }
-
-        #pragma unroll
-				for (int z = 0; z < BLOCK_SIZE; z++) {
-
-#if INTENSITY1
-          megaBfunction (temp_temp, A_temp[z], C4_temp[z]);
-#elif INTENSITY2
-          megaBfunction2 (temp_temp, A_temp[z], C4_temp[z]);
-#elif INTENSITY3
-          megaBfunction3 (temp_temp, A_temp[z], C4_temp[z]);
-#elif INTENSITY4
-          megaBfunction4 (temp_temp, A_temp[z], C4_temp[z]);
-#elif INTENSITY5
-          megaBfunction5 (temp_temp, A_temp[z], C4_temp[z]);
-#endif
-
-        }
-
-				DTYPE cur = temp_copies[3] + temp_temp;
-
-        #pragma unroll
-        for (int z = 3; z > 0; z--)
-          temp_copies[z] = temp_copies[z-1];
-
-				temp_copies[0] = cur;
       }
 
-      #pragma unroll
-			for (int i = 0; i < 4; i++)
-				temp += temp_copies[i];
-
-      write_channel_intel (c0, temp);
     }
+
+    for (int j = 0; j < lllY; j++)
+			write_channel_intel(c0, sum[i*lllY+j]);
   }
 
 #endif
