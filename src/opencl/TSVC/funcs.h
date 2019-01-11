@@ -130,11 +130,11 @@ inline DTYPE megafunc(DTYPE input1, DTYPE input2) {
 #define CCfunction7(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 #define CCfunction8(A,B,C,D) CInit(A, B, C, D); tempA = cos(tempB) * tempC + tempD; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; CFinal(A)
 
-#define megaCfunction(A,B,C,D) CInit(A,B,C,D); OP8(tempA,tempB,tempC+tempD); CFinal (A)
-#define megaCfunction2(A,B,C,D) CInit(A,B,C,D); OP8(tempA,tempB,tempC+tempD); OP8(tempA, tempB, tempC); CFinal (A)
-#define megaCfunction3(A,B,C,D) CInit(A,B,C,D); OP8(tempA,tempB,tempC+tempD); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); CFinal (A)
-#define megaCfunction4(A,B,C,D) CInit(A,B,C,D); OP8(tempA,tempB,tempC+tempD); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); CFinal (A)
-#define megaCfunction5(A,B,C,D) CInit(A,B,C,D); OP8(tempA,tempB,tempC+tempD); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); OP8(tempA, tempB, tempC); CFinal (A)
+#define megaCfunction(A,B,C,D) CInit(A,B,C,D); OPX(tempA,tempB,(tempC+tempD)); CFinal (A)
+#define megaCfunction2(A,B,C,D) CInit(A,B,C,D); OPX(tempA,tempB,(tempC+tempD)); OPX(tempA, tempB, tempC); CFinal (A)
+#define megaCfunction3(A,B,C,D) CInit(A,B,C,D); OPX(tempA,tempB,(tempC+tempD)); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); CFinal (A)
+#define megaCfunction4(A,B,C,D) CInit(A,B,C,D); OPX(tempA,tempB,(tempC+tempD)); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); CFinal (A)
+#define megaCfunction5(A,B,C,D) CInit(A,B,C,D); OPX(tempA,tempB,(tempC+tempD)); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); OPX(tempA, tempB, tempC); CFinal (A)
 
 #define Dfunction(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; DFinal(A)
 #define Dfunction2(A,B,C,D,E) DInit(A, B, C, D, E); tempA = cos(tempB) * tempC * tempD * tempE; tempA = cos(tempA) * tempE; DFinal(A)
