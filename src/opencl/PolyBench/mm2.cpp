@@ -80,8 +80,10 @@ void RunBenchmark (cl_device_id dev,
 	int block_size = op.getOptionInt("block_size");
   string numfmas = op.getOptionString("num_fmas");
 
-  int local = 256;
-  int global = 0;
+  int localX = 32;
+  int localY = 32;
+  int globalX = 0;
+  int globalY = 0;
 
   cl_int err;
   cl_program program;
@@ -209,8 +211,7 @@ void RunBenchmark (cl_device_id dev,
     } else if (dataType == "DOUBLE") {
       max = dataSize / sizeof (double);
     }
-
-    for (int lllY = 256; lllY < max/128; lllY *= 2) {
+    for (int lllY = 128; lllY < max/128; lllY *= 2) {
       if (counter == 1) break;
      	counter++;
       int lllX = max / lllY;
@@ -218,17 +219,8 @@ void RunBenchmark (cl_device_id dev,
       cout << "[INFO] data size is " << dataSize << endl;
       cout << "[INFO] Transformed lllX and lllY are " << lllX << " " << lllY << endl;
 
-			int c4Size = 0;
-      if (dataType == "INT") {
-        c4Size = lllY * lllY * sizeof (int);
-      } else if (dataType == "SINGLE") {
-        c4Size = lllY * lllY * sizeof (float);
-      } else if (dataType == "DOUBLE") {
-        c4Size = lllY * lllY * sizeof (double);
-      }
-
-      void *A, *AA, *C4, *sum;
-      cl_mem clA, clAA, clC4, clSum;
+      void *A, *B, *C, *D, *tempGPU;
+      cl_mem clA, clB, clC, clD, clTempGPU;
 
       cl_kernel kernel1 = clCreateKernel (program, kern1_name.c_str(), &err);
       cl_kernel kernel2 = clCreateKernel (program, kern2_name.c_str(), &err);
@@ -237,9 +229,24 @@ void RunBenchmark (cl_device_id dev,
 			cout << "[INFO] both kernels are compiled successfully!" << endl;
 
       A = (void *) malloc (dataSize);
-      AA = (void *) malloc (dataSize);
-      sum = (void *) malloc (dataSize);
-			C4 = (void *) malloc (c4Size);
+      B = (void *) malloc (dataSize);
+      int CSize = 0;
+      if (dataType == "INT") {
+        C = (void *) malloc (lllX * lllX * sizeof(int));
+        D = (void *) malloc (lllX * lllX * sizeof(int));
+        tempGPU = (void *) malloc (lllX * lllX * sizeof(int));
+        CSize = lllX * lllX * sizeof(int);
+      } else if (dataType == "SINGLE") {
+        C = (void *) malloc (lllX * lllX * sizeof(float));
+        D = (void *) malloc (lllX * lllX * sizeof(float));
+        tempGPU = (void *) malloc (lllX * lllX * sizeof(float));
+        CSize = lllX * lllX * sizeof(float);
+      } else if (dataType == "DOUBLE") {
+        C = (void *) malloc (lllX * lllX * sizeof(double));
+        D = (void *) malloc (lllX * lllX * sizeof(double));
+        tempGPU = (void *) malloc (lllX * lllX * sizeof(double));
+        CSize = lllX * lllX * sizeof(double);
+      }
 
       // Initialization of A and B arrays
       int sizeX = 0;
@@ -256,33 +263,36 @@ void RunBenchmark (cl_device_id dev,
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
             ((int *)A)[i*sizeY+j] = 1;
+            ((int *)B)[i*sizeY+j] = 1;
           }
         }
-        for (int i = 0; i < sizeY; i++) {
-          for (int j = 0; j < sizeY; j++) {
-            ((int *)C4)[i*sizeY+j] = 1;
+        for (int i = 0; i < sizeX; i++) {
+          for (int j = 0; j < sizeX; j++) {
+            ((int *)C)[i*sizeX+j] = 1;
           }
         }
       } else if (dataType == "SINGLE") {
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
             ((float *)A)[i*sizeY+j] = 1;
+            ((float *)B)[i*sizeY+j] = 1;
           }
         }
-        for (int i = 0; i < sizeY; i++) {
-          for (int j = 0; j < sizeY; j++) {
-            ((float *)C4)[i*sizeY+j] = 1;
+        for (int i = 0; i < sizeX; i++) {
+          for (int j = 0; j < sizeX; j++) {
+            ((float *)C)[i*sizeX+j] = 1;
           }
         }
       } else if (dataType == "DOUBLE") {
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
             ((double *)A)[i*sizeY+j] = 1;
+            ((double *)B)[i*sizeY+j] = 1;
           }
         }
-        for (int i = 0; i < sizeY; i++) {
-          for (int j = 0; j < sizeY; j++) {
-            ((double *)C4)[i*sizeY+j] = 1;
+        for (int i = 0; i < sizeX; i++) {
+          for (int j = 0; j < sizeX; j++) {
+            ((double *)C)[i*sizeX+j] = 1;
           }
         }
       }
@@ -293,88 +303,154 @@ void RunBenchmark (cl_device_id dev,
       clA = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
-      clAA = clCreateBuffer (ctx, CL_MEM_READ_WRITE, dataSize, NULL, &err);
+      clB = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
-			clC4 = clCreateBuffer (ctx, CL_MEM_READ_ONLY, c4Size, NULL, &err);
+			clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, CSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
-      clSum = clCreateBuffer (ctx, CL_MEM_READ_WRITE, dataSize, NULL, &err);
+      clD = clCreateBuffer (ctx, CL_MEM_READ_WRITE, CSize, NULL, &err);
+      CL_CHECK_ERROR (err);
+
+      clTempGPU = clCreateBuffer (ctx, CL_MEM_READ_WRITE, CSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
       err = clEnqueueWriteBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
-      err = clEnqueueWriteBuffer (queue, clC4, CL_TRUE, 0, c4Size, C4, 0, NULL, NULL);
+      err = clEnqueueWriteBuffer (queue, clB, CL_TRUE, 0, dataSize, B, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
-      err = clEnqueueWriteBuffer (queue, clSum, CL_TRUE, 0, dataSize, sum, 0, NULL, NULL);
+      err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, CSize, C, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
-			err = clEnqueueWriteBuffer (second_queue, clAA, CL_TRUE, 0, dataSize, AA, 0, NULL, NULL);
+      err = clEnqueueWriteBuffer (queue, clD, CL_TRUE, 0, CSize, D, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
       if (device_type == "GPU") {
-      	err = clEnqueueWriteBuffer (second_queue, clSum, CL_TRUE, 0, dataSize, sum, 0, NULL, NULL);
+      	err = clEnqueueWriteBuffer (queue, clTempGPU, CL_TRUE, 0, CSize, tempGPU, 0, NULL, NULL);
 				CL_CHECK_ERROR (err);
       }
 
-      cout << "[INFO] Buffer for the first and second queues are created and enqueued successfully!" << endl;
+      cout << "[INFO] Buffer for the first queue are created and enqueued successfully!" << endl;
+
+      err = clEnqueueWriteBuffer (second_queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
+      CL_CHECK_ERROR (err);
+
+      err = clEnqueueWriteBuffer (second_queue, clB, CL_TRUE, 0, dataSize, B, 0, NULL, NULL);
+      CL_CHECK_ERROR (err);
+
+      err = clEnqueueWriteBuffer (second_queue, clC, CL_TRUE, 0, CSize, C, 0, NULL, NULL);
+      CL_CHECK_ERROR (err);
+
+      err = clEnqueueWriteBuffer (second_queue, clD, CL_TRUE, 0, CSize, D, 0, NULL, NULL);
+      CL_CHECK_ERROR (err);
+
+      if (device_type == "GPU") {
+      	err = clEnqueueWriteBuffer (second_queue, clTempGPU, CL_TRUE, 0, CSize, tempGPU, 0, NULL, NULL);
+				CL_CHECK_ERROR (err);
+      }
+
+			cout << "[INFO] Buffer for the second queue are enqueued successfully!" << endl;
 
       err = clSetKernelArg (kernel1, 0, sizeof (cl_mem), (void *) &clA);
       CL_CHECK_ERROR (err);
       cout << "[INFO] clA is set successfully for kernel1" << endl;
 
-      err = clSetKernelArg (kernel1, 1, sizeof (cl_mem), (void *) &clC4);
+      err = clSetKernelArg (kernel1, 1, sizeof (cl_mem), (void *) &clB);
       CL_CHECK_ERROR (err);
-			cout << "[INFO] clC4 is set successfully for kernel1" << endl;
+			cout << "[INFO] clB is set successfully for kernel1" << endl;
 
-      err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *) &clSum);
+      err = clSetKernelArg (kernel1, 2, sizeof (cl_mem), (void *) &clC);
       CL_CHECK_ERROR (err);
-      cout << "[INFO] clSum is set successfully for kernel1" << endl;
+      cout << "[INFO] clC is set successfully for kernel1" << endl;
 
-      err = clSetKernelArg (kernel1, 3, sizeof (int), (void *) &(lllX));
+      err = clSetKernelArg (kernel1, 3, sizeof (cl_mem), (void *) &clD);
       CL_CHECK_ERROR (err);
-      cout << "[INFO] lllX is set successfully for kernel1" << endl;
+      cout << "[INFO] clD is set successfully for kernel1" << endl;
 
-			err = clSetKernelArg (kernel1, 4, sizeof (int), (void *) &(lllY));
-      CL_CHECK_ERROR (err);
-      cout << "[INFO] lllX is set successfully for kernel1" << endl;
-
-
-
-			if (device_type == "GPU") {
-        err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clAA);
+      if (dataType == "INT") {
+        int Alpha = ALPHA;
+        int Beta = BETA;
+        err = clSetKernelArg (kernel1, 4, sizeof (int), &(Alpha));
+        err = clSetKernelArg (kernel1, 5, sizeof (int), &(Beta));
+        cout << "[INFO] Alpha and Beta of type INT are set successfully for kernel1" << endl;
+      } else if (dataType == "SINGLE") {
+        float Alpha = ALPHA;
+				float Beta = BETA;
+        err = clSetKernelArg (kernel1, 4, sizeof (float), &(Alpha));
+        err = clSetKernelArg (kernel1, 5, sizeof (float), &(Beta));
+        cout << "[INFO] Alpha and Beta of type SINGLE are set successfully for kernel1" << endl;
         CL_CHECK_ERROR (err);
-				cout << "[INFO] clAA is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clSum);
+      } else if (dataType == "DOUBLE") {
+        double Alpha = ALPHA;
+        double Beta = BETA;
+        err = clSetKernelArg (kernel1, 4, sizeof (double), &(Alpha));
+        err = clSetKernelArg (kernel1, 5, sizeof (double), &(Beta));
+        cout << "[INFO] Alpha and Beta of type DOUBLE are set successfully for kernel1" << endl;
         CL_CHECK_ERROR (err);
-        cout << "[INFO] clSum is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 2, sizeof (int), (void *) &lllX);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllX is set successfully for kernel2" << endl;
-
-				err = clSetKernelArg (kernel2, 3, sizeof (int), (void *) &lllY);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllY is set successfully for kernel2" << endl;
-
-      } else {
-        err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clAA);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] clAA is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 1, sizeof (int), (void *) &lllX);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllX is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 2, sizeof (int), (void *) &lllY);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllY is set successfully for kernel2" << endl;
       }
 
-      cout << "[INFO] Kernel args are set successfully!" << endl;
+			err = clSetKernelArg (kernel1, 6, sizeof (int), &lllX);
+      CL_CHECK_ERROR (err);
+			cout << "[INFO] lllX is set successfully for kernel1" << endl;
+
+      err = clSetKernelArg (kernel1, 7, sizeof (int), &lllY);
+      CL_CHECK_ERROR (err);
+      cout << "[INFO] lllY is set successfully for kernel2" << endl;
+
+			cout << "[INFO] All arguments for the first argument are set successfully!" << endl;
+
+			if (device_type == "GPU") {
+        err = clSetKernelArg (kernel1, 8, sizeof (cl_mem), (void *) &clTempGPU);
+        CL_CHECK_ERROR (err);
+      }
+
+
+      err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clA);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clB);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 2, sizeof (cl_mem), (void *) &clC);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 3, sizeof (cl_mem), (void *) &clD);
+      CL_CHECK_ERROR (err);
+
+      if (dataType == "INT") {
+				int Alpha = ALPHA;
+        int Beta = BETA;
+        err = clSetKernelArg (kernel2, 4, sizeof (int), &(Alpha));
+        err = clSetKernelArg (kernel2, 5, sizeof (int), &(Beta));;
+        CL_CHECK_ERROR (err);
+      } else if (dataType == "SINGLE") {
+        float Alpha = ALPHA;
+        float Beta = BETA;
+        err = clSetKernelArg (kernel2, 4, sizeof (float), &(Alpha));
+        err = clSetKernelArg (kernel2, 5, sizeof (float), &(Beta));;
+        CL_CHECK_ERROR (err);
+      } else if (dataType == "DOUBLE") {
+        double Alpha = ALPHA;
+        double Beta = BETA;
+        err = clSetKernelArg (kernel2, 4, sizeof (double), &(Alpha));
+        err = clSetKernelArg (kernel2, 5, sizeof (double), &(Beta));;
+        CL_CHECK_ERROR (err);
+      }
+
+			err = clSetKernelArg (kernel2, 6, sizeof (int), &lllX);
+      CL_CHECK_ERROR (err);
+
+      err = clSetKernelArg (kernel2, 7, sizeof (int), &lllY);
+      CL_CHECK_ERROR (err);
+
+			if (device_type == "GPU") {
+        err = clSetKernelArg (kernel2, 8, sizeof (cl_mem), (void *) &clTempGPU);
+        CL_CHECK_ERROR (err);
+      }
+
+			cout << "[INFO] Kernel args are set successfully!" << endl;
 
       clFinish (queue);
       clFinish (second_queue);
@@ -382,16 +458,20 @@ void RunBenchmark (cl_device_id dev,
       cout << "Finishing jobs on both queues!" << endl;
       CL_BAIL_ON_ERROR (err);
 
-      const size_t global_work_size[] = {(size_t)(lllX*lllY)};
+      const size_t global_work_size1[] = {(size_t)lllX, (size_t)lllY};
+      const size_t global_work_size2[] = {(size_t)lllX, (size_t)lllX};
 
       if (!(device_type == "FPGA" && fpga_op_type == "SINGLE")) {
-        cout << "[INFO] global work size is " << global_work_size[0] << endl;
+        cout << "[INFO] global work size 1 is " << global_work_size1[0] << "," << global_work_size1[1] << endl;
+        cout << "[INFO] global work size 2 is " << global_work_size2[0] << "," << global_work_size2[1] << endl;
       }
 
-      const size_t local_work_size[] = {local};
+      const size_t local_work_size1[] = {(size_t)localX, (size_t)localY};
+			const size_t local_work_size2[] = {(size_t)localX, (size_t)localY};
 
       if (!(device_type == "FPGA" && fpga_op_type == "SINGLE")) {
-        cout << "[INFO] local work size is " << local_work_size[0] << "," << local_work_size[1] << endl;
+        cout << "[INFO] local work size 1 is " << local_work_size1[0] << "," << local_work_size1[1] << endl;
+				cout << "[INFO] local work size 2 is " << local_work_size2[0] << "," << local_work_size2[1] << endl;
 			}
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
@@ -401,10 +481,10 @@ void RunBenchmark (cl_device_id dev,
         cout << "[INFO] Both jobs are enqueued successfully!" << endl;
       } else {
         err = clEnqueueNDRangeKernel (queue, kernel1, 2,
-                                      NULL, global_work_size, local_work_size,
+                                      NULL, global_work_size1, local_work_size1,
                                       0, NULL, &evKernel1.CLEvent());
         err = clEnqueueNDRangeKernel (second_queue, kernel2, 2,
-                                      NULL, global_work_size, local_work_size,
+                                      NULL, global_work_size2, local_work_size2,
                                       1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
       }
       clFinish (queue);
@@ -418,33 +498,36 @@ void RunBenchmark (cl_device_id dev,
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
             	((int *)A)[i*sizeY+j] = 1;
+            	((int *)B)[i*sizeY+j] = 1;
           	}
         	}
-        	for (int i = 0; i < sizeY; i++) {
-          	for (int j = 0; j < sizeY; j++) {
-            	((int *)C4)[i*sizeY+j] = 1;
+        	for (int i = 0; i < sizeX; i++) {
+          	for (int j = 0; j < sizeX; j++) {
+            	((int *)C)[i*sizeX+j] = 1;
           	}
         	}
       	} else if (dataType == "SINGLE") {
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
             	((float *)A)[i*sizeY+j] = 1;
+            	((float *)B)[i*sizeY+j] = 1;
           	}
         	}
-        	for (int i = 0; i < sizeY; i++) {
-          	for (int j = 0; j < sizeY; j++) {
-            	((float *)C4)[i*sizeY+j] = 1;
+        	for (int i = 0; i < sizeX; i++) {
+          	for (int j = 0; j < sizeX; j++) {
+            	((float *)C)[i*sizeX+j] = 1;
           	}
         	}
       	} else if (dataType == "DOUBLE") {
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
             	((double *)A)[i*sizeY+j] = 1;
+            	((double *)B)[i*sizeY+j] = 1;
           	}
        		}
-        	for (int i = 0; i < sizeY; i++) {
-          	for (int j = 0; j < sizeY; j++) {
-            	((double *)C4)[i*sizeY+j] = 1;
+        	for (int i = 0; i < sizeX; i++) {
+          	for (int j = 0; j < sizeX; j++) {
+            	((double *)C)[i*sizeX+j] = 1;
           	}
         	}
       	}
@@ -454,10 +537,10 @@ void RunBenchmark (cl_device_id dev,
           err = clEnqueueTask (queue, kernel1, 0, NULL, &evKernel1.CLEvent());
         } else {
           err = clEnqueueNDRangeKernel (queue, kernel1, 2,
-                                        NULL, global_work_size, local_work_size,
+                                        NULL, global_work_size1, local_work_size1,
                                         0, NULL, &evKernel1.CLEvent());
           err = clEnqueueNDRangeKernel (second_queue, kernel2, 2,
-                                        NULL, global_work_size, local_work_size,
+                                        NULL, global_work_size2, local_work_size2,
                                         1, &evKernel1.CLEvent(), &evKernel2.CLEvent());
         }
         clFinish (queue);
@@ -599,7 +682,7 @@ void RunBenchmark (cl_device_id dev,
 
           if (wrong == 1) cout << "[ERROR] BB does not match!" << endl;
           else if (wrong == 2) cout << "[ERROR] AA does not match!" << endl;
-          else cout << "[INFO] Data mat3hes perfectly!" << endl;
+          else cout << "[INFO] Data matches perfectly!" << endl;
         }
 
         free (AACPU);
@@ -611,15 +694,17 @@ void RunBenchmark (cl_device_id dev,
 
 
       clReleaseMemObject (clA);
-      clReleaseMemObject (clAA);
-      clReleaseMemObject (clC4);
-      clReleaseMemObject (clSum);
+      clReleaseMemObject (clB);
+      clReleaseMemObject (clC);
+      clReleaseMemObject (clD);
+      clReleaseMemObject (clTempGPU);
       clReleaseKernel (kernel1);
       clReleaseKernel (kernel2);
       free (A);
-      free (AA);
-      free (C4);
-      free (sum);
+      free (B);
+      free (C);
+      free (D);
+      free (tempGPU);
     }
   }
 

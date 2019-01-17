@@ -15,11 +15,19 @@ AM_CPPFLAGS = $(OCL_CPPFLAGS)
 
 serialopencldir = $(bindir)/Serial/OpenCL
 
-serialopencl_PROGRAMS = 2mm \
-												mm1
+serialopencl_PROGRAMS = mm2 \
+												mm1 \
+												doitgen \
+												FloydWarshall
 
-2mm_SOURCES					= 2mm.cpp main.cpp
-2mm_LDADD						= $(OCL_LIBS) $(LIBS)
+mm2_SOURCES					= mm2.cpp main.cpp
+mm2_LDADD						= $(OCL_LIBS) $(LIBS)
 
 mm1_SOURCES					= mm1.cpp main.cpp
 mm1_LDADD						= $(OCL_LIBS) $(LIBS)
+
+doitgen_SOURCES			= doitgen.cpp main.cpp
+doitgen_LDADD				= $(OCL_LIBS) $(LIBS)
+
+FloydWarshall_SOURCES	= FloydWarshall.cpp main.cpp
+FloydWarshall_LDADD		= $(OCL_LIBS) $(LIBS)

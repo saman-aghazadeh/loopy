@@ -93,6 +93,9 @@ __kernel void doitgen1 (__global const DTYPE* restrict A,
 
 
 __kernel void doitgen2 (__global DTYPE* restrict AA,
+#ifdef GPU
+												__global DTYPE* restrict sum,
+#endif
                         const int lllX,
                         const int lllY) {
 
