@@ -18,7 +18,8 @@ serialopencldir = $(bindir)/Serial/OpenCL
 serialopencl_PROGRAMS = mm2 \
 												mm1 \
 												doitgen \
-												FloydWarshall
+												FloydWarshall \
+												RegDetect
 
 mm2_SOURCES					= mm2.cpp main.cpp
 mm2_LDADD						= $(OCL_LIBS) $(LIBS)
@@ -31,3 +32,7 @@ doitgen_LDADD				= $(OCL_LIBS) $(LIBS)
 
 FloydWarshall_SOURCES	= FloydWarshall.cpp main.cpp
 FloydWarshall_LDADD		= $(OCL_LIBS) $(LIBS)
+
+RegDetect_SOURCES			= RegDetect.cpp main.cpp
+RegDetect_LDADD				= $(OCL_LIBS) $(LIBS)
+
