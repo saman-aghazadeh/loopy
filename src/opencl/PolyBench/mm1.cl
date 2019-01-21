@@ -118,7 +118,7 @@ __kernel void mm (__global const DTYPE* restrict A,
         temp += local_temp;
       }
 
-      C[i*BLOCK_SIZE+j] = temp;
+      C[i*lllX+j] = temp;
     }
 
   }
