@@ -27,7 +27,7 @@ __kernel void mm (__global const DTYPE* restrict A,
   const int row = get_local_id(0);
   const int col = get_local_id(1);
 	const int globalRow = 32 * get_group_id(0) + row;
-  const int gloBalCol = 32 * get_group_id(1) + col;
+  const int globalCol = 32 * get_group_id(1) + col;
 
   // Local memory to fit a tile of 32*32 elements of A and B
   __local float Asub[32][32];
@@ -43,8 +43,8 @@ __kernel void mm (__global const DTYPE* restrict A,
     // Load one tile of A and B into local memory
     const int tiledRow = 32*t + row;
     const int tiledCol = 32*t + col;
-    Asub[col][row] = A[tiledCol*M + globalRow];
-    Bsub[col][row] = B[globalCol*K + tiledRow];
+    Asub[row][col] = A[globalRow*lllY + tiledCol];
+    Bsub[row][col] = B[globalRow*lllY + tiledCol];
 
     // Synchronize to make sure the tile loaded
     barrier (CLK_LOCAL_MEM_FENCE);
@@ -52,15 +52,15 @@ __kernel void mm (__global const DTYPE* restrict A,
     // Perform the computation for a single tile
     for (int k = 0; k < 32; k++) {
 #if INTENSITY1
-			megaBfunction1(acc, Asub[k][row], Bsub[col][k]);
+			megaBfunction(acc, Asub[row][k], Bsub[k][col]);
 #elif INTENSITY2
-			megaBfunction2(acc, Asub[k][row], Bsub[col][k]);
+			megaBfunction2(acc, Asub[row][k], Bsub[k][col]);
 #elif INTENSITY3
-			megaBfunction3(acc, Asub[k][row], Bsub[col][k]);
+			megaBfunction3(acc, Asub[row][k], Bsub[k][col]);
 #elif INTENSITY4
-			megaBfunction4(acc, Asub[k][row], Bsub[col][k]);
+			megaBfunction4(acc, Asub[row][k], Bsub[k][col]);
 #elif INTENSITY5
-			megaBfunction5(acc, Asub[k][row], Bsub[col][k]);
+			megaBfunction5(acc, Asub[row][k], Bsub[k][col]);
 #endif
 
     }
@@ -69,7 +69,7 @@ __kernel void mm (__global const DTYPE* restrict A,
 
   }
 
-  C[globalCol*M + globalRow] = acc;
+  C[globalRow*lllX + globalCol] = acc;
 
 #endif
 

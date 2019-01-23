@@ -25,7 +25,7 @@ using namespace std;
 
 #define ALPHA 1.5
 #define BETA  1.5
-#define GENERATE_PTX false
+#define GENERATE_PTX true
 
 // Forward declaration
 template <class T> inline std::string toString (const T& t) {
@@ -83,7 +83,6 @@ void RunBenchmark (cl_device_id dev,
   cl_int err;
   cl_program program;
 
-  Event evKernel ("EventKernel");
   Event evRead ("EventRead");
 
   cout << "[INFO] Device Type is " << device_type << endl;
@@ -93,6 +92,8 @@ void RunBenchmark (cl_device_id dev,
   cout << "[INFO] Maximum Data Size is " << maxDataSize << endl;
   cout << "[INFO] number of passes is " << passes << endl;
   cout << "[INFO] number of fmas are " << numfmas << endl;
+  cout << "[INFO] kernel name is " << kernel_name << endl;
+  cout << "[INFO] intensity is " << intensity << endl;
   // First building the program
 
 	setenv("CUDA_CACHE_DISABLE", "1", 1);
@@ -192,11 +193,8 @@ void RunBenchmark (cl_device_id dev,
 
   CL_CHECK_ERROR (err);
 
-	int counter = 0;
-
   for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
 
-    if (counter == 1) break;
     int max = 0;
     if (dataType == "INT") {
       max = dataSize / sizeof (int);
@@ -205,9 +203,7 @@ void RunBenchmark (cl_device_id dev,
     } else if (dataType == "DOUBLE") {
       max = dataSize / sizeof (double);
     }
-    for (int lllY = 128; lllY < max/128; lllY *= 2) {
-      if (counter == 1) break;
-     	counter++;
+    for (int lllY = 128; lllY <= max/128; lllY *= 2) {
       int lllX = max / lllY;
       cout << "[INFO] lllX is " << lllX << " and lllY is " << lllY << endl;
       cout << "[INFO] data size is " << dataSize << endl;
@@ -223,17 +219,19 @@ void RunBenchmark (cl_device_id dev,
 
       A = (void *) malloc (dataSize);
       B = (void *) malloc (dataSize);
-      int CSize = 0;
+      long long unsigned CSize = 0;
       if (dataType == "INT") {
         C = (void *) malloc (lllX * lllX * sizeof(int));
         CSize = lllX * lllX * sizeof(int);
       } else if (dataType == "SINGLE") {
-        C = (void *) malloc (lllX * lllX * sizeof(float));
-        CSize = lllX * lllX * sizeof(float);
+        C = (void *) malloc ((long long unsigned)lllX * (long long unsigned)lllX * (long long unsigned)sizeof(float));
+        CSize = (unsigned long long)lllX * (unsigned long long)lllX * (unsigned long long)sizeof(float);
       } else if (dataType == "DOUBLE") {
         C = (void *) malloc (lllX * lllX * sizeof(double));
         CSize = lllX * lllX * sizeof(double);
       }
+
+			cout << "[INFO] CSize is " << CSize << endl;
 
       // Initialization of A and B arrays
       int sizeX = 0;
@@ -278,7 +276,7 @@ void RunBenchmark (cl_device_id dev,
       clB = clCreateBuffer (ctx, CL_MEM_READ_ONLY, dataSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
-			clC = clCreateBuffer (ctx, CL_MEM_READ_ONLY, CSize, NULL, &err);
+			clC = clCreateBuffer (ctx, CL_MEM_READ_WRITE, CSize, NULL, &err);
       CL_CHECK_ERROR (err);
 
       err = clEnqueueWriteBuffer (queue, clA, CL_TRUE, 0, dataSize, A, 0, NULL, NULL);
@@ -288,6 +286,9 @@ void RunBenchmark (cl_device_id dev,
       CL_CHECK_ERROR (err);
 
       err = clEnqueueWriteBuffer (queue, clC, CL_TRUE, 0, CSize, C, 0, NULL, NULL);
+      if (err != CL_SUCCESS) {
+        continue;
+      }
       CL_CHECK_ERROR (err);
 
       cout << "[INFO] Buffer for the queue are created and enqueued successfully!" << endl;
@@ -341,7 +342,7 @@ void RunBenchmark (cl_device_id dev,
       cout << "Finishing jobs on the queue!" << endl;
       CL_BAIL_ON_ERROR (err);
 
-      const size_t global_work_size[] = {(size_t)lllX, (size_t)lllY};
+      const size_t global_work_size[] = {(size_t)lllX, (size_t)lllX};
 
       if (!(device_type == "FPGA" && fpga_op_type == "SINGLE")) {
         cout << "[INFO] global work size is " << global_work_size[0] << "," << global_work_size[1] << endl;
@@ -354,10 +355,12 @@ void RunBenchmark (cl_device_id dev,
 			}
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
+        Event evKernel ("EventKernel");
         err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
 
         cout << "[INFO] Jobs is enqueued successfully!" << endl;
       } else {
+        Event evKernel ("EventKernel");
         err = clEnqueueNDRangeKernel (queue, kernel, 2,
                                       NULL, global_work_size, local_work_size,
                                       0, NULL, &evKernel.CLEvent());
@@ -391,6 +394,7 @@ void RunBenchmark (cl_device_id dev,
        		}
       	}
 
+        Event evKernel ("EventKernel");
         if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
           err = clEnqueueTask (queue, kernel, 0, NULL, &evKernel.CLEvent());
         } else {
@@ -398,12 +402,17 @@ void RunBenchmark (cl_device_id dev,
                                         NULL, global_work_size, local_work_size,
                                         0, NULL, &evKernel.CLEvent());
         }
+        err = clWaitForEvents(1, &evKernel.CLEvent());
+        cout << "[INFO] error number is " << err << endl;
+				CL_BAIL_ON_ERROR (err);
         clFinish (queue);
         CL_BAIL_ON_ERROR (err);
 
 				cl_ulong totalTime = 0;
 
+        cout << "[INFO] Before fill timing!" << endl;
         evKernel.FillTimingInfo();
+        cout << "[INFO] After fill timing!" << endl;
 
 				if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
           cl_ulong start = evKernel.SubmitTime();
