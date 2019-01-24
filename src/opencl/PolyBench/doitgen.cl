@@ -23,6 +23,26 @@ __kernel void doitgen1 (__global const DTYPE* restrict A,
 
 #ifdef GPU
 
+	int i = get_global_id(0);
+  int j = get_global_id(1);
+
+  float sum = 0.0;
+
+  for (int k = 0; k < lllY; k++) {
+#if INTENSITY1
+		megaBfunction (sum, A[j*lllY + k], C4[i*lllY + k]);
+#elif INTENSITY2
+		megaBfunction2 (sum, A[j*lllY + k], C4[i*lllY + k]);
+#elif INTENSITY3
+		megaBfunction3 (sum, A[j*lllY + k], C4[i*lllY + k]);
+#elif INTENSITY4
+		megaBfunction4 (sum, A[j*lllY + k], C4[i*lllY + k]);
+#elif INTENSITY5
+		megaBfunction5 (sum, A[j*lllY + k], C4[i*lllY + k]);
+#endif
+  }
+
+
 #endif
 
 
@@ -93,13 +113,26 @@ __kernel void doitgen1 (__global const DTYPE* restrict A,
 
 
 __kernel void doitgen2 (__global DTYPE* restrict AA,
-#ifdef GPU
 												__global DTYPE* restrict sum,
-#endif
                         const int lllX,
                         const int lllY) {
 
 #ifdef GPU
+
+  int i = get_global_id(0);
+  int j = get_global_id(1);
+
+#if INTENSITY1
+	megaBfunction (AA[j*lllY + i], sum[j*lllY + i], j);
+#elif INTENSITY2
+	megaBfunction2 (AA[j*lllY + i], sum[j*lllY + i], j);
+#elif INTENSITY3
+	megaBfunction3 (AA[j*lllY + i], sum[j*lllY + i], j);
+#elif INTENSITY4
+	megaBfunction4 (AA[j*lllY + i], sum[j*lllY + i], j);
+#elif INTENSITY5
+	megaBfunction5 (AA[j*lllY + i], sum[j*lllY + i], i);
+#endif
 
 #endif
 

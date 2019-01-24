@@ -80,8 +80,9 @@ void RunBenchmark (cl_device_id dev,
 	int block_size = op.getOptionInt("block_size");
   string numfmas = op.getOptionString("num_fmas");
 
-  int local = 256;
-  int global = 0;
+  int localX = 32;
+  int localY = 32;
+
 
   cl_int err;
   cl_program program;
@@ -196,11 +197,8 @@ void RunBenchmark (cl_device_id dev,
 
   CL_CHECK_ERROR (err);
 
-	int counter = 0;
-
   for (unsigned long long dataSize = minDataSize; dataSize <= maxDataSize; dataSize *= 2) {
 
-    if (counter == 1) break;
     int max = 0;
     if (dataType == "INT") {
       max = dataSize / sizeof (int);
@@ -210,9 +208,7 @@ void RunBenchmark (cl_device_id dev,
       max = dataSize / sizeof (double);
     }
 
-    for (int lllY = 256; lllY < max/128; lllY *= 2) {
-      if (counter == 1) break;
-     	counter++;
+    for (int lllY = 128; lllY < max/128; lllY *= 2) {
       int lllX = max / lllY;
       cout << "[INFO] lllX is " << lllX << " and lllY is " << lllY << endl;
       cout << "[INFO] data size is " << dataSize << endl;
@@ -255,34 +251,34 @@ void RunBenchmark (cl_device_id dev,
       if (dataType == "INT") {
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((int *)A)[i*sizeY+j] = 1;
+            ((int *)A)[i*sizeY+j] = 1.1;
           }
         }
         for (int i = 0; i < sizeY; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((int *)C4)[i*sizeY+j] = 1;
+            ((int *)C4)[i*sizeY+j] = 1.1;
           }
         }
       } else if (dataType == "SINGLE") {
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((float *)A)[i*sizeY+j] = 1;
+            ((float *)A)[i*sizeY+j] = 1.1;
           }
         }
         for (int i = 0; i < sizeY; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((float *)C4)[i*sizeY+j] = 1;
+            ((float *)C4)[i*sizeY+j] = 1.1;
           }
         }
       } else if (dataType == "DOUBLE") {
         for (int i = 0; i < sizeX; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((double *)A)[i*sizeY+j] = 1;
+            ((double *)A)[i*sizeY+j] = 1.1;
           }
         }
         for (int i = 0; i < sizeY; i++) {
           for (int j = 0; j < sizeY; j++) {
-            ((double *)C4)[i*sizeY+j] = 1;
+            ((double *)C4)[i*sizeY+j] = 1.1;
           }
         }
       }
@@ -314,10 +310,8 @@ void RunBenchmark (cl_device_id dev,
 			err = clEnqueueWriteBuffer (second_queue, clAA, CL_TRUE, 0, dataSize, AA, 0, NULL, NULL);
       CL_CHECK_ERROR (err);
 
-      if (device_type == "GPU") {
-      	err = clEnqueueWriteBuffer (second_queue, clSum, CL_TRUE, 0, dataSize, sum, 0, NULL, NULL);
-				CL_CHECK_ERROR (err);
-      }
+      err = clEnqueueWriteBuffer (second_queue, clSum, CL_TRUE, 0, dataSize, sum, 0, NULL, NULL);
+			CL_CHECK_ERROR (err);
 
       cout << "[INFO] Buffer for the first and second queues are created and enqueued successfully!" << endl;
 
@@ -341,38 +335,21 @@ void RunBenchmark (cl_device_id dev,
       CL_CHECK_ERROR (err);
       cout << "[INFO] lllX is set successfully for kernel1" << endl;
 
+      err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clAA);
+      CL_CHECK_ERROR (err);
+      cout << "[INFO] clAA is set successfully for kernel2" << endl;
 
+      err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clSum);
+      CL_CHECK_ERROR (err);
+      cout << "[INFO] clSum is set successfully for kernel2" << endl;
 
-			if (device_type == "GPU") {
-        err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clAA);
-        CL_CHECK_ERROR (err);
-				cout << "[INFO] clAA is set successfully for kernel2" << endl;
+      err = clSetKernelArg (kernel2, 2, sizeof (int), (void *) &lllX);
+      CL_CHECK_ERROR (err);
+      cout << "[INFO] lllX is set successfully for kernel2" << endl;
 
-        err = clSetKernelArg (kernel2, 1, sizeof (cl_mem), (void *) &clSum);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] clSum is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 2, sizeof (int), (void *) &lllX);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllX is set successfully for kernel2" << endl;
-
-				err = clSetKernelArg (kernel2, 3, sizeof (int), (void *) &lllY);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllY is set successfully for kernel2" << endl;
-
-      } else {
-        err = clSetKernelArg (kernel2, 0, sizeof (cl_mem), (void *) &clAA);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] clAA is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 1, sizeof (int), (void *) &lllX);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllX is set successfully for kernel2" << endl;
-
-        err = clSetKernelArg (kernel2, 2, sizeof (int), (void *) &lllY);
-        CL_CHECK_ERROR (err);
-        cout << "[INFO] lllY is set successfully for kernel2" << endl;
-      }
+      err = clSetKernelArg (kernel2, 3, sizeof (int), (void *) &lllY);
+      CL_CHECK_ERROR (err);
+      cout << "[INFO] lllY is set successfully for kernel2" << endl;
 
       cout << "[INFO] Kernel args are set successfully!" << endl;
 
@@ -382,16 +359,16 @@ void RunBenchmark (cl_device_id dev,
       cout << "Finishing jobs on both queues!" << endl;
       CL_BAIL_ON_ERROR (err);
 
-      const size_t global_work_size[] = {(size_t)(lllX*lllY)};
+      const size_t global_work_size[] = {lllY, lllX};
 
       if (!(device_type == "FPGA" && fpga_op_type == "SINGLE")) {
-        cout << "[INFO] global work size is " << global_work_size[0] << endl;
+        cout << "[INFO] global work size is " << global_work_size[0] << " and " << global_work_size[1] << endl;
       }
 
-      const size_t local_work_size[] = {local};
+      const size_t local_work_size[] = {localY, localX};
 
       if (!(device_type == "FPGA" && fpga_op_type == "SINGLE")) {
-        cout << "[INFO] local work size is " << local_work_size[0] << "," << local_work_size[1] << endl;
+        cout << "[INFO] local work size is " << local_work_size[0] << " and " << local_work_size[1] << endl;
 			}
 
       if (device_type == "FPGA" && fpga_op_type == "SINGLE") {
@@ -417,34 +394,34 @@ void RunBenchmark (cl_device_id dev,
       	if (dataType == "INT") {
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((int *)A)[i*sizeY+j] = 1;
+            	((int *)A)[i*sizeY+j] = 1.1;
           	}
         	}
         	for (int i = 0; i < sizeY; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((int *)C4)[i*sizeY+j] = 1;
+            	((int *)C4)[i*sizeY+j] = 1.1;
           	}
         	}
       	} else if (dataType == "SINGLE") {
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((float *)A)[i*sizeY+j] = 1;
+            	((float *)A)[i*sizeY+j] = 1.1;
           	}
         	}
         	for (int i = 0; i < sizeY; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((float *)C4)[i*sizeY+j] = 1;
+            	((float *)C4)[i*sizeY+j] = 1.1;
           	}
         	}
       	} else if (dataType == "DOUBLE") {
         	for (int i = 0; i < sizeX; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((double *)A)[i*sizeY+j] = 1;
+            	((double *)A)[i*sizeY+j] = 1.1;
           	}
        		}
         	for (int i = 0; i < sizeY; i++) {
           	for (int j = 0; j < sizeY; j++) {
-            	((double *)C4)[i*sizeY+j] = 1;
+            	((double *)C4)[i*sizeY+j] = 1.1;
           	}
         	}
       	}
@@ -497,115 +474,6 @@ void RunBenchmark (cl_device_id dev,
         clFinish (queue);
         clFinish (second_queue);
         CL_BAIL_ON_ERROR (err);
-
-				continue;
-
-				/*
-
-        // Testing the same operation on CPU and do the verification
-        void* AACPU = (void *) (malloc (dataSize));
-        void* BBCPU = (void *) (malloc (dataSize));
-
-        if (dataType == "INT") {
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((int *)AACPU)[i*sizeY+j] = 1;
-              ((int *)BBCPU)[i*sizeY+j] = 1;
-            }
-          }
-          for (int i = 1; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((int *)AACPU)[i*sizeY+j] = ((int *)AACPU)[(i-1)*sizeY+j] + ((int *)BBCPU)[i*sizeY+j];
-            }
-          }
-          int wrong = 0;
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              if (((int *)BBCPU)[i*sizeY+j] != ((int *)B)[i*sizeY+j]) {
-                wrong = 1;
-                break;
-              }
-              //cout << "[INFO] AACPU[" << i*sizeY+j << "]="
-              //     << ((int *)AACPU)[i*sizeY+j] << " AA["
-              //     << i*sizeY+j << "]=" << ((int *)AA)[i*sizeY+j] << endl;
-              if (((int *)AACPU)[i*sizeY+j] != ((int *)A)[i*sizeY+j]) {
-                wrong = 2;
-                break;
-              }
-            }
-            if (wrong) break;
-          }
-          if (wrong == 1) cout << "[ERROR] BB does not match!" << endl;
-          else if (wrong == 2) cout << "[ERROR] AA does not match!" << endl;
-          else cout << "[INFO] Data matches perfectly!" << endl;
-        } else if (dataType == "SINGLE") {
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((float *)AACPU)[i*sizeY+j] = 1;
-              ((float *)BBCPU)[i*sizeY+j] = 1;
-            }
-          }
-          for (int i = 1; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((float *)AACPU)[i*sizeY+j] = ((float *)AACPU)[(i-1)*sizeY+j] + ((float *)BBCPU)[i*sizeY+j];
-            }
-          }
-          int wrong = 0;
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              if (abs(((float *)BBCPU)[i*sizeY+j] - ((float *)B)[i*sizeY+j]) > 0.01) {
-                wrong = 1;
-                break;
-              }
-              if (abs(((float *)AACPU)[i*sizeY+j] - ((float *)A)[i*sizeY+j]) > 0.01) {
-                wrong = 2;
-                break;
-              }
-
-            }
-            if (wrong) break;
-          }
-
-          if (wrong == 1) cout << "[ERROR] BB does not match!" << endl;
-          else if (wrong == 2) cout << "[ERROR] AA does not match!" << endl;
-          else cout << "[INFO] Data matches perfectly!" << endl;
-
-        } else if (dataType == "DOUBLE") {
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((double *)AACPU)[i*sizeY+j] = 1;
-              ((double *)BBCPU)[i*sizeY+j] = 1;
-            }
-          }
-          for (int i = 1; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              ((double *)AACPU)[i*sizeY+j] = ((double *)AACPU)[(i-1)*sizeY+j] + ((double *)BBCPU)[i*sizeY+j];
-            }
-          }
-          int wrong = 0;
-          for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-              if (abs(((double *)BBCPU)[i*sizeY+j] - ((double *)B)[i*sizeY+j]) > 0.01) {
-                wrong = 1;
-                break;
-              }
-              if (abs(((double *)AACPU)[i*sizeY+j] - ((double *)A)[i*sizeY+j]) > 0.01) {
-                wrong = 2;
-                break;
-              }
-            }
-            if (wrong) break;
-          }
-
-          if (wrong == 1) cout << "[ERROR] BB does not match!" << endl;
-          else if (wrong == 2) cout << "[ERROR] AA does not match!" << endl;
-          else cout << "[INFO] Data mat3hes perfectly!" << endl;
-        }
-
-        free (AACPU);
-        free (BBCPU);
-
-        */
 
       }
 
