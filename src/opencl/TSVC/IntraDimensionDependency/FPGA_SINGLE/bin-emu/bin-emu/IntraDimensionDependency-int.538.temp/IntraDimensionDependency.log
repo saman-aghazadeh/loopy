@@ -1,0 +1,4 @@
+/home/user/sbiookag/shoc-fpga/src/opencl/TSVC/IntraDimensionDependency/FPGA_SINGLE/bin-emu/IntraDimensionDependency.cl:1:10: fatal error: 'constants.h' file not found
+#include "constants.h"
+         ^~~~~~~~~~~~~
+1 error generated.

@@ -1,0 +1,7 @@
+/home/user/sbiookag/shoc-fpga/src/opencl/TSVC/IntraDimensionDependency/FPGA_SINGLE/IntraDimensionDependency.cl:15:2: error: unknown type name 'DPTYPE'
+        DPTYPE data[VEC_SIZE];
+        ^
+/home/user/sbiookag/shoc-fpga/src/opencl/TSVC/IntraDimensionDependency/FPGA_SINGLE/IntraDimensionDependency.cl:19:2: error: unknown type name 'weight_data_inner'
+        weight_data_inner data[STAGE_SIZE];
+        ^
+2 errors generated.
