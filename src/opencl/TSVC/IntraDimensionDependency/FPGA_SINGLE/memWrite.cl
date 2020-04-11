@@ -4,6 +4,7 @@ void memWrite(__global output_data *restrict A)
 {
 
 	configuration config = read_channel_intel(memwr_configuration_channel);
+	// printf ("[FPGA][MEM_WRITE] num_vecs=%d\n", config.num_vecs);
 
 	for (int i = 0; i < config.num_vecs; i++) {
 		output_data output = read_channel_intel(output_data_channel);

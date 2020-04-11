@@ -4,6 +4,8 @@ void memReadData(__global input_data *restrict A)
 {
 
 	configuration config = read_channel_intel(memrd_data_configuration_channel);
+
+	// printf ("[FPGA][MEM_READ_DATA] num_vecs=%d\n", config.num_vecs);
 	
 	for (int i = 0; i < config.num_vecs; i++) {
 		input_data data = A[i];

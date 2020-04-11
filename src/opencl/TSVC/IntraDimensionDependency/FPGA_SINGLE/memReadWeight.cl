@@ -4,6 +4,9 @@ void memReadWeight(__global weight_data *restrict A)
 {
 
 	configuration config = read_channel_intel(memrd_weight_configuration_channel);
+
+	// printf ("FPGA][MEM_READ_WEIGHT] num_vecs=%d, num_stages=%d\n",
+	// 	config.num_vecs, config.num_stages);
 	
 	int total = config.num_vecs * config.num_stages;
 

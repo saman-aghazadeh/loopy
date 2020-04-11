@@ -52,10 +52,7 @@ void RunBenchmark (cl_device_id dev,
   string single_precision = "-DSINGLE_PRECISION ";
   string double_precision = "-DDOUBLE_PRECISION ";
 
-  string kernel_controller_name = "controller";
-  string kernel_memReadData_name = "memReadData";
-  string kernel_memReadWeight_name = "memReadWeight";
-  string kernel_memWrite_name = "memWrite";
+  string kernel_name = "IntraDimensionDependency";
 
   long long unsigned  minDataSize = op.getOptionInt("min_data_size") * 1024 * 1024;
   long long unsigned  maxDataSize = op.getOptionInt("max_data_size") * 1024 * 1024;
@@ -67,13 +64,13 @@ void RunBenchmark (cl_device_id dev,
   string dataType = op.getOptionString("data_type");
   string flags = "";
 
+  int localX = 256;
+  int globalX = 0;
+
   cl_int err;
   cl_program program;
 
-  Event evKernelController ("EventKernelController");
-  Event evKernelMemReadData ("EventKernelMemReadData");
-  Event evKernelMemReadWeight ("EventKernelMemReadWeight");
-  Event evKernelMemWrite ("EventKernelMemWrite");
+  Event evKernel ("EventKernel");
 
   cout << "[INFO] Data Type is " << dataType << endl;
   cout << "[INFO] Minimum Data Size is " << minDataSize << endl;
@@ -104,9 +101,29 @@ void RunBenchmark (cl_device_id dev,
     flags += double_precision;
   }
 
-  string binary_file = aocl_utils::getBoardBinaryFile (kernel_location.c_str(), dev);
-  program = aocl_utils::createProgramFromBinary (ctx, binary_file.c_str(), &dev, 1);
+  ifstream kernelFile (kernel_location, ios::in);
+  ifstream headerFile ("funcs.h", ios::in);
+  if (!kernelFile.is_open()) {
+    cerr << "[ERROR] Failed to open file" << kernel_location << "for reading!" << endl;
+    exit (0);
+  }
+
+  if (!headerFile.is_open()) {
+    cerr << "[ERROR] Failed to open file funcs.h for reading!" << endl;
+    exit (0);
+  }
+
+  ostringstream oss;
+  oss << kernelFile.rdbuf();
+    
+  string srcStdStr = oss.str();
+  const char* srcStr = srcStdStr.c_str();
+
+  program = clCreateProgramWithSource (ctx, 1, (const char **)&srcStr, NULL, &err);
+  CL_CHECK_ERROR (err);
+
   cout << "[INFO] Program Created Successfully!" << endl;
+
 
   err = clBuildProgram (program, 1, &dev, flags.c_str(), NULL, NULL);
   cout << "[INFO] Kernel compiled with flags " << flags << endl << endl;
@@ -121,6 +138,22 @@ void RunBenchmark (cl_device_id dev,
     cout << "[ERROR] Ret Size: " << retSize << endl;
     cout << "[ERROR] Log: " << log << endl;
     exit (0);
+  }
+
+  if (GENERATE_PTX) {
+                size_t bin_sz;
+                err = clGetProgramInfo (program, CL_PROGRAM_BINARY_SIZES,
+                            sizeof (size_t), &bin_sz, NULL);
+
+                unsigned char* bin = (unsigned char*) malloc (bin_sz);
+    err = clGetProgramInfo (program, CL_PROGRAM_BINARIES,
+                            sizeof(unsigned char *), &bin, NULL);
+
+    FILE* fp = fopen ("binary.ptx", "wb");
+    fwrite (bin, sizeof(char), bin_sz, fp);
+    fclose(fp);
+    free (bin);
+
   }
 
   CL_CHECK_ERROR (err);
@@ -155,19 +188,10 @@ void RunBenchmark (cl_device_id dev,
       void *input, *weight, *output;
       cl_mem clInput, clWeight, clOutput;
 
-      cl_kernel kernelController = clCreateKernel (program, kernel_controller_name.c_str(), &err);
+      cl_kernel kernel = clCreateKernel (program, kernel_name.c_str(), &err);
       CL_CHECK_ERROR (err);
 
-      cl_kernel kernelMemReadData = clCreateKernel (program, kernel_memReadData_name.c_str(), &err);
-      CL_CHECK_ERROR (err);
-
-      cl_kernel kernelMemReadWeight = clCreateKernel (program, kernel_memReadWeight_name.c_str(), &err);
-      CL_CHECK_ERROR (err);
-
-      cl_kernel kernelMemWrite = clCreateKernel (program, kernel_memWrite_name.c_str(), &err);
-      CL_CHECK_ERROR (err);
-
-      cout << "[INFO] All kernels created successfully!" << endl;
+      cout << "[INFO] Kernel is created successfully!" << endl;
 
       input = (void *) malloc (dataSize);
       weight = (void *) malloc (dataSize);
@@ -249,19 +273,16 @@ void RunBenchmark (cl_device_id dev,
 
       cout << "[INFO] num_vecs=" << num_vecs << ", num_stages=" << num_stages << endl;
 
-      err = clSetKernelArg (kernelController, 0, sizeof (int), (void *) &num_vecs);
+      err = clSetKernelArg (kernel, 0, sizeof (cl_mem), (void *) &clInput);
       CL_CHECK_ERROR (err);
 
-      err = clSetKernelArg (kernelController, 1, sizeof (int), (void *) &num_stages);
+      err = clSetKernelArg (kernel, 1, sizeof (cl_mem), (void *) &clWeight);
       CL_CHECK_ERROR (err);
 
-      err = clSetKernelArg (kernelMemReadData, 0, sizeof (cl_mem), (void *) &clInput);
+      err = clSetKernelArg (kernel, 2, sizeof (cl_mem), (void *) &clOutput);
       CL_CHECK_ERROR (err);
 
-      err = clSetKernelArg (kernelMemReadWeight, 0, sizeof (cl_mem), (void *) &clWeight);
-      CL_CHECK_ERROR (err);
-
-      err = clSetKernelArg (kernelMemWrite, 0, sizeof (cl_mem), (void *) &clOutput);
+      err = clSetKernelArg (kernel, 3, sizeof (int), (void *) &lllx);
       CL_CHECK_ERROR (err);
 
       cout << "[INFO] Kernel arguments set successfully!" << endl;	
@@ -269,21 +290,36 @@ void RunBenchmark (cl_device_id dev,
       clFinish (queue);
       CL_BAIL_ON_ERROR (err);
 
-      err = clEnqueueTask (queue, kernelController, 0, NULL, &evKernelController.CLEvent());
-      CL_CHECK_ERROR (err);
+      size_t global_work_size[1];
+      if (dataType == "INT") {
+        if (llly == 0 ) {
+          global_work_size[0] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (int))/2)));
+        } else {
+          global_work_size[0] = llly;
+        }
+      } else if (dataType == "SINGLE") {
+        if (llly == 0) {
+          global_work_size[0] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (float))/2)));
+        } else {
+          global_work_size[0] = llly;
+        }
+      } else if (dataType == "DOUBLE") {
+        if (llly == 0) {
+          global_work_size[0] = (size_t)(pow(2, floor(log2l(dataSize / sizeof (double))/2)));
+        } else {
+          global_work_size[0] = llly;
+        }
+      }
 
-      err = clEnqueueTask (queue, kernelMemReadData, 0, NULL, &evKernelMemReadData.CLEvent());
-      CL_CHECK_ERROR (err);
+      const size_t local_work_size[] = {(size_t) localX};
 
-      err = clEnqueueTask (queue, kernelMemReadWeight, 0, NULL, &evKernelMemReadWeight.CLEvent());
+      err = clEnqueueNDRangeKernel (queue, kernel, 1,
+				    NULL, global_work_size, local_work_size,
+				    0, NULL, &evKernel.CLEvent());
       CL_CHECK_ERROR (err);
-
-      err = clEnqueueTask (queue, kernelMemWrite, 0, NULL, &evKernelMemWrite.CLEvent());
-      CL_CHECK_ERROR (err);
-
       clFinish (queue);
 
-      cout << "[INFO] Tasks are enqueued successfully!" << endl;
+      cout << "[INFO] Task is enqueued successfully!" << endl;
       cout << "[INFO] Done with warmup" << endl;
 
       for (int iter = 0; iter < passes; iter++) {
@@ -322,32 +358,24 @@ void RunBenchmark (cl_device_id dev,
 	err = clEnqueueWriteBuffer (queue, clOutput, CL_TRUE, 0, dataSize, output, 0, NULL, NULL);
 	CL_CHECK_ERROR (err);
 
-        err = clEnqueueTask (queue, kernelController, 0, NULL, &evKernelController.CLEvent());
+        err = clEnqueueNDRangeKernel (queue, kernel, 1, 
+				NULL, global_work_size, local_work_size,
+				0, NULL, &evKernel.CLEvent());
 	CL_CHECK_ERROR (err);
-
-	err = clEnqueueTask (queue, kernelMemReadData, 0, NULL, &evKernelMemReadData.CLEvent());
-	CL_CHECK_ERROR (err);
-
-	err = clEnqueueTask (queue, kernelMemReadWeight, 0, NULL, &evKernelMemReadWeight.CLEvent());
-	CL_CHECK_ERROR (err);
-
-	err = clEnqueueTask (queue, kernelMemWrite, 0, NULL, &evKernelMemWrite.CLEvent());
-	CL_CHECK_ERROR (err);
-	
 
         clFinish(queue);
         CL_BAIL_ON_ERROR (err);
 
-        evKernelMemWrite.FillTimingInfo();
+        evKernel.FillTimingInfo();
         if (dataType == "INT")
           resultDB.AddResult ("KernelINT" /*+ toString(dataSize) + "KiB"*/,
-                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernelMemWrite.SubmitEndRuntime());
+                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernel.SubmitEndRuntime());
         else if (dataType == "SINGLE")
           resultDB.AddResult ("KernelSINGLE",
-                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernelMemWrite.SubmitEndRuntime());
+                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernel.SubmitEndRuntime());
         else if (dataType == "DOUBLE")
           resultDB.AddResult ("KernelDOUBLE",
-                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernelMemWrite.SubmitEndRuntime());
+                              toString(dataSize)+"-"+toString(lllx)+"-"+toString(llly), "Bytes", evKernel.SubmitEndRuntime());
 
         err = clEnqueueReadBuffer (queue, clOutput, CL_TRUE, 0, dataSize, output, 0, 0, NULL);
 
@@ -359,10 +387,7 @@ void RunBenchmark (cl_device_id dev,
       clReleaseMemObject (clInput);
       clReleaseMemObject (clWeight);
       clReleaseMemObject (clOutput);
-      clReleaseKernel (kernelController);
-      clReleaseKernel (kernelMemReadData);
-      clReleaseKernel (kernelMemReadWeight);
-      clReleaseKernel (kernelMemWrite);
+      clReleaseKernel (kernel);
       free (input);
       free (weight);
       free (output);
