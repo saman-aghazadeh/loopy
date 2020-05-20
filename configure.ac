@@ -493,9 +493,6 @@ AC_CONFIG_FILES([Makefile
 		 src/opencl/level3/Makefile
                  src/opencl/idioms/Makefile
 		 src/opencl/TSVC/Makefile
-		 src/opencl/TSVC/IntraDimensionDependency/Makefile
-		 src/opencl/TSVC/IntraDimensionDependency/FPGA_SINGLE/Makefile
-		 src/opencl/TSVC/IntraDimensionDependency/GPU/Makefile
                  src/stability/Makefile
                  src/stability/epmpi/Makefile
                  tools/Makefile

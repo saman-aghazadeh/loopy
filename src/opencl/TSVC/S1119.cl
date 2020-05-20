@@ -20,11 +20,12 @@ __attribute__((num_compute_units(NUM_COMPUTE_UNITS)))
 
 #include "funcs.h"
 
-__kernel void S1119 (__global DTYPE* restrict AA,
-										__global const DTYPE* restrict BB,
-                    const int lllX
+__kernel void S1119 (	__global const DTYPE* restrict AA,
+			__global const DTYPE* restrict BB,
+			__global DTYPE* restrict CC,
+                    	const int lllX
 #ifdef FPGA_SINGLE
-                    ,const int lllY)
+                    	,const int lllY)
 #else
 																	)
 #endif
@@ -119,7 +120,7 @@ __kernel void S1119 (__global DTYPE* restrict AA,
 
 				#pragma unroll
 				for (int k = 0; k < BLOCK_SIZE; k++) {
-					AA[j*lllY+k+i_real[ii]] = AA_SR[ii][k];
+					CC[j*lllY+k+i_real[ii]] = AA_SR[ii][k];
 				}
 			}
 		}
