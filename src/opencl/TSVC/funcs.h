@@ -82,14 +82,38 @@ inline DTYPE megafunc(DTYPE input1, DTYPE input2) {
 #define Afunction7(A,B,C) AInit(A, B, C); tempA = pow(tempB, tempC); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); AFinal(A)
 #define Afunction8(A,B,C) AInit(A, B, C); tempA = pow(tempB, tempC); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); tempA = pow(tempB, tempA); AFinal(A)
 
-#define Bfunction(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; AFinal (A)
-#define Bfunction2(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction3(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction4(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction5(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction6(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction7(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
-#define Bfunction8(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+#define BFMAI	tempA = tempB * tempC + tempA
+#define BFMA1	tempA = tempA * tempC + tempA
+#define BFMA2 	BFMA1; BFMA1
+#define BFMA3	BFMA2; BFMA1
+#define BFMA4	BFMA3; BFMA1
+#define BFMA5	BFMA4; BFMA1
+#define	BFMA6	BFMA5; BFMA1
+#define	BFMA7	BFMA6; BFMA1
+#define BFMA8	BFMA7; BFMA1
+#define BFMA9	BFMA8; BFMA1
+#define BFMA10	BFMA9; BFMA1
+#define BFMA11	BFMA10; BFMA1
+#define BFMA12	BFMA11; BFMA1
+#define BFMA13	BFMA12; BFMA1
+#define BFMA14	BFMA13; BFMA1
+#define BFMA15	BFMA14; BFMA1
+
+#define Bfunction(A, B, C) AInit(A, B, C); BFMAI; BFMA1; AFinal (A)
+#define Bfunction2(A, B, C) AInit(A, B, C); BFMAI; BFMA3; AFinal (A)
+#define Bfunction3(A, B, C) AInit(A, B, C); BFMAI; BFMA5; AFinal (A)
+#define Bfunction4(A, B, C) AInit(A, B, C); BFMAI; BFMA7; AFinal (A)
+#define Bfunction5(A, B, C) AInit(A, B, C); BFMAI; BFMA9; AFinal (A)
+
+
+// #define Bfunction(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; AFinal (A)
+// #define Bfunction2(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction3(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction4(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction5(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction6(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction7(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
+// #define Bfunction8(A,B,C) AInit(A, B, C); tempA = cos(tempB) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; tempA = cos(tempA) * tempC; AFinal(A)
 
 #define megaBfunction(A,B,C) megaAInit(A,B,C); OPX (tempA,tempB,tempC); megaAFinal (A)
 #define megaBfunction2(A,B,C) megaAInit(A,B,C); OPX(tempA,tempB,tempC); OPX(tempA,tempB,tempC); megaAFinal (A)
