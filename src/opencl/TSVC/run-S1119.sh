@@ -1,0 +1,2 @@
+# env CL_CONTEXT_EMULATOR_DEVICE_INTELFPGA=1 ./S1119 --data_type SINGLE --kern_loc bin-emu/S1119 --kern_name S1119 --device_type FPGA --fpga_op_type SINGLE --intensity 1 --block_size 32 --min_data_size 4 --max_data_size 4
+./S1119 --data_type SINGLE --kern_loc bin/S1119-singleprecision-intensity1-bs32-fpgasingle --kern_name S1119 --device_type FPGA --fpga_op_type SINGLE --intensity 1 --block_size 32 --min_data_size 256 --max_data_size 256 --passes 3
