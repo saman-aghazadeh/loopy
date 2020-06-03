@@ -41,19 +41,19 @@ __kernel void S1119 (	__global const DTYPE* restrict AA,
 	for (int i = 1; i < lllX; i++) {
 #if INTENSITY1
 		Bfunction(temp, temp, BB[i*size+gid]);
-    		AA[i*size+gid] = temp;
+    		CC[i*size+gid] = temp;
 #elif INTENSITY2
 		Bfunction2(temp, temp, BB[i*size+gid]);
-    		AA[i*size+gid] = temp;
+    		CC[i*size+gid] = temp;
 #elif INTENSITY3
 		Bfunction3(temp, temp, BB[i*size+gid]);
-    		AA[i*size+gid] = temp;
+    		CC[i*size+gid] = temp;
 #elif INTENSITY4
 		Bfunction4(temp, temp, BB[i*size+gid]);
-    		AA[i*size+gid] = temp;
+    		CC[i*size+gid] = temp;
 #elif INTENSITY5
 		Bfunction5(temp, temp, BB[i*size+gid]);
-    		AA[i*size+gid] = temp;
+    		CC[i*size+gid] = temp;
 #endif
 	}
 	
