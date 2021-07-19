@@ -1,21 +1,7 @@
+# Loopy
 
-The Scalable HeterOgeneous Computing (SHOC) benchmark suite is a
-collection of benchmark programs testing the performance and
-stability of systems using computing devices with non-traditional architectures
-for general purpose computing. Its initial focus is on systems containing
-Graphics Processing Units (GPUs) and multi-core processors, and on the
-OpenCL programming standard. It can be used on clusters as well as individual
-hosts.
+Computation intensive applications usually consist of multiple nested or flattened loops. These loops are the main building blocks of the applications and embody a specific type of execution pattern. In order to reduce the running time of the loops, developers need to analyze the loops in the code and try to parallelize them on hardware accelerators, such as GPUs, TPUs, and FPGAs, which are increasingly available in the cloud. Unfortunately, the lack of understanding of loop characteristics and the ability of hardware accelerators in handling these types of loops prevents developers from choosing the right platform to develop their applications in the cloud . Also, developing an accelerator specific code is a time-consuming effort. To address these issues, this paper studies the effectiveness of different processors in accelerating common patterns of loops. It identifies five important types of loops that commonly exist in real-world applications, and presents Loopy, the implementations of these loops optimized for different architectures. Using Loopy, the repo also evaluates different hardware in accelerating the loop patterns. The result reveals the architectural differences among different accelerators with regard to different loop patterns. It also provides insights for the developers to choose the right accelerators for their applications. The current version of Loopy supports both FPGAs and GPUs, which are the most versatile and available accelerators.
 
-Documentation on configuring, building, and running the SHOC benchmark
-programs is contained in the SHOC user manual, in the doc subdirectory
-of the SHOC source code tree.  The file INSTALL.txt contains a sketch of
-those instructions for rapid installation.
+## Author
 
-Installation should be familiar to anyone who is experienced with configure
-and make, see the config directory for some examples.  Also, if your
-platform requires regenerating the configure script, see build-aux/bootstrap.sh
-and the manual for more details.
-
-Last update: 2014-04-13 15:39:22 kspaff
-
+Saman Biookaghazadeh (saman.aghazadeh@gmail.com)
